@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>X Ray kernel Test 1</title>
+    <script src="require.js"></script>
+    <script src="../bin/x-ray-kernel.js"></script>
+    <!--<script src="../src/api/Kernel.js"></script>§-->
+</head>
+<body>
+<script>
+    require(["../src/api/Kernel"], function (xray) {
+        let kernel = new xray.Kernel(Module);
+        console.log("Running...");
+        console.log(kernel.api.newScene(25));
+        console.log("Terminated!");
+    });
+</script>
+</body>
+</html>
