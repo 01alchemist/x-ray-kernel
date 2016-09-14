@@ -28,3 +28,5 @@
 *.out
 *.app
 /src/a.out.js
+.vscode
+.idea
