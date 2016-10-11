@@ -4,7 +4,7 @@
   "description": "Ray trace kernel for JavaScript written in C/C++",
   "main": "index.js",
   "bin": {
-    "x-ray-kernel": "pthread-main.js"
+    "x-ray-kernel": "x-ray-kernel.js"
   },
   "directories": {
     "test": "test"
@@ -13,7 +13,9 @@
     "require": "^2.4.20",
     "requirejs": "^2.3.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "turbo.js": "^1.0.7"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

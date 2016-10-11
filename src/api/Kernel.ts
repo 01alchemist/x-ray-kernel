@@ -1,5 +1,5 @@
 import {NativeMod} from "./NativeMod";
-import {api, CWrap} from "./API";
+import {api, CWrap} from "./api";
 /**
  * ...
  * @author Nidin Vinayakan

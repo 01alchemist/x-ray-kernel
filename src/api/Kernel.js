@@ -1,4 +1,4 @@
-define(["require", "exports", "./API"], function (require, exports, API_1) {
+define(["require", "exports", "./api"], function (require, exports, api_1) {
     "use strict";
     /**
      * ...
@@ -12,7 +12,7 @@ define(["require", "exports", "./API"], function (require, exports, API_1) {
         }
         Kernel.prototype.mapNativeFunctions = function (nativeMod) {
             var _this = this;
-            API_1.api.forEach(function (cwrap) {
+            api_1.api.forEach(function (cwrap) {
                 _this.api[cwrap.name] = nativeMod.cwrap(cwrap.name, cwrap.returnType, cwrap.argumentTypes);
             });
         };
