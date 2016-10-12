@@ -17,9 +17,13 @@
     "turbo.js": "^1.0.7",
     "typescript": "^1.8.10"
   },
+  "watch": {
+    "make-turbo": "src/kernel/turbo/src/*.*"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "make-turbo": "node ./src/kernel/turbo/make.js"
+    "make-turbo": "node ./src/kernel/turbo/make.js",
+    "watch": "npm-watch"
   },
   "repository": {
     "type": "git",

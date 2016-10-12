@@ -3,7 +3,7 @@
 let fs = require("fs");
 let path = require("path");
 let turbo = require("../../../../turbo.js/lib/compiler.js");
-let compiler = new turbo();
+let compiler = new turbo.Compiler();
 let modules = [
     "./src/common.tts",
     "./src/color.tts"
@@ -17,7 +17,14 @@ source += "}";
 
 fs.writeFileSync(path.resolve(__dirname, "xray-kernel-turbo.tts"), source);
 
-compiler.compile([path.resolve(__dirname, "xray-kernel-turbo.tts")]);
+compiler.compile({
+    sources: [path.resolve(__dirname, "xray-kernel-turbo.tts")],
+    options:{
+        bundle:true,
+        // outDir:"./",
+        target:turbo.CompilerTarget.TypeScript
+    }
+});
 
 fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
