@@ -14,10 +14,12 @@
     "requirejs": "^2.3.1"
   },
   "devDependencies": {
-    "turbo.js": "^1.0.7"
+    "turbo.js": "^1.0.7",
+    "typescript": "^1.8.10"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "make-turbo": "node ./src/kernel/turbo/make.js"
   },
   "repository": {
     "type": "git",
