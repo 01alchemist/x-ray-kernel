@@ -14,16 +14,46 @@
     "requirejs": "^2.3.1"
   },
   "devDependencies": {
+    "jasmine-core": "2.4.1",
+    "jasmine-spec-reporter": "2.5.0",
+    "karma": "1.2.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-cli": "^1.0.1",
+    "karma-jasmine": "^1.0.2",
+    "karma-junit-reporter": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-remap-istanbul": "^0.2.1",
+    "karma-requirejs": "^1.1.0",
+    "karma-script-launcher": "^1.0.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-typescript": "^2.0.6",
+    "karma-typescript-preprocessor": "^0.3.0",
+    "karma-typescript-preprocessor2": "^1.2.1",
+    "ts-node": "1.2.1",
+    "tslint": "3.13.0",
     "turbo.js": "^1.0.7",
     "typescript": "^1.8.10"
   },
   "watch": {
-    "make-turbo": "src/kernel/turbo/src/*.*"
+    "make-turbo": {
+      "patterns": [
+        "src/kernel/turbo/src"
+      ],
+      "extensions": "tts",
+      "ignore": [
+        "src/kernel/turbo/xray-kernel-turbo.spec.ts",
+        "src/kernel/turbo/xray-kernel-turbo.spec.js",
+        "src/kernel/turbo/xray-kernel-turbo.ts",
+        "src/kernel/turbo/xray-kernel-turbo.js"
+      ],
+      "quiet": true
+    }
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "make-turbo": "node ./src/kernel/turbo/make.js",
-    "watch": "npm-watch"
+    "watch": "npm-watch",
+    "watch-test": "tsc -w ./src/kernel/turbo/xray-kernel-turbo.spec.ts -t ES5 -m commonjs",
+    "test": "karma start karma.conf.js"
   },
   "repository": {
     "type": "git",

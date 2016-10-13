@@ -1,4 +1,4 @@
-export interface RGBA {
+interface RGBA {
     R:number,
     G:number,
     B:number,
@@ -22,7 +22,7 @@ export interface RGBA {
 		var R = ((hex >> 16) & 255 ) / 255;
 		var G = ((hex >> 8) & 255) / 255;
 		var B = (hex & 255) / 255;
-		return Color.pow(Color.init(SELF, RGB(R, G, B)), 2.2);
+		return Color.Pow(Color.init(SELF, RGB(R, G, B)), 2.2);
 	};
 
 	@method Kelvin(SELF, K:number):number {
