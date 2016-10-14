@@ -185,5 +185,3 @@ interface RGBA {
     };
 
 } @end
-
-kernel.Color = Color;

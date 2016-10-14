@@ -8,13 +8,14 @@ let modules = [
     "./src/common.tts",
     "./src/color.tts"
 ];
-var source = "namespace kernel {\n\n";
+// var source = "namespace kernel {\n\n";
+var source = "//Turbo module\n";
 source += turbo.Compiler.includes + "\n";
 modules.forEach((file) => {
     var content = fs.readFileSync(path.resolve(__dirname, file));
     source += content + "\n\n";
 });
-source += "}";
+source += "\n";
 
 fs.writeFileSync(path.resolve(__dirname, "xray-kernel-turbo.tts"), source);
 

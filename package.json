@@ -9,30 +9,27 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "require": "^2.4.20",
-    "requirejs": "^2.3.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "jasmine-core": "2.4.1",
     "jasmine-spec-reporter": "2.5.0",
     "karma": "1.2.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-cli": "^1.0.1",
+    "karma-commonjs": "^1.0.0",
+    "karma-coverage": "^1.1.1",
     "karma-jasmine": "^1.0.2",
     "karma-junit-reporter": "^1.1.0",
     "karma-phantomjs-launcher": "^1.0.2",
     "karma-remap-istanbul": "^0.2.1",
     "karma-requirejs": "^1.1.0",
-    "karma-script-launcher": "^1.0.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-typescript": "^2.0.6",
-    "karma-typescript-preprocessor": "^0.3.0",
-    "karma-typescript-preprocessor2": "^1.2.1",
+    "require": "^2.4.20",
+    "requirejs": "^2.3.1",
     "ts-node": "1.2.1",
     "tslint": "3.13.0",
-    "turbo.js": "^1.0.7",
-    "typescript": "^1.8.10"
+    "typescript": "^2.0.3"
   },
   "watch": {
     "make-turbo": {

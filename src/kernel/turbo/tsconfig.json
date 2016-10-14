@@ -5,11 +5,16 @@
     "removeComments": true,
     "sourceMap": true,
     "listFiles": true,
+    "moduleResolution": "node",
     "experimentalDecorators": true,
     "outDir": "bin",
     "target": "es5",
     "module": "commonjs"
   },
+  :
+  "files": [
+    "xray-kernel-turbo.spec.ts"
+  ],
   "exclude": [
     "node_modules",
     "bin",

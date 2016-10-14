@@ -1,30 +1,30 @@
 module.exports = function (config) {
     config.set({
-        basePath: '',
-        frameworks: ['requirejs', 'jasmine'],
+        basePath: './src/kernel/turbo/',
+        frameworks: ['commonjs', 'jasmine'],
         plugins: [
-            require('karma-requirejs'),
             require('karma-jasmine'),
-            require('karma-script-launcher'),
             require('karma-chrome-launcher'),
             require('karma-sourcemap-loader'),
-            require('karma-typescript-preprocessor2')
+            require('karma-typescript'),
+            require('karma-commonjs'),
+            require('karma-coverage')
         ],
         files: [
-            //{pattern: './src/kernel/turbo/xray-kernel-turbo.ts', watched: true},
-            {pattern: './src/kernel/turbo/xray-kernel-turbo.spec.ts', watched: true}
+            {pattern: 'xray-kernel-turbo.ts', watched: true},
+            {pattern: 'xray-kernel-turbo.spec.ts', watched: true}
         ],
         preprocessors: {
-            'src/kernel/turbo/*.ts': ['typescript', 'sourcemap']   // Use karma-sourcemap-loader
+            '**/*.ts': ["karma-typescript", "commonjs", "coverage"]   // Use karma-sourcemap-loader
         },
-        typescriptPreprocessor: {
+        /*typescriptPreprocessor: {
             // options passed to typescript compiler
-            tsconfigPath: './src/kernel/turbo/tsconfig.json', // *obligatory
+            tsconfigPath: 'tsconfig.json', // *obligatory
             compilerOptions: { // *optional
                 removeComments: false
             },
             // Options passed to gulp-sourcemaps to create sourcemaps
-            sourcemapOptions: {includeContent: true, sourceRoot: '/src'},
+            sourcemapOptions: {includeContent: true, sourceRoot: ''},
             // ignore all files that ends with .d.ts (this files will not be served)
             ignorePath: function(path){
                 return /\.d\.ts$/.test(path);
@@ -36,17 +36,22 @@ module.exports = function (config) {
             }, function(path) {
                 return path.replace(/[\/\\]test[\/\\]/i, '/'); // remove directory test and change to /
             }]
-        },
-        reporters: ['progress'],
+        },*/
+        reporters: ["dots", "karma-typescript", "coverage"],
+        coverageReporter: {type : 'html', dir : 'coverage/'},
         port: 9876,
         colors: true,
         logLevel: config.LOG_INFO,
         autoWatch: true,
-        browsers: ['ChromeCanary_SAB'],
+        browsers: ['Chrome_SAB'],
         customLaunchers: {
+            Chrome_SAB: {
+                base: 'Chrome',
+                flags: ['--js-flags="--harmony-sharedarraybuffer"']
+            },
             ChromeCanary_SAB: {
-                base: 'Chrome'
-                //flags: ['--js-flags="--harmony-sharedarraybuffer"']
+                base: 'ChromeCanary',
+                flags: ['--js-flags="--harmony-sharedarraybuffer"']
             }
         },
         singleRun: false
