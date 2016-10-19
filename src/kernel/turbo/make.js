@@ -8,9 +8,7 @@ let modules = [
     "./src/common.tts",
     "./src/color.tts"
 ];
-// var source = "namespace kernel {\n\n";
 var source = "//Turbo module\n";
-source += turbo.Compiler.includes + "\n";
 modules.forEach((file) => {
     var content = fs.readFileSync(path.resolve(__dirname, file));
     source += content + "\n\n";
@@ -33,11 +31,12 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
 
 //Compile TypeScript
-const spawn = require('child_process').spawn;
+/*const spawn = require('child_process').spawn;
 const ls = spawn('tsc', [
     __dirname + '/xray-kernel-turbo.ts',
     '--target', 'es5',
-    '--module', 'commonjs'
+    '--module', 'commonjs',
+    '--sourceMap'
 ]);
 
 ls.stdout.on('data', (data) => {
@@ -50,4 +49,4 @@ ls.stderr.on('data', (data) => {
 
 ls.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
-});
+});*/

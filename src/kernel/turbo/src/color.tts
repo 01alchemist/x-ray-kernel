@@ -11,21 +11,23 @@ interface RGBA {
 	G:float64;
 	B:float64;
 
-	@method init(SELF, color){
+	@method init(SELF:number, color = {R:0,G:0,B:0}):number {
 		SELF.R = color.R;
 		SELF.G = color.G;
 		SELF.B = color.B;
 		return SELF;
-	};
+	}
 
-	@method HexColor(SELF, hex:number):number {
-		var R = ((hex >> 16) & 255 ) / 255;
-		var G = ((hex >> 8) & 255) / 255;
-		var B = (hex & 255) / 255;
-		return Color.Pow(Color.init(SELF, RGB(R, G, B)), 2.2);
-	};
+	static HexColor(hex:number):number {
+		let R = ((hex >> 16) & 255 ) / 255;
+		let G = ((hex >> 8) & 255) / 255;
+		let B = (hex & 255) / 255;
+        let c = RGB(R, G, B);
+        let new_ptr:number = @new Color;
+		return Color.Pow_mem(Color.init(new_ptr, c), 2.2);
+	}
 
-	@method Kelvin(SELF, K:number):number {
+    static Kelvin(K:number):number {
         var red:number;
         var green:number;
         var blue:number;
@@ -70,12 +72,8 @@ interface RGBA {
         red = Math.min(1, red/255);
         green = Math.min(1, green/255);
         blue = Math.min(1, blue/255);
-        return Color.init(SELF, RGB(red, green, blue));
-    };
-
-    @method NewColor(SELF, c:RGBA):number {
-        return Color.init(SELF, RGB(c.R / 65535, c.G / 65535, c.B / 65535));
-    };
+        return Color.init(@new Color, RGB(red, green, blue));
+    }
 
     @method RGBA(SELF:number):RGBA {
         let _c:Uint8Array = new Uint8Array(3);
@@ -83,7 +81,7 @@ interface RGBA {
         _c[1] = Math.max(0, Math.min(255, Color.G(SELF) * 255));
         _c[2] = Math.max(0, Math.min(255, Color.B(SELF) * 255));
         return {R: _c[0], G: _c[1], B: _c[2], A: 255};
-    };
+    }
 
     @method RGBA64(SELF:number):RGBA {
         let _c:Uint16Array = new Uint16Array(3);
@@ -91,81 +89,97 @@ interface RGBA {
         _c[1] = Math.max(0, Math.min(65535, Color.G(SELF) * 65535));
         _c[2] = Math.max(0, Math.min(65535, Color.B(SELF) * 65535));
         return {R: _c[0], G: _c[1], B: _c[2], A: 65535};
-    };
+    }
     
-    Color.Add = function(A:Color, B:Color){return RGB(A.R + B.R, A.G + B.G, A.B + B.B);};
-    Color.Add_mem = function(A:number, B:number){
-        return RGB(Color.R(A) + Color.R(B), Color.G(A) + Color.G(B), Color.B(A) + Color.B(B));
-    };
-    
-    Color.Sub = function(A:Color, B:Color){return RGB(A.R - B.R, A.G - B.G, A.B - B.B);};
-    Color.Sub_mem = function(A:number, B:number){
+    static Add(A:RGBA, B:RGBA){return RGB(A.R + B.R, A.G + B.G, A.B + B.B);}
+
+    static Add_mem(A:number, B:number, C?:number){
+        //C = C?C:Color.init(@new Color);
+        if(C){
+            C = C;
+        }else{
+            return Color.init(@new Color, RGB(Color.R(A) + Color.R(B), Color.G(A) + Color.G(B), Color.B(A) + Color.B(B)));
+        }
+        // return RGB(Color.R(A) + Color.R(B), Color.G(A) + Color.G(B), Color.B(A) + Color.B(B));
+    }
+
+    static Sub(A:RGBA, B:RGBA){return RGB(A.R - B.R, A.G - B.G, A.B - B.B);}
+    static Sub_mem(A:number, B:number){
         return RGB(Color.R(A) - Color.R(B), Color.G(A) - Color.G(B), Color.B(A) - Color.B(B));
-    };
+    }
     
-    Color.Mul = function(A:Color, B:Color){return RGB(A.R * B.R, A.G * B.G, A.B * B.B);};
-    Color.Mul_mem = function(A:number, B:number) {
+    static Mul(A:RGBA, B:RGBA){return RGB(A.R * B.R, A.G * B.G, A.B * B.B);}
+    static Mul_mem(A:number, B:number) {
         return RGB(Color.R(A) * Color.R(B), Color.G(A) * Color.G(B), Color.B(A) * Color.B(B));
-    };
+    }
 
-    Color.MulScalar = function(A:Color, f:number){return RGB(A.R * f, A.G * f, A.B * f);};
-    Color.MulScalar_mem = function(A:number, f:number) {
+    static MulScalar(A:RGBA, f:number){return RGB(A.R * f, A.G * f, A.B * f);}
+    static MulScalar_mem(A:number, f:number) {
         return RGB(Color.R(A) * f, Color.G(A) * f, Color.B(A) * f);
-    };
+    }
 
-    Color.DivScalar = function(A:Color, f:number){return RGB(A.R / f, A.G / f, A.B / f);};
-    Color.DivScalar_mem = function(A:number, f:number) {
+    static DivScalar(A:RGBA, f:number){return RGB(A.R / f, A.G / f, A.B / f);}
+    static DivScalar_mem(A:number, f:number) {
         return RGB(Color.R(A) / f, Color.G(A) / f, Color.B(A) / f);
-    };
+    }
 
-    Color.Min = function(A:Color, B:Color) {return RGB( Math.min(A.R , B.R), Math.min(A.G , B.G), Math.min(A.B , B.B) );};
-    Color.Min_mem = function(A:number, B:number) {
+    static Min(A:RGBA, B:RGBA) {return RGB( Math.min(A.R , B.R), Math.min(A.G , B.G), Math.min(A.B , B.B) );}
+    static Min_mem(A:number, B:number) {
         return RGB( Math.min(Color.R(A) , Color.R(B)), Math.min(Color.G(A) , Color.G(B)), Math.min(Color.B(A) , Color.B(B)) );
-    };
+    }
 
-    Color.Max = function(A:Color, B:Color){return RGB( Math.max(A.R , B.R), Math.max(A.G , B.G), Math.max(A.B , B.B) );};
-    Color.Max_mem = function(A:number, B:number){
+    static Max(A:RGBA, B:RGBA){return RGB( Math.max(A.R , B.R), Math.max(A.G , B.G), Math.max(A.B , B.B) );}
+    static Max_mem(A:number, B:number){
         return RGB( Math.max(Color.R(A) , Color.R(B)), Math.max(Color.G(A) , Color.G(B)), Math.max(Color.B(A) , Color.B(B)) );
-    };
+    }
 
-    Color.MinComponent = function(A:Color, B:Color):number {return Math.min(Math.min(A.R, A.G), A.B)};
-    Color.MinComponent_mem = function(A:number, B:number) {
-        return Math.min( Math.min(Color.R(A.R), Color.G(A.G)), Color.B(A.B) );
-    };
+    static MinComponent(A:RGBA):number {return Math.min(Math.min(A.R, A.G), A.B)}
+    static MinComponent_mem(A:number) {
+        return Math.min( Math.min(Color.R(A), Color.G(A)), Color.B(A) );
+    }
 
-    Color.MaxComponent = function(A:Color, B:Color){ return Math.max(Math.max(A.R, A.G), A.B) };
-    Color.MaxComponent_mem = function(A:number, B:number){
-        return Math.max( Math.max(Color.R(A.R), Color.G(A.G)), Color.B(A.B) );
-    };
+    static MaxComponent(A:RGBA){ return Math.max(Math.max(A.R, A.G), A.B) }
+    static MaxComponent_mem(A:number){
+        return Math.max( Math.max(Color.R(A), Color.G(A)), Color.B(A) );
+    }
 
-    Color.Pow = function(A:Color, f:number) {return RGB( Math.pow(A.R, f), Math.pow(A.G, f), Math.pow(A.B, f) );};
-    Color.Pow_mem = function(A:number, f:number) {
-        return RGB( Math.pow(Color.R(A), f), Math.pow(Color.G(A), f), Math.pow(Color.B(A), f) );
-    };
+    static Pow(A:RGBA, f:number) {return RGB( Math.pow(A.R, f), Math.pow(A.G, f), Math.pow(A.B, f) );}
+    static Pow_mem(A:number, f:number) {
+        let SELF = @new Color;
+        SELF.R = Math.pow(Color.R(A), f);
+        SELF.G = Math.pow(Color.G(A), f);
+        SELF.B = Math.pow(Color.B(A), f);
+        return SELF;
+    }
 
-    Color.Mix = function(A:Color, B:Color, pct:number) {
+    static Mix(A:RGBA, B:RGBA, pct:number) {
         let _a = Color.MulScalar(A, 1 - pct);
         let _b = Color.MulScalar(B, pct);
         return RGB(_a.R + _b.R, _a.G + _b.G, _a.B + _b.B);
-    };
-    Color.Mix_mem = function(A:number, B:number, pct:number) {
+    }
+    static Mix_mem(A:number, B:number, pct:number) {
         let _a = Color.MulScalar_mem(A, 1 - pct);
         let _b = Color.MulScalar_mem(B, pct);
         return RGB(_a.R + _b.R, _a.G + _b.G, _a.B + _b.B);
-    };
+    }
 
     @method set(SELF, r:number, g:number, b:number) {
-        SELF.r = r;
-        SELF.g = g;
-        SELF.b = b;
+        SELF.R = r;
+        SELF.G = g;
+        SELF.B = b;
         return SELF;
-    };
+    }
 
     @method Clone(SELF):number {
-        return Color.init(SELF, RGB(SELF.r, SELF.g, SELF.b));
-    };
+        return Color.init(SELF, RGB(SELF.R, SELF.G, SELF.B));
+    }
 
-    Color.BrightColors = [
+
+    static NewColor(color):number {
+        return Color.init(@new Color, color);
+    }
+
+    static BrightColors = [
         Color.HexColor(0xFF00FF),
         Color.HexColor(0x84FF00),
         Color.HexColor(0xFF0084),
@@ -175,13 +189,13 @@ interface RGBA {
         Color.HexColor(0xFFFF00)
     ];
 
-    Color.Random = function():Color {
-        return new Color(Math.random(), Math.random(), Math.random());
-    };
+    static Random():number {
+        return Color.NewColor(RGB(Math.random(), Math.random(), Math.random()));
+    }
 
-    Color.RandomBrightColor = function():Color {
-        var i:number = Math.round(Math.random() * Color.brightColors.length);
-        return Color.brightColors[i];
-    };
+    static RandomBrightColor():number {
+        var i:number = Math.round(Math.random() * Color.BrightColors.length);
+        return Color.BrightColors[i];
+    }
 
 } @end

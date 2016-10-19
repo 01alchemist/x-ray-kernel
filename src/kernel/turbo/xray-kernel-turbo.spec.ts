@@ -1,4 +1,8 @@
+///<reference path="./xray-kernel-turbo.ts" />
 import kernel = require("./xray-kernel-turbo");
+
+const Color = kernel.Color;
+const turbo = kernel.turbo;
 
 describe("Turbo Runtime suite", () => {
 
@@ -11,7 +15,6 @@ describe("Turbo Runtime suite", () => {
     });
 
 });
-
 describe("Kernel suite >> ", () => {
 
     it("Kernel should have defined", () => {
@@ -21,156 +24,163 @@ describe("Kernel suite >> ", () => {
     describe("Color definition >> ", () => {
 
         it("Color should have defined", () => {
-            expect(kernel.Color).toBeDefined();
+            expect(Color).toBeDefined();
         });
 
         it("Color should have init method", () => {
-            expect(kernel.Color.init).toBeDefined();
+            expect(Color.init).toBeDefined();
         });
 
         it("Color should have set method", () => {
-            expect(kernel.Color.set).toBeDefined();
+            expect(Color.set).toBeDefined();
         });
 
         it("Color should have HexColor method", () => {
-            expect(kernel.Color.HexColor).toBeDefined();
+            expect(Color.HexColor).toBeDefined();
         });
 
         it("Color should have Kelvin method", () => {
-            expect(kernel.Color.Kelvin).toBeDefined();
+            expect(Color.Kelvin).toBeDefined();
         });
 
         it("Color should have NewColor method", () => {
-            expect(kernel.Color.NewColor).toBeDefined();
+            expect(Color.NewColor).toBeDefined();
         });
 
         it("Color should have RGBA method", () => {
-            expect(kernel.Color.RGBA).toBeDefined();
+            expect(Color.RGBA).toBeDefined();
         });
 
         it("Color should have RGBA64 method", () => {
-            expect(kernel.Color.RGBA64).toBeDefined();
+            expect(Color.RGBA64).toBeDefined();
         });
-
         it("Color should have Add method", () => {
-            expect(kernel.Color.Add).toBeDefined();
+            expect(Color.Add).toBeDefined();
         });
 
         it("Color should have Add_mem method", () => {
-            expect(kernel.Color.Add_mem).toBeDefined();
+            expect(Color.Add_mem).toBeDefined();
         });
 
         it("Color should have Sub method", () => {
-            expect(kernel.Color.Sub).toBeDefined();
+            expect(Color.Sub).toBeDefined();
         });
 
         it("Color should have Sub_mem method", () => {
-            expect(kernel.Color.Sub_mem).toBeDefined();
+            expect(Color.Sub_mem).toBeDefined();
         });
 
         it("Color should have Mul method", () => {
-            expect(kernel.Color.Mul).toBeDefined();
+            expect(Color.Mul).toBeDefined();
         });
 
         it("Color should have Mul_mem method", () => {
-            expect(kernel.Color.Mul_mem).toBeDefined();
+            expect(Color.Mul_mem).toBeDefined();
         });
 
         it("Color should have MulScalar method", () => {
-            expect(kernel.Color.MulScalar).toBeDefined();
+            expect(Color.MulScalar).toBeDefined();
         });
 
         it("Color should have MulScalar_mem method", () => {
-            expect(kernel.Color.MulScalar_mem).toBeDefined();
+            expect(Color.MulScalar_mem).toBeDefined();
         });
 
         it("Color should have DivScalar method", () => {
-            expect(kernel.Color.DivScalar).toBeDefined();
+            expect(Color.DivScalar).toBeDefined();
         });
 
         it("Color should have DivScalar_mem method", () => {
-            expect(kernel.Color.DivScalar_mem).toBeDefined();
+            expect(Color.DivScalar_mem).toBeDefined();
         });
 
         it("Color should have Min method", () => {
-            expect(kernel.Color.Min).toBeDefined();
+            expect(Color.Min).toBeDefined();
         });
 
         it("Color should have Min_mem method", () => {
-            expect(kernel.Color.Min_mem).toBeDefined();
+            expect(Color.Min_mem).toBeDefined();
         });
 
         it("Color should have Max method", () => {
-            expect(kernel.Color.Max).toBeDefined();
+            expect(Color.Max).toBeDefined();
         });
 
         it("Color should have Max_mem method", () => {
-            expect(kernel.Color.Max_mem).toBeDefined();
+            expect(Color.Max_mem).toBeDefined();
         });
 
         it("Color should have MinComponent method", () => {
-            expect(kernel.Color.MinComponent).toBeDefined();
+            expect(Color.MinComponent).toBeDefined();
         });
 
         it("Color should have MinComponent_mem method", () => {
-            expect(kernel.Color.MinComponent_mem).toBeDefined();
+            expect(Color.MinComponent_mem).toBeDefined();
         });
 
         it("Color should have MaxComponent method", () => {
-            expect(kernel.Color.MaxComponent).toBeDefined();
+            expect(Color.MaxComponent).toBeDefined();
         });
 
         it("Color should have MaxComponent_mem method", () => {
-            expect(kernel.Color.MaxComponent_mem).toBeDefined();
+            expect(Color.MaxComponent_mem).toBeDefined();
         });
 
         it("Color should have Pow method", () => {
-            expect(kernel.Color.Pow).toBeDefined();
+            expect(Color.Pow).toBeDefined();
         });
 
         it("Color should have Pow_mem method", () => {
-            expect(kernel.Color.Pow_mem).toBeDefined();
+            expect(Color.Pow_mem).toBeDefined();
         });
 
         it("Color should have Mix method", () => {
-            expect(kernel.Color.Mix).toBeDefined();
+            expect(Color.Mix).toBeDefined();
         });
 
         it("Color should have Mix_mem method", () => {
-            expect(kernel.Color.Mix_mem).toBeDefined();
+            expect(Color.Mix_mem).toBeDefined();
         });
 
         it("Color should have Clone method", () => {
-            expect(kernel.Color.Clone).toBeDefined();
+            expect(Color.Clone).toBeDefined();
         });
 
         it("Color should have Random method", () => {
-            expect(kernel.Color.Random).toBeDefined();
+            expect(Color.Random).toBeDefined();
         });
 
         it("Color should have RandomBrightColor method", () => {
-            expect(kernel.Color.RandomBrightColor).toBeDefined();
+            expect(Color.RandomBrightColor).toBeDefined();
         });
 
         it("Color should have BrightColors property", () => {
-            expect(kernel.Color.BrightColors).toBeDefined();
+            expect(Color.BrightColors).toBeDefined();
         });
     });
 
     describe("Color instance >> ", () => {
 
         it("Should create with out a problem", () => {
-            let color = new kernel.Color(0);
+            let color = new Color(0);
             expect(color).toBeTruthy();
         });
 
         it("Should add with out a problem", () => {
-            let color1 = new kernel.Color();
-            let color2 = new kernel.Color();
 
-            let c3 = kernel.Color.Add_mem(color1, color2);
-            console.log(c3);
-            expect(color1).toEqual(color2);
+            let red = {R: 1, G: 0, B: 0};
+            let green = {R: 0, G: 1, B: 0};
+            let blue = {R: 0, G: 0, B: 1};
+            let white = {R: 255, G: 255, B: 255, A:255};
+
+            let color1:number = Color.NewColor(red);
+            let color2:number = Color.NewColor(green);
+            let color3:number = Color.NewColor(blue);
+
+            let c3:number = Color.Add_mem(color1, color2);
+            c3 = Color.Add_mem(c3, color3);
+
+            expect(white).toEqual(Color.RGBA(c3));
         });
     });
 

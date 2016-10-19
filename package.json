@@ -11,6 +11,8 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@types/jasmine": "^2.5.35",
+    "concurrently": "^3.1.0",
     "jasmine-core": "2.4.1",
     "jasmine-spec-reporter": "2.5.0",
     "karma": "1.2.0",
@@ -47,9 +49,11 @@
     }
   },
   "scripts": {
+    "tst": "bash -e ",
+    "dev": "concurrently --kill-others \"npm run watch\" \"npm run watch-test\" \"npm run test\"",
     "make-turbo": "node ./src/kernel/turbo/make.js",
     "watch": "npm-watch",
-    "watch-test": "tsc -w ./src/kernel/turbo/xray-kernel-turbo.spec.ts -t ES5 -m commonjs",
+    "watch-test": "tsc -w ./src/kernel/turbo/xray-kernel-turbo.spec.ts -t ES5 -m commonjs --sourceMap",
     "test": "karma start karma.conf.js"
   },
   "repository": {
