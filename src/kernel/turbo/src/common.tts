@@ -1,3 +1,7 @@
+type float32 = number;
+type float64 = number;
+
+
 const height:number = 600;
 const width:number = 800;
 const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height*width*4 + 65536);
@@ -14,25 +18,26 @@ const INF:number = 1e9;
 const EPS:number = 1e-9;
 const SENTINEL:number = 1e32;
 
-function DL2(x:number, y:number) { return {x:x, y:y}; }
-function DL3(x:number, y:number, z:number) { return {x:x, y:y, z:z}; }
-function DL4(x:number, y:number, z:number, w:number) { return {x:x, y:y, z:z, w:w}; }
-function F3(a:number, b:number, c:number) { return {a:a, b:b, c:c}; }
-function RGB(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
+function xy(x:number, y:number) { return {X:x, Y:y}; }
+function xyz(x:number, y:number, z:number) { return {X:x, Y:y, Z:z}; }
+function xyzw(x:number, y:number, z:number, w:number) { return {X:x, Y:y, Z:z, W:w}; }
+function F3(a:number, b:number, c:number) { return {A:a, B:b, C:c}; }
+function rgb(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
 
-const black = DL3(0,0,0);
+// const black = DL3(0,0,0);
 
-function add(a, b) { return DL3(a.x+b.x, a.y+b.y, a.z+b.z); }
-function addi(a, c) { return DL3(a.x+c, a.y+c, a.z+c); }
-function sub(a, b) { return DL3(a.x-b.x, a.y-b.y, a.z-b.z); }
-function subi(a, c) { return DL3(a.x-c, a.y-c, a.z-c); }
-function muli(a, c) { return DL3(a.x*c, a.y*c, a.z*c); }
-function divi(a, c) { return DL3(a.x/c, a.y/c, a.z/c); }
-function neg(a) { return DL3(-a.x, -a.y, -a.z); }
-function length(a) { return Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z); }
-function normalize(a) { var d = length(a); return DL3(a.x/d, a.y/d, a.z/d); }
-function cross(a, b) { return DL3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x); }
-function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+// function add(a, b) { return DL3(a.x+b.x, a.y+b.y, a.z+b.z); }
+// function addi(a, c) { return DL3(a.x+c, a.y+c, a.z+c); }
+// function sub(a, b) { return DL3(a.x-b.x, a.y-b.y, a.z-b.z); }
+// function subi(a, c) { return DL3(a.x-c, a.y-c, a.z-c); }
+// function muli(a, c) { return DL3(a.x*c, a.y*c, a.z*c); }
+// function divi(a, c) { return DL3(a.x/c, a.y/c, a.z/c); }
+// function neg(a) { return DL3(-a.x, -a.y, -a.z); }
+// function length(a) { return Math.sqrt(a.x*a.x + a.y*a.y + a.z*a.z); }
+// function normalize(a) { var d = length(a); return DL3(a.x/d, a.y/d, a.z/d); }
+// function cross(a, b) { return DL3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x); }
+// function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
+
 function fract(f) { return f - Math.floor(f); }
 function fract_add1(f) {
     let f1 = f - Math.floor(f);
