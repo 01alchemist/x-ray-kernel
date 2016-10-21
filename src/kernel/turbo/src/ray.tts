@@ -1,0 +1,85 @@
+@turbo:: class Ray{
+
+	Origin:Vector
+	Direction:Vector
+
+	@method init(SELF:number, origin:number, direction:number):number{
+		SELF.Origin = origin;
+		SELF.Direction = direction;
+		return SELF;
+	}
+
+	static Position(r:number, t:number):number{
+		return Vector.Add_mem(Ray.Origin(r), Vector.MulScalar_mem(Ray.Direction(r), t));
+	}
+
+	static Reflect(n:number, i:number, r?:number):number{
+		r = r?r:@new Ray;
+		return Ray.init(r, Ray.Origin(n), Vector.Reflect_mem(Ray.Direction(n), Ray.Direction(i)) );
+	}
+
+    static Refract(n:number, i:number, n1:number, n2:number, r?:number):number{
+        r = r?r:@new Ray;
+        return Ray.init(r, Ray.Origin(n), Vector.Refract_mem(Ray.Direction(n), Ray.Direction(i), n1, n2) );
+    }
+
+    static Reflectance(n:number, i:number, n1:number, n2:number):number{
+        return Vector.Reflectance_mem(Ray.Direction(n), Ray.Direction(i), n1, n2);
+    }
+
+    static WeightedBounce(r:number, u:number, v:number, c?:number):number{
+        c = c?:c:@new Ray;
+        let radius:number = Math.sqrt(u);
+        let theta:number = 2 * Math.PI * v;
+        let s:number = Vector.Normalize_mem(Vector.Cross_mem(Ray.Direction(r), Vector.RandomUnitVector()));
+        let t:number = Vector.Cross_mem(Ray.Direction(r), s);
+        let d:number = @new Vector;
+        Vector.Add_mem(d, Vector.MulScalar_mem(s, radius * Math.cos(theta)), d);
+        Vector.Add_mem(d, Vector.MulScalar_mem(t, radius * Math.sin(theta)), d);
+        Vector.Add_mem(d, Vector.MulScalar_mem(r, Math.sqrt(1 - u)), d);
+        return Ray.init(c, Ray.Origin(r), d);
+    }
+
+    static ConeBounce(r:number, theta:number, u:number, v:number, c?:number):number{
+        c = c?c:@new Ray;
+        return Ray.init(c, Ray.Origin(r), Cone(Ray.Direction(r), theta, u, v));
+    }
+
+    static Bounce(info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, strength:number} {
+        return null;
+    }
+}
+
+func (i Ray) Bounce(info *HitInfo, u, v float64, bounceType BounceType, rnd *rand.Rand) (Ray, bool, float64) {
+	n := info.Ray
+	material := info.Material
+	n1, n2 := 1.0, material.Index
+	if info.Inside {
+		n1, n2 = n2, n1
+	}
+	var p float64
+	if material.Reflectivity >= 0 {
+		p = material.Reflectivity
+	} else {
+		p = n.Reflectance(i, n1, n2)
+	}
+	var reflect bool
+	switch bounceType {
+	case BounceTypeAny:
+		reflect = rnd.Float64() < p
+	case BounceTypeDiffuse:
+		reflect = false
+	case BounceTypeSpecular:
+		reflect = true
+	}
+	if reflect {
+		reflected := n.Reflect(i)
+		return reflected.ConeBounce(material.Gloss, u, v, rnd), true, p
+	} else if material.Transparent {
+		refracted := n.Refract(i, n1, n2)
+		refracted.Origin = refracted.Origin.Add(refracted.Direction.MulScalar(1e-4))
+		return refracted.ConeBounce(material.Gloss, u, v, rnd), true, 1 - p
+	} else {
+		return n.WeightedBounce(u, v, rnd), false, 1 - p
+	}
+}
