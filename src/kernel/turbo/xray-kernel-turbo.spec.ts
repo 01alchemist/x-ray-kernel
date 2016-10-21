@@ -4,6 +4,7 @@ import kernel = require("./xray-kernel-turbo");
 const turbo = kernel.turbo;
 const Color = kernel.Color;
 const Vector = kernel.Vector;
+const Matrix = kernel.Matrix;
 
 describe("Turbo Runtime suite", () => {
 
@@ -956,6 +957,174 @@ describe("Kernel suite >> ", () => {
             expect(Vector.XYZ(vector1)).not.toBeNull();
             expect(Vector.XYZ(vector2)).not.toBeNull();
             expect(Vector.XYZ(vector1)).not.toEqual(Vector.XYZ(vector2));
+        });
+    });
+
+    describe("Matrix definition >> ", () => {
+
+        it("Matrix should have defined", () => {
+            expect(Matrix).toBeDefined();
+        });
+
+        it("Matrix should have Identity method", () => {
+            expect(Matrix.Identity).toBeDefined();
+        });
+
+        it("Matrix should have NewMatrix method", () => {
+            expect(Matrix.NewMatrix).toBeDefined();
+        });
+
+        it("Matrix should have TranslateUnitMatrix method", () => {
+            expect(Matrix.TranslateUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have ScaleUnitMatrix method", () => {
+            expect(Matrix.ScaleUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have RotateUnitMatrix method", () => {
+            expect(Matrix.RotateUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have FrustumUnitMatrix method", () => {
+            expect(Matrix.FrustumUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have OrthographicUnitMatrix method", () => {
+            expect(Matrix.OrthographicUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have PerspectiveUnitMatrix method", () => {
+            expect(Matrix.PerspectiveUnitMatrix).toBeDefined();
+        });
+
+        it("Matrix should have LookAtMatrix method", () => {
+            expect(Matrix.LookAtMatrix).toBeDefined();
+        });
+
+        it("Matrix should have Translate method", () => {
+            expect(Matrix.Translate).toBeDefined();
+        });
+
+        it("Matrix should have Scale method", () => {
+            expect(Matrix.Scale).toBeDefined();
+        });
+
+        it("Matrix should have Rotate method", () => {
+            expect(Matrix.Rotate).toBeDefined();
+        });
+
+        it("Matrix should have Frustum method", () => {
+            expect(Matrix.Frustum).toBeDefined();
+        });
+
+        it("Matrix should have Orthographic method", () => {
+            expect(Matrix.Orthographic).toBeDefined();
+        });
+
+        it("Matrix should have Perspective method", () => {
+            expect(Matrix.Perspective).toBeDefined();
+        });
+
+        it("Matrix should have Mul method", () => {
+            expect(Matrix.Mul).toBeDefined();
+        });
+
+        it("Matrix should have MulPosition method", () => {
+            expect(Matrix.MulPosition).toBeDefined();
+        });
+
+        it("Matrix should have MulDirection method", () => {
+            expect(Matrix.MulDirection).toBeDefined();
+        });
+
+        it("Matrix should have Mul method", () => {
+            expect(Matrix.Mul).toBeDefined();
+        });
+
+        it("Matrix should have MulRay method", () => {
+            expect(Matrix.MulRay).toBeDefined();
+        });
+
+        it("Matrix should have MulBox method", () => {
+            expect(Matrix.MulBox).toBeDefined();
+        });
+
+        it("Matrix should have Transpose method", () => {
+            expect(Matrix.Transpose).toBeDefined();
+        });
+
+        it("Matrix should have Determinant method", () => {
+            expect(Matrix.Determinant).toBeDefined();
+        });
+
+        it("Matrix should have Inverse method", () => {
+            expect(Matrix.Inverse).toBeDefined();
+        });
+
+    });
+
+    describe("Matrix instance >> ", () => {
+
+        it("Should create without a problem", () => {
+            let matrix = new Matrix(0);
+            expect(matrix).toBeTruthy();
+        });
+
+        it("Should TranslateUnitMatrix without a problem", () => {
+
+            //float64 (input)
+            let a1 = {X: 1, Y: 0, Z: 0};
+            let vec:number = Vector.NewVector(a1);
+            let expectedMat:number = Matrix.NewMatrix(
+                1, 0, 0, 1,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1
+            );
+            
+            let transUnitMatrix:number = Matrix.TranslateUnitMatrix(vec);
+            
+            expect(Matrix.IsEqual(transUnitMatrix, expectedMat)).toBeTruthy();
+            expect(Matrix.IsIdentity(transUnitMatrix)).not.toBeTruthy();
+        });
+
+        it("Should ScaleUnitMatrix without a problem", () => {
+
+            //float64 (input)
+            let a1 = {X: 1, Y: 0, Z: 0};
+            let vec:number = Vector.NewVector(a1);
+            let expectedMat:number = Matrix.NewMatrix(
+                1, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 0,
+                0, 0, 0, 1
+            );
+
+            let scaleUnitMatrix:number = Matrix.ScaleUnitMatrix(vec);
+
+            expect(Matrix.IsEqual(scaleUnitMatrix, expectedMat)).toBeTruthy();
+            expect(Matrix.IsIdentity(scaleUnitMatrix)).not.toBeTruthy();
+        });
+
+        it("Should RotateUnitMatrix without a problem", () => {
+
+            //float64 (input)
+            let a1 = {X: 1, Y: 0, Z: 0};
+            let vec:number = Vector.NewVector(a1);
+            let expectedMat:number = Matrix.NewMatrix(
+                1, 0, 0, 0,
+                0, -0.4480736161291702, 0.8939966636005579, 0,
+                0, -0.8939966636005579, -0.4480736161291702, 0,
+                0, 0, 0, 1
+            );
+
+            let rotateUnitMatrix:number = Matrix.RotateUnitMatrix(vec, 90);
+
+            // console.log(Matrix.DATA(rotateUnitMatrix));
+
+            expect(Matrix.IsEqual(rotateUnitMatrix, expectedMat)).toBeTruthy();
+            expect(Matrix.IsIdentity(rotateUnitMatrix)).not.toBeTruthy();
         });
     });
 

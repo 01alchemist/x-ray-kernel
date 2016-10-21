@@ -394,7 +394,7 @@ type float64 = number;
 
 const height:number = 600;
 const width:number = 800;
-const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height*width*4 + 65536);
+const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
 turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
 
 const shadows:boolean = true;		// Compute object shadows
@@ -408,11 +408,24 @@ const INF:number = 1e9;
 const EPS:number = 1e-9;
 const SENTINEL:number = 1e32;
 
-function xy(x:number, y:number) { return {X:x, Y:y}; }
-function xyz(x:number, y:number, z:number) { return {X:x, Y:y, Z:z}; }
-function xyzw(x:number, y:number, z:number, w:number) { return {X:x, Y:y, Z:z, W:w}; }
-function F3(a:number, b:number, c:number) { return {A:a, B:b, C:c}; }
-function rgb(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
+function xy(x:number, y:number) {
+    return {X: x, Y: y};
+}
+function xyz(x:number, y:number, z:number) {
+    return {X: x, Y: y, Z: z};
+}
+function xyzw(x:number, y:number, z:number, w:number) {
+    return {X: x, Y: y, Z: z, W: w};
+}
+function F3(a:number, b:number, c:number) {
+    return {A: a, B: b, C: c};
+}
+function rgb(r:number, g:number, b:number) {
+    return {R: r, G: g, B: b};
+}
+function ray(origin:number, direction:number) {
+    return {Origin: origin, Direction: direction};
+}
 
 // const black = DL3(0,0,0);
 
@@ -428,15 +441,24 @@ function rgb(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
 // function cross(a, b) { return DL3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x); }
 // function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
 
-function fract(f) { return f - Math.floor(f); }
+function fract(f) {
+    return f - Math.floor(f);
+}
 function fract_add1(f) {
     let f1 = f - Math.floor(f);
     return f1 - Math.floor(f1 + 1);
 }
-function clampInt(x, lo, hi){
-    if (x < lo) {return lo;}
-    if (x > hi) {return hi;}
+function clampInt(x, lo, hi) {
+    if (x < lo) {
+        return lo;
+    }
+    if (x > hi) {
+        return hi;
+    }
     return x;
+}
+function len(ptr, T) {
+
 }
 
 type RGBA  = {
@@ -856,7 +878,7 @@ export class Vector extends MemoryObject{
 
     static RandomUnitVector():number {
         let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-        
+
         let x = Math.random() * 2 - 1;
         let y = Math.random() * 2 - 1;
         let z = Math.random() * 2 - 1;
@@ -949,7 +971,7 @@ export class Vector extends MemoryObject{
     }
 
     static Negate(a:XYZ):XYZ {
-        return xyz(-turbo.Runtime._mem_float64[(a + 8) >> 3], -turbo.Runtime._mem_float64[(a + 16) >> 3], -turbo.Runtime._mem_float64[(a + 24) >> 3])
+        return xyz(-a.X, -a.Y, -a.Z);
     }
 
     static Negate_mem(a:number, c?:number):number {
@@ -970,7 +992,7 @@ export class Vector extends MemoryObject{
     }
 
     static Abs(a:XYZ):XYZ {
-        return xyz(Math.abs(turbo.Runtime._mem_float64[(a + 8) >> 3]), Math.abs(turbo.Runtime._mem_float64[(a + 16) >> 3]), Math.abs(turbo.Runtime._mem_float64[(a + 24) >> 3]));
+        return xyz(Math.abs(a.X), Math.abs(a.Y), Math.abs(a.Z));
     }
 
     static Abs_mem(a:number, c?:number):number {
@@ -1353,6 +1375,457 @@ export class Vector extends MemoryObject{
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1266219; return SELF; }
 }
 turbo.Runtime._idToType[1266219] = Vector;
+
+export class Box extends MemoryObject{
+   static NAME:string = "Box";
+   static SIZE:number = 12;
+   static ALIGN:number = 4;
+   static CLSID:number = 1841;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF:number, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = (Vector.NewVector(min)); 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (Vector.NewVector(max)); 
+        return SELF;
+	}
+
+    static Init_mem(SELF:number, min:number, max:number){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = min; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = max; 
+        return SELF;
+	}
+
+
+	static BoxForTriangles(){
+
+	}
+
+	static Anchor(){
+
+	}
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1841; return SELF; }
+}
+turbo.Runtime._idToType[1841] = Box;
+
+
+// static BoxForShapes(shapes:Shape.Array):number{
+// let length:number = len(shapes, Shape);
+// if(length == 0) {
+// return _new Box;
+// }
+// let box = shapes[0].BoundingBox();
+//
+// for(let i:number = 0; i < length; i++){
+// let shape:number = Shape  .  Array  .  at(shapes, i);
+// box = Box.Extend(box, Shape.BoundingBox(shape));
+// }
+// return box
+// }
+
+/*
+func BoxForShapes(shapes []Shape) Box {
+	if len(shapes) == 0 {
+		return Box{}
+	}
+	box := shapes[0].BoundingBox()
+	for _, shape := range shapes {
+		box = box.Extend(shape.BoundingBox())
+	}
+	return box
+}
+
+func BoxForTriangles(shapes []*Triangle) Box {
+	if len(shapes) == 0 {
+		return Box{}
+	}
+	box := shapes[0].BoundingBox()
+	for _, shape := range shapes {
+		box = box.Extend(shape.BoundingBox())
+	}
+	return box
+}
+
+func (a Box) Anchor(anchor Vector) Vector {
+	return a.Min.Add(a.Size().Mul(anchor))
+}
+
+func (a Box) Center() Vector {
+	return a.Anchor(Vector{0.5, 0.5, 0.5})
+}
+
+func (a Box) OuterRadius() float64 {
+	return a.Min.Sub(a.Center()).Length()
+}
+
+func (a Box) InnerRadius() float64 {
+	return a.Center().Sub(a.Min).MaxComponent()
+}
+
+func (a Box) Size() Vector {
+	return a.Max.Sub(a.Min)
+}
+
+func (a Box) Extend(b Box) Box {
+	return Box{a.Min.Min(b.Min), a.Max.Max(b.Max)}
+}
+
+func (a Box) Contains(b Vector) bool {
+	return a.Min.X <= b.X && a.Max.X >= b.X &&
+		a.Min.Y <= b.Y && a.Max.Y >= b.Y &&
+		a.Min.Z <= b.Z && a.Max.Z >= b.Z
+}
+
+func (a Box) Intersects(b Box) bool {
+	return !(a.Min.X > b.Max.X || a.Max.X < b.Min.X || a.Min.Y > b.Max.Y ||
+		a.Max.Y < b.Min.Y || a.Min.Z > b.Max.Z || a.Max.Z < b.Min.Z)
+}
+
+func (b *Box) Intersect(r Ray) (float64, float64) {
+	x1 := (b.Min.X - r.Origin.X) / r.Direction.X
+	y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
+	z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
+	x2 := (b.Max.X - r.Origin.X) / r.Direction.X
+	y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
+	z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+	if x1 > x2 {
+		x1, x2 = x2, x1
+	}
+	if y1 > y2 {
+		y1, y2 = y2, y1
+	}
+	if z1 > z2 {
+		z1, z2 = z2, z1
+	}
+	t1 := math.Max(math.Max(x1, y1), z1)
+	t2 := math.Min(math.Min(x2, y2), z2)
+	return t1, t2
+}
+
+func (b *Box) Partition(axis Axis, point float64) (left, right bool) {
+	switch axis {
+	case AxisX:
+		left = b.Min.X <= point
+		right = b.Max.X >= point
+	case AxisY:
+		left = b.Min.Y <= point
+		right = b.Max.Y >= point
+	case AxisZ:
+		left = b.Min.Z <= point
+		right = b.Max.Z >= point
+	}
+	return
+}
+*/
+
+
+interface Ray{
+    Origin:number;
+    Direction:number;
+}
+
+export class Matrix extends MemoryObject{
+   static NAME:string = "Matrix";
+   static SIZE:number = 136;
+   static ALIGN:number = 8;
+   static CLSID:number = 2093537;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF:number=0, x00:number=0, x01:number=0, x02:number=0, x03:number=0, x10:number=0, x11:number=0, x12:number=0, x13:number=0, x20:number=0, x21:number=0, x22:number=0, x23:number=0, x30:number=0, x31:number=0, x32:number=0, x33:number=0) {
+         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = x00; 
+         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = x01; 
+         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = x02; 
+         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = x03; 
+         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = x10; 
+         turbo.Runtime._mem_float64[(SELF + 48) >> 3] = x11; 
+         turbo.Runtime._mem_float64[(SELF + 56) >> 3] = x12; 
+         turbo.Runtime._mem_float64[(SELF + 64) >> 3] = x13; 
+         turbo.Runtime._mem_float64[(SELF + 72) >> 3] = x20; 
+         turbo.Runtime._mem_float64[(SELF + 80) >> 3] = x21; 
+         turbo.Runtime._mem_float64[(SELF + 88) >> 3] = x22; 
+         turbo.Runtime._mem_float64[(SELF + 96) >> 3] = x23; 
+         turbo.Runtime._mem_float64[(SELF + 104) >> 3] = x30; 
+         turbo.Runtime._mem_float64[(SELF + 112) >> 3] = x31; 
+         turbo.Runtime._mem_float64[(SELF + 120) >> 3] = x32; 
+         turbo.Runtime._mem_float64[(SELF + 128) >> 3] = x33; 
+        return SELF;
+    }
+
+    static NewMatrix(x00?:number, x01?:number, x02?:number, x03?:number, x10?:number, x11?:number, x12?:number, x13?:number, x20?:number, x21?:number, x22?:number, x23?:number, x30?:number, x31?:number, x32?:number, x33?:number):number {
+        let ptr:number = Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            x00, x01, x02, x03,
+            x10, x11, x12, x13,
+            x20, x21, x22, x23,
+            x30, x31, x32, x33
+        )
+    }
+
+    static DATA(SELF:number) {
+        return [
+            turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3], turbo.Runtime._mem_float64[(SELF + 32) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 40) >> 3], turbo.Runtime._mem_float64[(SELF + 48) >> 3], turbo.Runtime._mem_float64[(SELF + 56) >> 3], turbo.Runtime._mem_float64[(SELF + 64) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 72) >> 3], turbo.Runtime._mem_float64[(SELF + 80) >> 3], turbo.Runtime._mem_float64[(SELF + 88) >> 3], turbo.Runtime._mem_float64[(SELF + 96) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 104) >> 3], turbo.Runtime._mem_float64[(SELF + 112) >> 3], turbo.Runtime._mem_float64[(SELF + 120) >> 3], turbo.Runtime._mem_float64[(SELF + 128) >> 3]
+        ]
+    }
+
+    static Identity(c?:number):number {
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static IsEqual(a:number, b:number):boolean {
+        return turbo.Runtime._mem_float64[(a + 8) >> 3] == turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[(a + 16) >> 3] == turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[(a + 24) >> 3] == turbo.Runtime._mem_float64[(b + 24) >> 3] && turbo.Runtime._mem_float64[(a + 32) >> 3] == turbo.Runtime._mem_float64[(b + 32) >> 3] && turbo.Runtime._mem_float64[(a + 40) >> 3] == turbo.Runtime._mem_float64[(b + 40) >> 3] && turbo.Runtime._mem_float64[(a + 48) >> 3] == turbo.Runtime._mem_float64[(b + 48) >> 3] && turbo.Runtime._mem_float64[(a + 56) >> 3] == turbo.Runtime._mem_float64[(b + 56) >> 3] && turbo.Runtime._mem_float64[(a + 64) >> 3] == turbo.Runtime._mem_float64[(b + 64) >> 3] && turbo.Runtime._mem_float64[(a + 72) >> 3] == turbo.Runtime._mem_float64[(b + 72) >> 3] && turbo.Runtime._mem_float64[(a + 80) >> 3] == turbo.Runtime._mem_float64[(b + 80) >> 3] && turbo.Runtime._mem_float64[(a + 88) >> 3] == turbo.Runtime._mem_float64[(b + 88) >> 3] && turbo.Runtime._mem_float64[(a + 96) >> 3] == turbo.Runtime._mem_float64[(b + 96) >> 3] && turbo.Runtime._mem_float64[(a + 104) >> 3] == turbo.Runtime._mem_float64[(b + 104) >> 3] && turbo.Runtime._mem_float64[(a + 112) >> 3] == turbo.Runtime._mem_float64[(b + 112) >> 3] && turbo.Runtime._mem_float64[(a + 120) >> 3] == turbo.Runtime._mem_float64[(b + 120) >> 3] && turbo.Runtime._mem_float64[(a + 128) >> 3] == turbo.Runtime._mem_float64[(b + 128) >> 3];
+    }
+
+    static IsIdentity(a:number):boolean {
+        return turbo.Runtime._mem_float64[(a + 8) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 16) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 24) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 32) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 40) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 48) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 56) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 64) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 72) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 80) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 88) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 96) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 104) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 112) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 120) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 128) >> 3] == 1;
+    }
+
+    static TranslateUnitMatrix(v:number, c?:number):number{
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            1, 0, 0, turbo.Runtime._mem_float64[(v + 8) >> 3],
+            0, 1, 0, turbo.Runtime._mem_float64[(v + 16) >> 3],
+            0, 0, 1, turbo.Runtime._mem_float64[(v + 24) >> 3],
+            0, 0, 0, 1
+        )
+    }
+
+    static ScaleUnitMatrix(v:number, c?:number):number{
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            turbo.Runtime._mem_float64[(v + 8) >> 3], 0, 0, 0,
+            0, turbo.Runtime._mem_float64[(v + 16) >> 3], 0, 0,
+            0, 0, turbo.Runtime._mem_float64[(v + 24) >> 3], 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static RotateUnitMatrix(v:number, a:number, _c?:number):number{
+
+        v = Vector.Normalize_mem(v);
+        let s:number = Math.sin(a);
+        let c:number = Math.cos(a);
+        let m:number = 1 - c;
+
+        let ptr:number = _c?_c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            m*turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] + c, m * turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] + turbo.Runtime._mem_float64[(v + 24) >> 3] * s, m * turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] - turbo.Runtime._mem_float64[(v + 16) >> 3] * s, 0,
+            m*turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] - turbo.Runtime._mem_float64[(v + 24) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] + c, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] + turbo.Runtime._mem_float64[(v + 8) >> 3] * s, 0,
+            m*turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] + turbo.Runtime._mem_float64[(v + 16) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] - turbo.Runtime._mem_float64[(v + 8) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] + c, 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static FrustumUnitMatrix(l:number, r:number, b:number, t:number, n:number, f:number, c?:number):number{
+
+        let t1:number = 2 * n;
+        let t2:number = r - l;
+        let t3:number = t - b;
+        let t4:number = f - n;
+
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            t1 / t2, 0, (r + l) / t2, 0,
+            0, t1 / t3, (t + b) / t3, 0,
+            0, 0, (-f - n) / t4, (-t1 * f) / t4,
+            0, 0, -1, 0
+        )
+    }
+
+    static OrthographicUnitMatrix(l:number, r:number, b:number, t:number, n:number, f:number, c?:number):number{
+
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            2 / (r - l), 0, 0, -(r + l) / (r - l),
+            0, 2 / (t - b), 0, -(t + b) / (t - b),
+            0, 0, -2 / (f - n), -(f + n) / (f - n),
+            0, 0, 0, 1
+        )
+    }
+
+    static PerspectiveUnitMatrix(fovy:number, aspect:number, near:number, far:number, c?:number):number {
+        let ymax:number = near * Math.tan(fovy * Math.PI/360);
+        let xmax:number = ymax * aspect;
+        return Matrix.Frustum(-xmax, xmax, -ymax, ymax, near, far, c);
+    }
+
+    static LookAtMatrix(eye:number, center:number, up:number, c?:number):number{
+        up = Vector.Normalize_mem(up);
+        let f:number = Vector.Normalize_mem(Vector.Sub_mem(center, eye));
+        let s:number = Vector.Normalize_mem(Vector.Cross_mem(f, up));
+        let u:number = Vector.Cross_mem(s,f);
+
+        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        Matrix.init(ptr,
+            turbo.Runtime._mem_float64[(s + 8) >> 3], turbo.Runtime._mem_float64[(u + 8) >> 3], turbo.Runtime._mem_float64[(f + 8) >> 3], 0,
+            turbo.Runtime._mem_float64[(s + 16) >> 3], turbo.Runtime._mem_float64[(u + 16) >> 3], turbo.Runtime._mem_float64[(f + 16) >> 3], 0,
+            turbo.Runtime._mem_float64[(s + 24) >> 3], turbo.Runtime._mem_float64[(u + 24) >> 3], turbo.Runtime._mem_float64[(f + 24) >> 3], 0,
+            0, 0, 0, 1
+        );
+        return Matrix.Translate(Matrix.Inverse(Matrix.Transpose(ptr, ptr), ptr), eye, ptr);
+    }
+    
+    static Translate(m:number, v:number, c?:number):number {
+        return Matrix.Mul(m, Matrix.TranslateUnitMatrix(v), c);
+    }
+
+    static Scale(m:number, v:number):number{
+        return Matrix.Mul(m, Matrix.ScaleUnitMatrix(v));
+    }
+
+    static Rotate(m:number, v:number, a:number):number {
+        return Matrix.Mul(m, Matrix.RotateUnitMatrix(v, a));
+    }
+
+    static Frustum(m:number, l:number, r:number, b:number, t:number, n:number, f:number):number {
+        return Matrix.Mul(m, Matrix.FrustumUnitMatrix(l, r, b, t, n, f));
+    }
+
+    static Orthographic(m:number, l:number, r:number, b:number, t:number, n:number, f:number):number {
+        return Matrix.Mul(m, Matrix.OrthographicUnitMatrix(l, r, b, t, n, f));
+    }
+
+    static Perspective(m:number, fovy:number, aspect:number, near:number, far:number):number {
+        return Matrix.Mul(m, Matrix.PerspectiveUnitMatrix(fovy, aspect, near, far));
+    }
+
+    static Mul(a:number, b:number, m?:number):number{
+        m = m?m:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        turbo.Runtime._mem_float64[(m + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
+        turbo.Runtime._mem_float64[(m + 40) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
+        turbo.Runtime._mem_float64[(m + 72) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
+        turbo.Runtime._mem_float64[(m + 104) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
+        turbo.Runtime._mem_float64[(m + 16) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
+        turbo.Runtime._mem_float64[(m + 48) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
+        turbo.Runtime._mem_float64[(m + 80) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
+        turbo.Runtime._mem_float64[(m + 112) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
+        turbo.Runtime._mem_float64[(m + 24) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
+        turbo.Runtime._mem_float64[(m + 56) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
+        turbo.Runtime._mem_float64[(m + 88) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
+        turbo.Runtime._mem_float64[(m + 120) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
+        turbo.Runtime._mem_float64[(m + 32) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
+        turbo.Runtime._mem_float64[(m + 64) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
+        turbo.Runtime._mem_float64[(m + 96) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
+        turbo.Runtime._mem_float64[(m + 128) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
+        return m;
+    }
+
+    static MulPosition(a:number, b:number, c?:number):number {
+        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3];
+        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3];
+        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3];
+        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8))();
+        return Vector.Init_mem(ptr, x, y, z);
+    }
+
+    static MulDirection(a:number, b:number, c?:number):number {
+        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
+        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
+        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
+        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8))();
+        return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
+    }
+
+    static MulRay(a:number, b:Ray):Ray {
+        return ray(Matrix.MulPosition(a, b.Origin), Matrix.MulDirection(a, b.Direction));
+    }
+
+    static  MulBox(a:number, box:number, c?:number):number {
+        let min:number = turbo.Runtime._mem_int32[(box + 4) >> 2];
+        let max:number = turbo.Runtime._mem_int32[(box + 8) >> 2];
+        // http://dev.theomader.com/transform-bounding-boxes/
+        let r:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 40) >> 3], turbo.Runtime._mem_float64[(a + 72) >> 3]);
+        let u:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 48) >> 3], turbo.Runtime._mem_float64[(a + 80) >> 3]);
+        let b:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 24) >> 3], turbo.Runtime._mem_float64[(a + 56) >> 3], turbo.Runtime._mem_float64[(a + 88) >> 3]);
+        let t:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 32) >> 3], turbo.Runtime._mem_float64[(a + 64) >> 3], turbo.Runtime._mem_float64[(a + 96) >> 3]);
+        let xa:number = Vector.MulScalar_mem(r, turbo.Runtime._mem_float64[(min + 8) >> 3]);
+        let xb:number = Vector.MulScalar_mem(r, turbo.Runtime._mem_float64[(max + 8) >> 3]);
+        let ya:number = Vector.MulScalar_mem(u, turbo.Runtime._mem_float64[(min + 16) >> 3]);
+        let yb:number = Vector.MulScalar_mem(u, turbo.Runtime._mem_float64[(max + 16) >> 3]);
+        let za:number = Vector.MulScalar_mem(b, turbo.Runtime._mem_float64[(min + 24) >> 3]);
+        let zb:number = Vector.MulScalar_mem(b, turbo.Runtime._mem_float64[(max + 24) >> 3]);
+        xa = Vector.Min_mem(xa, xb, r);
+        xb = Vector.Max_mem(xa, xb, u);
+        ya = Vector.Min_mem(ya, yb, b);
+        yb = Vector.Max_mem(ya, yb);
+        za = Vector.Min_mem(za, zb);
+        zb = Vector.Max_mem(za, zb);
+        min = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xa, ya), za),t);
+        max = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xb, yb), zb),t);
+        let ptr = c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        return Box.Init_mem(ptr, min, max);
+    }
+
+    static Transpose(a:number, c?:number):number {
+        let ptr = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        return Matrix.init(ptr,
+            turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 40) >> 3], turbo.Runtime._mem_float64[(a + 72) >> 3], turbo.Runtime._mem_float64[(a + 104) >> 3],
+            turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 48) >> 3], turbo.Runtime._mem_float64[(a + 80) >> 3], turbo.Runtime._mem_float64[(a + 112) >> 3],
+            turbo.Runtime._mem_float64[(a + 24) >> 3], turbo.Runtime._mem_float64[(a + 56) >> 3], turbo.Runtime._mem_float64[(a + 88) >> 3], turbo.Runtime._mem_float64[(a + 120) >> 3],
+            turbo.Runtime._mem_float64[(a + 32) >> 3], turbo.Runtime._mem_float64[(a + 64) >> 3], turbo.Runtime._mem_float64[(a + 96) >> 3], turbo.Runtime._mem_float64[(a + 128) >> 3]
+        );
+    }
+
+    static Determinant(SELF:number):number {
+        return (turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] +
+        turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] +
+        turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] +
+        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] +
+        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] +
+        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] -
+        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3])
+    }
+
+    static Inverse(SELF:number, c?:number):number {
+        let m:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let d:number = Matrix.Determinant(SELF);
+        turbo.Runtime._mem_float64[(m + 8) >> 3] = (turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 16) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 24) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 32) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 40) >> 3] = (turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 48) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 56) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 64) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 72) >> 3] = (turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 80) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 88) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 96) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 104) >> 3] = (turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 112) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 120) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
+        turbo.Runtime._mem_float64[(m + 128) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]) / d
+        return m
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=2093537; return SELF; }
+}
+turbo.Runtime._idToType[2093537] = Matrix;
 
 
 

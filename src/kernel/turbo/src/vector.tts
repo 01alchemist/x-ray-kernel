@@ -35,7 +35,7 @@ type XYZ = {
 
     static RandomUnitVector():number {
         let ptr:number = @new Vector;
-        
+
         let x = Math.random() * 2 - 1;
         let y = Math.random() * 2 - 1;
         let z = Math.random() * 2 - 1;
@@ -128,7 +128,7 @@ type XYZ = {
     }
 
     static Negate(a:XYZ):XYZ {
-        return xyz(-Vector.X(a), -Vector.Y(a), -Vector.Z(a))
+        return xyz(-a.X, -a.Y, -a.Z);
     }
 
     static Negate_mem(a:number, c?:number):number {
@@ -149,7 +149,7 @@ type XYZ = {
     }
 
     static Abs(a:XYZ):XYZ {
-        return xyz(Math.abs(Vector.X(a)), Math.abs(Vector.Y(a)), Math.abs(Vector.Z(a)));
+        return xyz(Math.abs(a.X), Math.abs(a.Y), Math.abs(a.Z));
     }
 
     static Abs_mem(a:number, c?:number):number {

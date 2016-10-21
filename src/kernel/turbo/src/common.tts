@@ -4,7 +4,7 @@ type float64 = number;
 
 const height:number = 600;
 const width:number = 800;
-const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height*width*4 + 65536);
+const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
 turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
 
 const shadows:boolean = true;		// Compute object shadows
@@ -18,11 +18,24 @@ const INF:number = 1e9;
 const EPS:number = 1e-9;
 const SENTINEL:number = 1e32;
 
-function xy(x:number, y:number) { return {X:x, Y:y}; }
-function xyz(x:number, y:number, z:number) { return {X:x, Y:y, Z:z}; }
-function xyzw(x:number, y:number, z:number, w:number) { return {X:x, Y:y, Z:z, W:w}; }
-function F3(a:number, b:number, c:number) { return {A:a, B:b, C:c}; }
-function rgb(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
+function xy(x:number, y:number) {
+    return {X: x, Y: y};
+}
+function xyz(x:number, y:number, z:number) {
+    return {X: x, Y: y, Z: z};
+}
+function xyzw(x:number, y:number, z:number, w:number) {
+    return {X: x, Y: y, Z: z, W: w};
+}
+function F3(a:number, b:number, c:number) {
+    return {A: a, B: b, C: c};
+}
+function rgb(r:number, g:number, b:number) {
+    return {R: r, G: g, B: b};
+}
+function ray(origin:number, direction:number) {
+    return {Origin: origin, Direction: direction};
+}
 
 // const black = DL3(0,0,0);
 
@@ -38,13 +51,22 @@ function rgb(r:number, g:number, b:number) { return {R:r, G:g, B:b}; }
 // function cross(a, b) { return DL3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x); }
 // function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
 
-function fract(f) { return f - Math.floor(f); }
+function fract(f) {
+    return f - Math.floor(f);
+}
 function fract_add1(f) {
     let f1 = f - Math.floor(f);
     return f1 - Math.floor(f1 + 1);
 }
-function clampInt(x, lo, hi){
-    if (x < lo) {return lo;}
-    if (x > hi) {return hi;}
+function clampInt(x, lo, hi) {
+    if (x < lo) {
+        return lo;
+    }
+    if (x > hi) {
+        return hi;
+    }
     return x;
+}
+function len(ptr, T) {
+
 }

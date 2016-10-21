@@ -1,0 +1,82 @@
+interface Hit{
+    Shape:number;
+}
+interface Ray{
+
+}
+
+@turbo::  class Shape{
+
+	@method init(SELF:number):number{
+		return SELF;
+	}
+
+	@virtual Compile(s:number){
+		throw "Pure: Shape.Compile()";
+	}
+
+	@virtual BoundingBox(s:number):number{
+		throw "Pure: Shape.BoundingBox()";
+	}
+
+	@virtual Intersect(s:number, ray:Ray):Hit{
+		throw "Pure: Shape.Intersect()";
+	}
+
+	@virtual UV(s:number, p:number):number{
+		throw "Pure: Shape.UV()";
+	}
+
+	@virtual NormalAt(s:number, p:number):number{
+		throw "Pure: Shape.NormalAt()";
+	}
+
+	@virtual MaterialAt(s:number, p:number):number{
+		throw "Pure: Shape.MaterialAt()";
+	}
+
+} @end
+
+@turbo:: class TransformedShape{
+
+	Shape:Shape
+	Matrix:Matrix
+	Inverse:Matrix
+
+	@method init(SELF:number){
+		return SELF;
+	}
+
+	static NewTransformedShape(s:number, m:number):number {
+		return TransformedShape.init(@new TransformedShape, s, m, Matrix.Inverse(m));
+	}
+
+	static BoundingBox(s:TransformedShape):Box {
+		return Matrix.MulBox(s, Shape.BoundingBox(s));
+	}
+
+	static Intersect(s:number, r:Ray):Hit {
+		let shapeRay = Matrix.MulRay(TransformedShape.Inverse(s), r);
+		let hit = Shape.Intersect(s, shapeRay);
+		if (!hit.Ok()) {
+			return hit;
+		}
+		let shape:number = hit.Shape;
+		let shapePosition = shapeRay.Position(hit.T);
+		let shapeNormal = shape.NormalAt(shapePosition);
+		let position = s.Matrix.MulPosition(shapePosition);
+		let normal = s.Inverse.Transpose().MulDirection(shapeNormal);
+		let material = MaterialAt(shape, shapePosition);
+		let inside = false;
+		if (shapeNormal.Dot(shapeRay.Direction) > 0) {
+			normal = normal.Negate();
+			inside = true
+		}
+		let ray = Ray{position, normal}
+		let info = HitInfo{shape, position, normal, ray, material, inside}
+		hit.T = position.Sub(r.Origin).Length()
+		hit.HitInfo = info
+		return hit;
+	}
+
+} @end

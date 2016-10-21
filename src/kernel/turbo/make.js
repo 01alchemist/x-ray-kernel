@@ -7,7 +7,9 @@ let compiler = new turbo.Compiler();
 let modules = [
     "./src/common.tts",
     "./src/color.tts",
-    "./src/vector.tts"
+    "./src/vector.tts",
+    "./src/box.tts",
+    "./src/matrix.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {
