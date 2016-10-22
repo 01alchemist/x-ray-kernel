@@ -45,7 +45,7 @@
         return Ray.init(c, Ray.Origin(r), Cone(Ray.Direction(r), theta, u, v));
     }
 
-    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, strength:number} {
+    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, strength:number} {
         let n = info.Ray;
         let material = info.Material;
         let n1 = 1.0;
@@ -59,7 +59,7 @@
 
         let p:number;
 
-        if(Material.Reflectivity(material) >= 0{
+        if(Material.Reflectivity(material) >= 0) {
             p = Material.Reflectivity(material);
         }else{
             p = Ray.Reflectance(n, i, n1, n2);
@@ -68,43 +68,25 @@
         let reflect:boolean;
 
         switch (bounceType){
-            case BounceType
+            case BounceType.Any:
+                reflect = Math.random() < p;
+                break;
+            case BounceType.Diffuse:
+                reflect = false;
+                break;
+            case BounceType.Specular:
+                reflect = true;
+                break;
         }
-
-        return null;
+        if(reflect) {
+            let reflected:number = Ray.Reflect(n, i);
+            return { ray: Ray.ConeBounce(reflected, Material.Gloss(material), u, v), reflected:true, strength:p };
+        } else if (Material.Transparent(material)) {
+            let refracted:number = Ray.Refract(n, i, n1, n2);
+            Ray.Origin(refracted) = Vector.Add(Ray.Origin(refracted), Vector.MulScalar(Ray.Direction(refracted), 1e-4));
+            return { ray: Ray.ConeBounce(refracted, Material.Gloss(material), u, v), reflected: true, strength: 1 - p };
+        } else {
+            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, strength: 1 - p };
+        }
     }
-}
-
-func (i Ray) Bounce(info *HitInfo, u, v float64, bounceType BounceType, rnd *rand.Rand) (Ray, bool, float64) {
-	n := info.Ray
-	material := info.Material
-	n1, n2 := 1.0, material.Index
-	if info.Inside {
-		n1, n2 = n2, n1
-	}
-	var p float64
-	if material.Reflectivity >= 0 {
-		p = material.Reflectivity
-	} else {
-		p = n.Reflectance(i, n1, n2)
-	}
-	var reflect bool
-	switch bounceType {
-	case BounceTypeAny:
-		reflect = rnd.Float64() < p
-	case BounceTypeDiffuse:
-		reflect = false
-	case BounceTypeSpecular:
-		reflect = true
-	}
-	if reflect {
-		reflected := n.Reflect(i)
-		return reflected.ConeBounce(material.Gloss, u, v, rnd), true, p
-	} else if material.Transparent {
-		refracted := n.Refract(i, n1, n2)
-		refracted.Origin = refracted.Origin.Add(refracted.Direction.MulScalar(1e-4))
-		return refracted.ConeBounce(material.Gloss, u, v, rnd), true, 1 - p
-	} else {
-		return n.WeightedBounce(u, v, rnd), false, 1 - p
-	}
 }
