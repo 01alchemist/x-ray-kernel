@@ -45,7 +45,32 @@
         return Ray.init(c, Ray.Origin(r), Cone(Ray.Direction(r), theta, u, v));
     }
 
-    static Bounce(info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, strength:number} {
+    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, strength:number} {
+        let n = info.Ray;
+        let material = info.Material;
+        let n1 = 1.0;
+        let n2 = Material.Index(material);
+
+        if(info.Inside){
+            let tmp = n1;
+            n1 = n2;
+            n2 = tmp;
+        }
+
+        let p:number;
+
+        if(Material.Reflectivity(material) >= 0{
+            p = Material.Reflectivity(material);
+        }else{
+            p = Ray.Reflectance(n, i, n1, n2);
+        }
+
+        let reflect:boolean;
+
+        switch (bounceType){
+            case BounceType
+        }
+
         return null;
     }
 }
