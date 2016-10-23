@@ -1,0 +1,63 @@
+export var NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
+
+export class Hit{
+
+	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
+
+	}
+
+	Ok():boolean{
+		return this.T < Number.POSITIVE_INFINITY;
+	}
+
+	Info(r:number/*:Ray*/){
+		if(this.HitInfo != null){
+			return this.HitInfo;
+		}
+
+		let shape:number = this.Shape;
+		let position:number = Ray.Position(r, this.T);
+		let normal:number = Shape.NormalAt(this.Shape, position);
+		let material:number = Material.MaterialAt(shape, position);
+		let inside:boolean = false;
+
+		if(Vector.Dot_mem(normal, Ray.Direction(r)) > 0){
+			Vector.Negate_mem(normal, normal);
+			inside = true;
+			switch (Shape.Type(shape)) {
+				case *Volume, *SDFShape:
+					inside = false
+			}
+		}
+	}
+}
+
+export class HitInfo{
+	Shape:number; //Shape
+	Position:number; //Vector
+	Normal:number; //Vector
+	Ray:number; //Ray
+	Material:number; //Material
+	Inside:boolean;
+}
+
+func (hit *Hit) Info(r Ray) HitInfo {
+	if hit.HitInfo != nil {
+		return *hit.HitInfo
+	}
+	shape := hit.Shape
+	position := r.Position(hit.T)
+	normal := shape.NormalAt(position)
+	material := MaterialAt(shape, position)
+	inside := false
+	if normal.Dot(r.Direction) > 0 {
+		normal = normal.Negate()
+		inside = true
+		switch shape.(type) {
+		case *Volume, *SDFShape:
+			inside = false
+		}
+	}
+	ray := Ray{position, normal}
+	return HitInfo{shape, position, normal, ray, material, inside}
+}

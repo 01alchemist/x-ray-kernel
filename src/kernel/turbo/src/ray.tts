@@ -28,7 +28,7 @@
     }
 
     static WeightedBounce(r:number, u:number, v:number, c?:number):number{
-        c = c?:c:@new Ray;
+        c = c?c:@new Ray;
         let radius:number = Math.sqrt(u);
         let theta:number = 2 * Math.PI * v;
         let s:number = Vector.Normalize_mem(Vector.Cross_mem(Ray.Direction(r), Vector.RandomUnitVector()));
