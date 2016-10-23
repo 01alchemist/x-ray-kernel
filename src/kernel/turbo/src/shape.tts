@@ -5,6 +5,11 @@ interface Ray{
 
 }
 
+export enum ShapeType{
+    Volume,
+    SDFShape
+}
+
 @turbo::  class Shape{
 
 	@method init(SELF:number):number{

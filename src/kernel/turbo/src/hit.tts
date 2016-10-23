@@ -25,39 +25,27 @@ export class Hit{
 			Vector.Negate_mem(normal, normal);
 			inside = true;
 			switch (Shape.Type(shape)) {
-				case *Volume, *SDFShape:
-					inside = false
+				case ShapeType.Volume:
+				case ShapeType.SDFShape:
+					inside = false;
+					break;
 			}
 		}
+
+		let ptr:number = @new Ray;
+		let ray = Ray.init(ptr, position, normal);
+		return new HitInfo(shape, position, normal, ray, material, inside);
 	}
 }
 
 export class HitInfo{
-	Shape:number; //Shape
-	Position:number; //Vector
-	Normal:number; //Vector
-	Ray:number; //Ray
-	Material:number; //Material
-	Inside:boolean;
-}
 
-func (hit *Hit) Info(r Ray) HitInfo {
-	if hit.HitInfo != nil {
-		return *hit.HitInfo
+	constructor(public Shape:number, //Shape
+				public Position:number, //Vector
+                public Normal:number, //Vector
+                public Ray:number, //Ray
+                public Material:number, //Material
+                public Inside:boolean){
+
 	}
-	shape := hit.Shape
-	position := r.Position(hit.T)
-	normal := shape.NormalAt(position)
-	material := MaterialAt(shape, position)
-	inside := false
-	if normal.Dot(r.Direction) > 0 {
-		normal = normal.Negate()
-		inside = true
-		switch shape.(type) {
-		case *Volume, *SDFShape:
-			inside = false
-		}
-	}
-	ray := Ray{position, normal}
-	return HitInfo{shape, position, normal, ray, material, inside}
 }

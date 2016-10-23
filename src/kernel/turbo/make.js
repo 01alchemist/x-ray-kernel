@@ -10,6 +10,7 @@ let modules = [
     "./src/vector.tts",
     "./src/box.tts",
     "./src/matrix.tts",
+    "./src/material.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {
