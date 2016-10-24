@@ -10,45 +10,46 @@ export enum ShapeType{
     SDFShape
 }
 
-@turbo::  class Shape{
+@turbo class Shape{
 
 	@method init(SELF:number):number{
 		return SELF;
 	}
 
-	@virtual Compile(s:number){
+	@virtual Compile(SELF:number, s:number){
 		throw "Pure: Shape.Compile()";
 	}
 
-	@virtual BoundingBox(s:number):number{
+	@virtual BoundingBox(SELF:number, s:number):number{
 		throw "Pure: Shape.BoundingBox()";
 	}
 
-	@virtual Intersect(s:number, ray:Ray):Hit{
+	@virtual Intersect(SELF:number, s:number, ray:Ray):Hit{
 		throw "Pure: Shape.Intersect()";
 	}
 
-	@virtual UV(s:number, p:number):number{
+	@virtual UV(SELF:number, s:number, p:number):number{
 		throw "Pure: Shape.UV()";
 	}
 
-	@virtual NormalAt(s:number, p:number):number{
+	@virtual NormalAt(SELF:number, s:number, p:number):number{
 		throw "Pure: Shape.NormalAt()";
 	}
 
-	@virtual MaterialAt(s:number, p:number):number{
+	@virtual MaterialAt(SELF:number, s:number, p:number):number{
 		throw "Pure: Shape.MaterialAt()";
 	}
 
 } @end
 
-@turbo:: class TransformedShape{
+@turbo class TransformedShape{
 
-	Shape:Shape
+	Shape:int32
 	Matrix:Matrix
 	Inverse:Matrix
 
-	@method init(SELF:number){
+	@method init(SELF:number, shape:number){
+        SELF.Shape = shape;
 		return SELF;
 	}
 
@@ -67,20 +68,21 @@ export enum ShapeType{
 			return hit;
 		}
 		let shape:number = hit.Shape;
-		let shapePosition = shapeRay.Position(hit.T);
-		let shapeNormal = shape.NormalAt(shapePosition);
-		let position = s.Matrix.MulPosition(shapePosition);
-		let normal = s.Inverse.Transpose().MulDirection(shapeNormal);
-		let material = MaterialAt(shape, shapePosition);
+		let shapePosition = Ray.Position(shapeRay, hit.T);
+		let shapeNormal = Shape.NormalAt(shape, shapePosition);
+		let position = Matrix.MulPosition(s, shapePosition);
+		let normal = Matrix.MulDirection(Matrix.Transpose(Matrix.Inverse(s)), shapeNormal);
+		let material = Material.MaterialAt(shape, shapePosition);
 		let inside = false;
 		if (shapeNormal.Dot(shapeRay.Direction) > 0) {
-			normal = normal.Negate();
-			inside = true
+			Vector.Negate_mem(normal, normal);
+			inside = true;
 		}
-		let ray = Ray{position, normal}
-		let info = HitInfo{shape, position, normal, ray, material, inside}
-		hit.T = position.Sub(r.Origin).Length()
-		hit.HitInfo = info
+		let ray:number = @new Ray;
+        Ray.init(ray, position, normal);
+		let info = new HitInfo(shape, position, normal, ray, material, inside);
+		hit.T = Vector.Length(Vector.Sub_mem(position, Ray.Origin(r)));
+		hit.HitInfo = info;
 		return hit;
 	}
 

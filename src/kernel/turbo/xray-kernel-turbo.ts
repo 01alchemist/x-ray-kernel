@@ -441,6 +441,7 @@ function ray(origin:number, direction:number) {
 // function cross(a, b) { return DL3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x); }
 // function dot(a, b) { return a.x*b.x + a.y*b.y + a.z*b.z; }
 
+/*
 function fract(f) {
     return f - Math.floor(f);
 }
@@ -459,6 +460,136 @@ function clampInt(x, lo, hi) {
 }
 function len(ptr, T) {
 
+}*/
+
+
+
+export class Utils {
+
+    static Radians(degrees:number):number {
+        return degrees * Math.PI / 180
+    }
+
+    static Degrees(radians:number):number {
+        return radians * 180 / Math.PI
+    }
+
+    static Cone(direction:number /*Vector*/, theta:number, u:number, v:number):number /*Vector*/ {
+        if (theta < EPS) {
+            return direction;
+        }
+        theta = theta * (1 - (2 * Math.acos(u) / Math.PI));
+        let m1 = Math.sin(theta);
+        let m2 = Math.cos(theta);
+        let a = v * 2 * Math.PI;
+        let q = Vector.RandomUnitVector();
+        let s = Vector.Cross_mem(direction, q);
+        let t = Vector.Cross_mem(direction, s);
+        let d = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(s, m1 * Math.cos(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(t, m1 * Math.sin(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(direction, m2));
+        d = Vector.Normalize_mem(d);
+        return d;
+    }
+    
+    static LoadImage(path:string):number /*Image*/ {
+        //TODO: load image using img tag and canvas
+        return null;
+    }
+
+    static SavePNG(path:string, im:number /*Image*/):boolean {
+        //TODO: save using file
+        return null;
+    }
+
+    static Median(items:number[]):number {
+        let n = items.length;
+        if (n == 0) {
+            return 0
+        } else if (n % 2 == 1) {
+            return items[n / 2]
+        } else {
+            let a = items[n / 2 - 1];
+            let b = items[n / 2];
+            return (a + b) / 2
+        }
+    }
+
+    static DurationString(t:number/*milliseconds*/):string {
+        let d:Date = new Date();
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+        d.setMilliseconds(t);
+        return d.toLocaleTimeString();
+    }
+
+    static NumberString(x:number):string {
+        let suffixes = ["", "k", "M", "G"];
+
+        suffixes.forEach((suffix) => {
+            if (x < 1000) {
+                return x + suffix;
+            }
+            x /= 1000
+        });
+
+        return x + "T";
+    }
+
+    static ParseFloats(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseFloat(item));
+        });
+        return result;
+    }
+
+    static ParseInts(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseInt(item));
+        });
+        return result;
+    }
+
+    static Fract(x:number):number {
+        return x - Math.floor(x);
+    }
+
+    static FractAddOne(x:number):number {
+        let f1 = x - Math.floor(x);
+        return f1 - Math.floor(f1 + 1);
+    }
+
+    static  Modf(f):{int:number,frac:number} {
+        var int = Math.floor(f);
+        var frac = f - int;
+        return {int: int, frac: frac};
+    }
+
+    static Clamp(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
+
+    static ClampInt(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
 }
 
 type RGBA  = {
@@ -1747,8 +1878,9 @@ export class Matrix extends MemoryObject{
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
-    static MulRay(a:number, b:Ray):Ray {
-        return ray(Matrix.MulPosition(a, b.Origin), Matrix.MulDirection(a, b.Direction));
+    static MulRay(a:number, b:number):number {
+        let ptr:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        return Ray.init(ptr, Matrix.MulPosition(a, turbo.Runtime._mem_int32[(b + 4) >> 2]), Matrix.MulDirection(a, turbo.Runtime._mem_int32[(b + 8) >> 2]));
     }
 
     static  MulBox(a:number, box:number, c?:number):number {
@@ -1826,6 +1958,527 @@ export class Matrix extends MemoryObject{
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=2093537; return SELF; }
 }
 turbo.Runtime._idToType[2093537] = Matrix;
+
+export class Texture extends MemoryObject{
+   static NAME:string = "Texture";
+   static SIZE:number = 16;
+   static ALIGN:number = 4;
+   static CLSID:number = 10502342;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, width:number, height:number, data:number){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = width; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = height; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = data; 
+    }
+
+    static textures:any = [];
+
+    static GetTexture(path:string):number {
+
+        let texture = Texture.textures[path];
+        if(texture) {
+            return texture;
+        }
+        texture = Texture.LoadTexture(path);
+        if(texture){
+            Texture.textures[path] = texture;
+            return texture
+        }
+        return null;
+    }
+
+    static LoadTexture(path:string):number {
+        console.log("Loading IMG: "+ path);
+        let im = Utils.LoadImage(path);
+        return Texture.NewTexture(im);
+    }
+
+    static NewTexture(im:number /*Image*/):number /*Texture*/{
+        let size:number = turbo.Runtime._mem_int32[((Image.Bounds(im)) + 8) >> 2];
+        let data:number = turbo.Runtime.allocOrThrow(4 + (4 * (turbo.Runtime._mem_float64[(size + 8) >> 3] * turbo.Runtime._mem_float64[(size + 16) >> 3])), 4) /*Array*/;
+        for (let y:number = 0; y < turbo.Runtime._mem_float64[(size + 16) >> 3]; y++) {
+            for (let x:number = 0; x < turbo.Runtime._mem_float64[(size + 8) >> 3]; x++) {
+                let index = y * turbo.Runtime._mem_float64[(size + 8) >> 3] + x;
+                turbo.Runtime._mem_int32[(data+4*index) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
+            }
+        }
+        let ptr:number = Texture.initInstance(turbo.Runtime.allocOrThrow(16,4));
+        return Texture.init(ptr, turbo.Runtime._mem_float64[(size + 8) >> 3], turbo.Runtime._mem_float64[(size + 16) >> 3], data);
+    }
+
+    Pow(t:number, a:number):number {
+        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let len:number = Color.Array.len(data);
+
+        for (let i:number = 0; i < len; i++) {
+            let d = turbo.Runtime._mem_int32[(data+4*i) >> 2];
+            Color.Pow_mem(d, a, d);
+        }
+        return t;
+    }
+
+    static MulScalar(t:number, a:number):number{
+        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let len:number = Color.Array.length(data);
+
+        for (let i:number = 0; i < len; i++) {
+            let d = turbo.Runtime._mem_int32[(data+4*i) >> 2];
+            Color.MulScalar_mem(d, a, d);
+        }
+        return t;
+    }
+
+    static bilinearSample(t:number, u:number, v:number):number{
+        let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
+        let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
+        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+
+        let w:number = Width - 1;
+        let h:number = Height - 1;
+        
+        let _ = Utils.Modf(u * w);
+        
+        let X = _.int;
+        let x = _.frac;
+        _ = Utils.Modf(v * h);
+        let Y = _.int;
+        let y = _.frac;
+
+        let x0:number = parseInt(X);
+        let y0:number = parseInt(Y);
+        let x1:number = x0 + 1;
+        let y1:number = y0 + 1;
+        let c00:number = turbo.Runtime._mem_int32[(data+4*(y0 * Width + x0)) >> 2];
+        let c01:number = turbo.Runtime._mem_int32[(data+4*(y1 * Width + x0)) >> 2];
+        let c10:number = turbo.Runtime._mem_int32[(data+4*(y0 * Width + x1)) >> 2];
+        let c11:number = turbo.Runtime._mem_int32[(data+4*(y1 * Width + x1)) >> 2];
+        let c:number = Color.BLACK;
+        c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c01, (1 - x) * y));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c11, x * y));
+        return c;
+    }
+
+
+    static Sample(t:number, u:number, v:number):number {
+        u = Utils.FractAddOne(u);
+        v = Utils.FractAddOne(v);
+        return Texture.bilinearSample(t, u, 1-v);
+    }
+
+    static NormalSample(t:number, u:number, v:number, c?:number):number {
+        let c = Texture.Sample(t, u, v);
+        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        return Vector.Normalize_mem(Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(c + 8) >> 3] * 2 - 1, turbo.Runtime._mem_float64[(c + 16) >> 3] * 2 - 1, turbo.Runtime._mem_float64[(c + 24) >> 3] * 2 - 1), ptr);
+    }
+
+    static BumpSample(t:number, u:number, v:number, c?:number):number {
+        let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
+        let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
+        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        u = Utils.FractAddOne(u);
+        v = Utils.FractAddOne(v);
+        v = 1 - v;
+        let x:number = parseInt(u * Width);
+        let y:number = parseInt(v * Height);
+        let x1 = Utils.ClampInt(x-1, 0, Width-1);
+        let x2 = Utils.ClampInt(x+1, 0, Width-1);
+        let y1 = Utils.ClampInt(y-1, 0, Height-1);
+        let y2 = Utils.ClampInt(y+1, 0, Height-1);
+        let cx = Color.Sub_mem(turbo.Runtime._mem_int32[(data+4*(y * Width + x1)) >> 2], turbo.Runtime._mem_int32[(data+4*(y * Width + x2)) >> 2]);
+        let cy = Color.Sub_mem(turbo.Runtime._mem_int32[(data+4*(y1 * Width + x)) >> 2], turbo.Runtime._mem_int32[(data+4*(y2 * Width + x)) >> 2]);
+        let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        return Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(cx + 8) >> 3], turbo.Runtime._mem_float64[(cy + 8) >> 3], 0);
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=10502342; return SELF; }
+}
+turbo.Runtime._idToType[10502342] = Texture;
+
+
+
+export class Material extends MemoryObject{
+   static NAME:string = "Material";
+   static SIZE:number = 73;
+   static ALIGN:number = 8;
+   static CLSID:number = 167722613;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = Color; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = Texture; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = NormalTexture; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = BumpTexture; 
+         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = GlossTexture; 
+         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = BumpMultiplier; 
+         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = Emittance; 
+         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = Index; 
+         turbo.Runtime._mem_float64[(SELF + 48) >> 3] = Gloss; 
+         turbo.Runtime._mem_float64[(SELF + 56) >> 3] = Tint; 
+         turbo.Runtime._mem_float64[(SELF + 64) >> 3] = Reflectivity; 
+         turbo.Runtime._mem_uint8[(SELF + 72) >> 0] = Transparent; 
+    }
+
+    static DiffuseMaterial(color:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);
+    }
+
+    static SpecularMaterial(color:number, index:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, 0, 0, -1, false);
+    }
+
+    static GlossyMaterial(color:number, index:number, gloss:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, 0, -1, false);
+    }
+
+    static ClearMaterial(index:number, gloss:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, Color.BLACK, null, null, null, null, 1, 0, index, gloss, 0, -1, true);
+    }
+
+    static TransparentMaterial(color:number, index:number, gloss:number, tint:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, tint, -1, true);
+    }
+
+    static MetallicMaterial(color:number, gloss:number, tint:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, 0, 1, gloss, tint, -1, false);
+    }
+
+    static LightMaterial(color:number, emittance:number):number{
+        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr, color, null, null, null, null, 1, emittance, 1, 0, 0, -1, false);
+    }
+
+    static MaterialAt(shape:number, point:number):number{
+        let material:number = Shape.MaterialAt(shape, point);
+        let uv:number = Shape.UV(shape, point);
+        if (turbo.Runtime._mem_int32[(material + 8) >> 2] != null) {
+            turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], turbo.Runtime._mem_float64[(uv + 8) >> 3], turbo.Runtime._mem_float64[(uv + 16) >> 3]);
+        }
+        if (turbo.Runtime._mem_int32[(material + 20) >> 2] != null) {
+            let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], turbo.Runtime._mem_float64[(uv + 8) >> 3], turbo.Runtime._mem_float64[(uv + 16) >> 3]);
+            turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
+        }
+        return material;
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=167722613; return SELF; }
+}
+turbo.Runtime._idToType[167722613] = Material;
+
+export class Ray extends MemoryObject{
+   static NAME:string = "Ray";
+   static SIZE:number = 12;
+   static ALIGN:number = 4;
+   static CLSID:number = 674;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF:number, origin:number, direction:number):number{
+		 turbo.Runtime._mem_int32[(SELF + 4) >> 2] = origin; 
+		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = direction; 
+		return SELF;
+	}
+
+	static Position(r:number, t:number):number{
+		return Vector.Add_mem(turbo.Runtime._mem_int32[(r + 4) >> 2], Vector.MulScalar_mem(turbo.Runtime._mem_int32[(r + 8) >> 2], t));
+	}
+
+	static Reflect(n:number, i:number, r?:number):number{
+		r = r?r:Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		return Ray.init(r, turbo.Runtime._mem_int32[(n + 4) >> 2], Vector.Reflect_mem(turbo.Runtime._mem_int32[(n + 8) >> 2], turbo.Runtime._mem_int32[(i + 8) >> 2]) );
+	}
+
+    static Refract(n:number, i:number, n1:number, n2:number, r?:number):number{
+        r = r?r:Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        return Ray.init(r, turbo.Runtime._mem_int32[(n + 4) >> 2], Vector.Refract_mem(turbo.Runtime._mem_int32[(n + 8) >> 2], turbo.Runtime._mem_int32[(i + 8) >> 2], n1, n2) );
+    }
+
+    static Reflectance(n:number, i:number, n1:number, n2:number):number{
+        return Vector.Reflectance_mem(turbo.Runtime._mem_int32[(n + 8) >> 2], turbo.Runtime._mem_int32[(i + 8) >> 2], n1, n2);
+    }
+
+    static WeightedBounce(r:number, u:number, v:number, c?:number):number{
+        c = c?c:Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        let radius:number = Math.sqrt(u);
+        let theta:number = 2 * Math.PI * v;
+        let s:number = Vector.Normalize_mem(Vector.Cross_mem(turbo.Runtime._mem_int32[(r + 8) >> 2], Vector.RandomUnitVector()));
+        let t:number = Vector.Cross_mem(turbo.Runtime._mem_int32[(r + 8) >> 2], s);
+        let d:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        Vector.Add_mem(d, Vector.MulScalar_mem(s, radius * Math.cos(theta)), d);
+        Vector.Add_mem(d, Vector.MulScalar_mem(t, radius * Math.sin(theta)), d);
+        Vector.Add_mem(d, Vector.MulScalar_mem(r, Math.sqrt(1 - u)), d);
+        return Ray.init(c, turbo.Runtime._mem_int32[(r + 4) >> 2], d);
+    }
+
+    static ConeBounce(r:number, theta:number, u:number, v:number, c?:number):number{
+        c = c?c:Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        return Ray.init(c, turbo.Runtime._mem_int32[(r + 4) >> 2], Cone(turbo.Runtime._mem_int32[(r + 8) >> 2], theta, u, v));
+    }
+
+    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, strength:number} {
+        let n = info.Ray;
+        let material = info.Material;
+        let n1 = 1.0;
+        let n2 = turbo.Runtime._mem_float64[(material + 40) >> 3];
+
+        if(info.Inside){
+            let tmp = n1;
+            n1 = n2;
+            n2 = tmp;
+        }
+
+        let p:number;
+
+        if(turbo.Runtime._mem_float64[(material + 64) >> 3] >= 0) {
+            p = turbo.Runtime._mem_float64[(material + 64) >> 3];
+        }else{
+            p = Ray.Reflectance(n, i, n1, n2);
+        }
+
+        let reflect:boolean;
+
+        switch (bounceType){
+            case BounceType.Any:
+                reflect = Math.random() < p;
+                break;
+            case BounceType.Diffuse:
+                reflect = false;
+                break;
+            case BounceType.Specular:
+                reflect = true;
+                break;
+        }
+        if(reflect) {
+            let reflected:number = Ray.Reflect(n, i);
+            return { ray: Ray.ConeBounce(reflected, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected:true, strength:p };
+        } else if (turbo.Runtime._mem_uint8[(material + 72) >> 0]) {
+            let refracted:number = Ray.Refract(n, i, n1, n2);
+            turbo.Runtime._mem_int32[(refracted + 4) >> 2] = Vector.Add(turbo.Runtime._mem_int32[(refracted + 4) >> 2], Vector.MulScalar(turbo.Runtime._mem_int32[(refracted + 8) >> 2], 1e-4));
+            return { ray: Ray.ConeBounce(refracted, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected: true, strength: 1 - p };
+        } else {
+            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, strength: 1 - p };
+        }
+    }
+}
+
+interface Hit{
+    Shape:number;
+}
+interface Ray{
+
+}
+
+export enum ShapeType{
+    Volume,
+    SDFShape
+}
+
+@turbo class Shape{
+    static init(SELF:number):number{
+		return SELF;
+	}
+    static Compile_impl(SELF:number, s:number){
+		throw "Pure: Shape.Compile()";
+	}
+    static BoundingBox_impl(SELF:number, s:number):number{
+		throw "Pure: Shape.BoundingBox()";
+	}
+    static Intersect_impl(SELF:number, s:number, ray:Ray):Hit{
+		throw "Pure: Shape.Intersect()";
+	}
+    static UV_impl(SELF:number, s:number, p:number):number{
+		throw "Pure: Shape.UV()";
+	}
+    static NormalAt_impl(SELF:number, s:number, p:number):number{
+		throw "Pure: Shape.NormalAt()";
+	}
+    static MaterialAt_impl(SELF:number, s:number, p:number):number{
+		throw "Pure: Shape.MaterialAt()";
+	}
+    static Compile(SELF , s) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.Compile_impl(SELF , s);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static BoundingBox(SELF , s) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.BoundingBox_impl(SELF , s);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Intersect(SELF , s,ray) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.Intersect_impl(SELF , s,ray);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static UV(SELF , s,p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.UV_impl(SELF , s,p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static NormalAt(SELF , s,p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.NormalAt_impl(SELF , s,p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static MaterialAt(SELF , s,p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 674:
+                return Ray.MaterialAt_impl(SELF , s,p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=674; return SELF; }
+}
+turbo.Runtime._idToType[674] = Ray;
+
+export class TransformedShape extends MemoryObject{
+   static NAME:string = "TransformedShape";
+   static SIZE:number = 16;
+   static ALIGN:number = 4;
+   static CLSID:number = 245094204;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF:number, shape:number){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = shape; 
+		return SELF;
+	}
+
+	static NewTransformedShape(s:number, m:number):number {
+		return TransformedShape.init(TransformedShape.initInstance(turbo.Runtime.allocOrThrow(16,4)), s, m, Matrix.Inverse(m));
+	}
+
+	static BoundingBox(s:TransformedShape):Box {
+		return Matrix.MulBox(s, Shape.BoundingBox(s));
+	}
+
+	static Intersect(s:number, r:Ray):Hit {
+		let shapeRay = Matrix.MulRay(turbo.Runtime._mem_int32[(s + 12) >> 2], r);
+		let hit = Shape.Intersect(s, shapeRay);
+		if (!hit.Ok()) {
+			return hit;
+		}
+		let shape:number = hit.Shape;
+		let shapePosition = Ray.Position(shapeRay, hit.T);
+		let shapeNormal = Shape.NormalAt(shape, shapePosition);
+		let position = Matrix.MulPosition(s, shapePosition);
+		let normal = Matrix.MulDirection(Matrix.Transpose(Matrix.Inverse(s)), shapeNormal);
+		let material = Material.MaterialAt(shape, shapePosition);
+		let inside = false;
+		if (shapeNormal.Dot(shapeRay.Direction) > 0) {
+			Vector.Negate_mem(normal, normal);
+			inside = true;
+		}
+		let ray:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        Ray.init(ray, position, normal);
+		let info = new HitInfo(shape, position, normal, ray, material, inside);
+		hit.T = Vector.Length(Vector.Sub_mem(position, turbo.Runtime._mem_int32[(r + 4) >> 2]));
+		hit.HitInfo = info;
+		return hit;
+	}
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=245094204; return SELF; }
+}
+turbo.Runtime._idToType[245094204] = TransformedShape;
+
+export var NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
+
+export class Hit{
+
+	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
+
+	}
+
+	Ok():boolean{
+		return this.T < Number.POSITIVE_INFINITY;
+	}
+
+	Info(r:number/*:Ray*/){
+		if(this.HitInfo != null){
+			return this.HitInfo;
+		}
+
+		let shape:number = this.Shape;
+		let position:number = Ray.Position(r, this.T);
+		let normal:number = Shape.NormalAt(this.Shape, position);
+		let material:number = Material.MaterialAt(shape, position);
+		let inside:boolean = false;
+
+		if(Vector.Dot_mem(normal, turbo.Runtime._mem_int32[(r + 8) >> 2]) > 0){
+			Vector.Negate_mem(normal, normal);
+			inside = true;
+			switch (Shape.Type(shape)) {
+				case ShapeType.Volume:
+				case ShapeType.SDFShape:
+					inside = false;
+					break;
+			}
+		}
+
+		let ptr:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		let ray = Ray.init(ptr, position, normal);
+		return new HitInfo(shape, position, normal, ray, material, inside);
+	}
+}
+
+export class HitInfo{
+
+	constructor(public Shape:number, //Shape
+				public Position:number, //Vector
+                public Normal:number, //Vector
+                public Ray:number, //Ray
+                public Material:number, //Material
+                public Inside:boolean){
+
+	}
+}
 
 
 

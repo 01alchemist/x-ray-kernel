@@ -1,4 +1,4 @@
-@turbo:: class Ray{
+@turbo class Ray{
 
 	Origin:Vector
 	Direction:Vector

@@ -1,4 +1,4 @@
-@turbo:: class Box{
+@turbo class Box{
 
 	Min:Vector;
 	Max:Vector;

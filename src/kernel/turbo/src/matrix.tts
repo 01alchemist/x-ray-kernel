@@ -3,7 +3,7 @@ interface Ray{
     Direction:number;
 }
 
-@turbo:: class Matrix{
+@turbo class Matrix{
 
     x00:float64
     x01:float64
@@ -228,8 +228,9 @@ interface Ray{
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
-    static MulRay(a:number, b:Ray):Ray {
-        return ray(Matrix.MulPosition(a, b.Origin), Matrix.MulDirection(a, b.Direction));
+    static MulRay(a:number, b:number):number {
+        let ptr:number = @new Ray;
+        return Ray.init(ptr, Matrix.MulPosition(a, Ray.Origin(b)), Matrix.MulDirection(a, Ray.Direction(b)));
     }
 
     static  MulBox(a:number, box:number, c?:number):number {

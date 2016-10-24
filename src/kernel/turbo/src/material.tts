@@ -1,5 +1,5 @@
 
-@turbo:: class Material {
+@turbo class Material {
 	Color:Color
 	Texture:Texture
 	NormalTexture:Texture
@@ -11,57 +11,69 @@
 	Gloss:float64 // reflection cone angle in radians
 	Tint:float64 // specular and refractive tinting
 	Reflectivity:float64 // metallic reflection
-	Transparent:boolean
+	Transparent:uint8
 
-	@method init(SELF:number){
+    @method init(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
+        SELF.Color = Color;
+        SELF.Texture = Texture;
+        SELF.NormalTexture = NormalTexture;
+        SELF.BumpTexture = BumpTexture;
+        SELF.GlossTexture = GlossTexture;
+        SELF.BumpMultiplier = BumpMultiplier;
+        SELF.Emittance = Emittance;
+        SELF.Index = Index;
+        SELF.Gloss = Gloss;
+        SELF.Tint = Tint;
+        SELF.Reflectivity = Reflectivity;
+        SELF.Transparent = Transparent;
+    }
 
-	}
+    static DiffuseMaterial(color:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);
+    }
 
-	static DiffuseMaterial(color:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);
-	}
+    static SpecularMaterial(color:number, index:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, 0, 0, -1, false);
+    }
 
-	static SpecularMaterial(color:number, index:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, 0, index, 0, 0, -1, false);
-	}
+    static GlossyMaterial(color:number, index:number, gloss:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, 0, -1, false);
+    }
 
-	static GlossyMaterial(color:number, index:number, gloss:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, 0, -1, false);
-	}
+    static ClearMaterial(index:number, gloss:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, Color.BLACK, null, null, null, null, 1, 0, index, gloss, 0, -1, true);
+    }
 
-	static ClearMaterial(index:number, gloss:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, Color.BLACK, null, null, null, null, 1, 0, index, gloss, 0, -1, true);
-	}
+    static TransparentMaterial(color:number, index:number, gloss:number, tint:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, tint, -1, true);
+    }
 
-	static TransparentMaterial(color:number, index:number, gloss:number, tint:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, 0, index, gloss, tint, -1, true);
-	}
+    static MetallicMaterial(color:number, gloss:number, tint:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, 0, 1, gloss, tint, -1, false);
+    }
 
-	static MetallicMaterial(color:number, gloss:number, tint:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, 0, 1, gloss, tint, -1, false);
-	}
+    static LightMaterial(color:number, emittance:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, null, null, null, null, 1, emittance, 1, 0, 0, -1, false);
+    }
 
-	static LightMaterial(color:number, emittance:number):number{
-		let ptr:number = @new Material;
-		return Material.init(ptr, color, null, null, null, null, 1, emittance, 1, 0, 0, -1, false);
-	}
+    static MaterialAt(shape:number, point:number):number{
+        let material:number = Shape.MaterialAt(shape, point);
+        let uv:number = Shape.UV(shape, point);
+        if (Material.Texture(material) != null) {
+            Material.Color(material) = Texture.Sample(Material.Texture(material), Vector.X(uv), Vector.Y(uv));
+        }
+        if (Material.GlossTexture(material) != null) {
+            let c:number = Texture.Sample(Material.GlossTexture(material), Vector.X(uv), Vector.Y(uv));
+            Material.Gloss(material) = (Color.R(c) + Color.G(c) + Color.B(c)) / 3;
+        }
+        return material;
+    }
 
- 	static MaterialAt(shape:number, point:number):number{
-		let material:number = Shape.MaterialAt(shape, point);
-		let uv:number = Shape.UV(shape, point);
-		if (Material.Texture(material) != null) {
-			Material.Color(material) = Texture.Sample(Material.Texture(material), Vector.X(uv), Vector.Y(uv));
-		}
-		if (Material.GlossTexture(material) != null) {
-			let c:number = Texture.Sample(Material.GlossTexture(material), Vector.X(uv), Vector.Y(uv));
-			Material.Gloss(material) = (Color.R(c) + Color.G(c) + Color.B(c)) / 3;
-		}
-		return material;
-	}
-}
+} @end

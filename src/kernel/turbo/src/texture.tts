@@ -1,33 +1,27 @@
-@turbo:: class Texture {
+@turbo class Texture {
 
-    static textures:any;
+    Width:int32
+    Height:int32
+    DataLength:int32
+    Data:Color.Array
 
-	@method init(SELF:number){
-
+    @method init(SELF, width:number, height:number, data:number){
+        SELF.Width = width;
+        SELF.Height = height;
+        SELF.Data = data;
     }
 
-	static Sample(u:number, v:number):number{
-
-    }
-	static NormalSample(u:number, v:number):number{
-
-    }
-    static BumpSample(u:number, v:number):number{
-
-    }
-    static Pow(a:number):number{
-
-    }
-    static MulScalar(a:number){
-
-    }
+    static textures:any = [];
 
     static GetTexture(path:string):number {
-        if(Texture.textures[path]) {
-            return Texture.textures[path];
+
+        let texture = Texture.textures[path];
+        if(texture) {
+            return texture;
         }
-        if(Texture.LoadTexture(path)){
-            textures[path] = texture;
+        texture = Texture.LoadTexture(path);
+        if(texture){
+            Texture.textures[path] = texture;
             return texture
         }
         return null;
@@ -36,94 +30,106 @@
     static LoadTexture(path:string):number {
         console.log("Loading IMG: "+ path);
         let im = Utils.LoadImage(path);
-        if err != nil {
-            return nil, err
+        return Texture.NewTexture(im);
+    }
+
+    static NewTexture(im:number /*Image*/):number /*Texture*/{
+        let size:number = Box.Max(Image.Bounds(im));
+        let data:number = @new Color.Array(Vector.X(size) * Vector.Y(size));
+        for (let y:number = 0; y < Vector.Y(size); y++) {
+            for (let x:number = 0; x < Vector.X(size); x++) {
+                let index = y * Vector.X(size) + x;
+                Color.Array.setAt(data, index, Color.Pow(Image.At(im, x, y), 2.2) );
+            }
         }
-        return NewTexture(im), nil
+        let ptr:number = @new Texture;
+        return Texture.init(ptr, Vector.X(size), Vector.Y(size), data);
     }
 
-    type ColorTexture struct {
-        Width  int
-        Height int
-        Data   []Color
-    }
+    Pow(t:number, a:number):number {
+        let data:number = Texture.Data(t);
+        let len:number = Texture.DataLength(t);
 
-func NewTexture(im image.Image) Texture {
-    size := im.Bounds().Max
-    data := make([]Color, size.X*size.Y)
-    for y := 0; y < size.Y; y++ {
-        for x := 0; x < size.X; x++ {
-            index := y*size.X + x
-            data[index] = NewColor(im.At(x, y)).Pow(2.2)
+        for (let i:number = 0; i < len; i++) {
+            let d = Color.Array.at(data, i);
+            Color.Pow_mem(d, a, d);
         }
+        return t;
     }
-    return &ColorTexture{size.X, size.Y, data}
-}
 
-func (t *ColorTexture) Pow(a float64) Texture {
-    for i := range t.Data {
-        t.Data[i] = t.Data[i].Pow(a)
+    static MulScalar(t:number, a:number):number{
+        let data:number = Texture.Data(t);
+        let len:number = Texture.DataLength(t);
+
+        for (let i:number = 0; i < len; i++) {
+            let d = Color.Array.at(data, i);
+            Color.MulScalar_mem(d, a, d);
+        }
+        return t;
     }
-    return t
-}
 
-func (t *ColorTexture) MulScalar(a float64) Texture {
-    for i := range t.Data {
-        t.Data[i] = t.Data[i].MulScalar(a)
+    static bilinearSample(t:number, u:number, v:number):number{
+        let Width:number = Texture.Width(t);
+        let Height:number = Texture.Height(t);
+        let data:number = Texture.Data(t);
+
+        let w:number = Width - 1;
+        let h:number = Height - 1;
+        
+        let _ = Utils.Modf(u * w);
+        
+        let X = _.int;
+        let x = _.frac;
+        _ = Utils.Modf(v * h);
+        let Y = _.int;
+        let y = _.frac;
+
+        let x0:number = parseInt(X);
+        let y0:number = parseInt(Y);
+        let x1:number = x0 + 1;
+        let y1:number = y0 + 1;
+        let c00:number = Color.Array.at(data, y0 * Width + x0);
+        let c01:number = Color.Array.at(data, y1 * Width + x0);
+        let c10:number = Color.Array.at(data, y0 * Width + x1);
+        let c11:number = Color.Array.at(data, y1 * Width + x1);
+        let c:number = Color.BLACK;
+        c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c01, (1 - x) * y));
+        c = Color.Add_mem(c, Color.MulScalar_mem(c11, x * y));
+        return c;
     }
-    return t
-}
 
-func (t *ColorTexture) bilinearSample(u, v float64) Color {
-    w := float64(t.Width) - 1
-    h := float64(t.Height) - 1
-    X, x := math.Modf(u * w)
-    Y, y := math.Modf(v * h)
-    x0 := int(X)
-    y0 := int(Y)
-    x1 := x0 + 1
-    y1 := y0 + 1
-    c00 := t.Data[y0*t.Width+x0]
-    c01 := t.Data[y1*t.Width+x0]
-    c10 := t.Data[y0*t.Width+x1]
-    c11 := t.Data[y1*t.Width+x1]
-    c := Black
-    c = c.Add(c00.MulScalar((1 - x) * (1 - y)))
-    c = c.Add(c10.MulScalar(x * (1 - y)))
-    c = c.Add(c01.MulScalar((1 - x) * y))
-    c = c.Add(c11.MulScalar(x * y))
-    return c
-}
 
-func (t *ColorTexture) Sample(u, v float64) Color {
-    u = Fract(Fract(u) + 1)
-    v = Fract(Fract(v) + 1)
-    return t.bilinearSample(u, 1-v)
-}
+    static Sample(t:number, u:number, v:number):number {
+        u = Utils.FractAddOne(u);
+        v = Utils.FractAddOne(v);
+        return Texture.bilinearSample(t, u, 1-v);
+    }
 
-func (t *ColorTexture) NormalSample(u, v float64) Vector {
-    c := t.Sample(u, v)
-    return Vector{c.R*2 - 1, c.G*2 - 1, c.B*2 - 1}.Normalize()
-}
+    static NormalSample(t:number, u:number, v:number, c?:number):number {
+        let c = Texture.Sample(t, u, v);
+        let ptr:number = c?c:@new Vector;
+        return Vector.Normalize_mem(Vector.Init_mem(ptr, Color.R(c) * 2 - 1, Color.G(c) * 2 - 1, Color.B(c) * 2 - 1), ptr);
+    }
 
-func (t *ColorTexture) BumpSample(u, v float64) Vector {
-    u = Fract(Fract(u) + 1)
-    v = Fract(Fract(v) + 1)
-    v = 1 - v
-    x := int(u * float64(t.Width))
-    y := int(v * float64(t.Height))
-    x1, x2 := ClampInt(x-1, 0, t.Width-1), ClampInt(x+1, 0, t.Width-1)
-    y1, y2 := ClampInt(y-1, 0, t.Height-1), ClampInt(y+1, 0, t.Height-1)
-    cx := t.Data[y*t.Width+x1].Sub(t.Data[y*t.Width+x2])
-    cy := t.Data[y1*t.Width+x].Sub(t.Data[y2*t.Width+x])
-    return Vector{cx.R, cy.R, 0}
-}
+    static BumpSample(t:number, u:number, v:number, c?:number):number {
+        let Width:number = Texture.Width(t);
+        let Height:number = Texture.Height(t);
+        let data:number = Texture.Data(t);
+        u = Utils.FractAddOne(u);
+        v = Utils.FractAddOne(v);
+        v = 1 - v;
+        let x:number = parseInt(u * Width);
+        let y:number = parseInt(v * Height);
+        let x1 = Utils.ClampInt(x-1, 0, Width-1);
+        let x2 = Utils.ClampInt(x+1, 0, Width-1);
+        let y1 = Utils.ClampInt(y-1, 0, Height-1);
+        let y2 = Utils.ClampInt(y+1, 0, Height-1);
+        let cx = Color.Sub_mem(Color.Array.at(data, y * Width + x1), Color.Array.at(data, y * Width + x2));
+        let cy = Color.Sub_mem(Color.Array.at(data, y1 * Width + x), Color.Array.at(data, y2 * Width + x));
+        let ptr:number = @new Vector;
+        return Vector.Init_mem(ptr, Color.R(cx), Color.R(cy), 0);
+    }
 
-}
-
-var textures map[string]Texture
-
-func init() {
-	textures = make(map[string]Texture)
-}
-
+} @end

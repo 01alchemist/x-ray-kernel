@@ -10,7 +10,7 @@ type RGB = {
     B:number
 };
 
-@turbo:: class Color{
+@turbo class Color{
 
 	R:float64;
 	G:float64;

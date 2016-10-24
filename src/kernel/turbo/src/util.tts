@@ -1,0 +1,128 @@
+
+export class Utils {
+
+    static Radians(degrees:number):number {
+        return degrees * Math.PI / 180
+    }
+
+    static Degrees(radians:number):number {
+        return radians * 180 / Math.PI
+    }
+
+    static Cone(direction:number /*Vector*/, theta:number, u:number, v:number):number /*Vector*/ {
+        if (theta < EPS) {
+            return direction;
+        }
+        theta = theta * (1 - (2 * Math.acos(u) / Math.PI));
+        let m1 = Math.sin(theta);
+        let m2 = Math.cos(theta);
+        let a = v * 2 * Math.PI;
+        let q = Vector.RandomUnitVector();
+        let s = Vector.Cross_mem(direction, q);
+        let t = Vector.Cross_mem(direction, s);
+        let d = @new Vector;
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(s, m1 * Math.cos(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(t, m1 * Math.sin(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(direction, m2));
+        d = Vector.Normalize_mem(d);
+        return d;
+    }
+    
+    static LoadImage(path:string):number /*Image*/ {
+        //TODO: load image using img tag and canvas
+        return null;
+    }
+
+    static SavePNG(path:string, im:number /*Image*/):boolean {
+        //TODO: save using file
+        return null;
+    }
+
+    static Median(items:number[]):number {
+        let n = items.length;
+        if (n == 0) {
+            return 0
+        } else if (n % 2 == 1) {
+            return items[n / 2]
+        } else {
+            let a = items[n / 2 - 1];
+            let b = items[n / 2];
+            return (a + b) / 2
+        }
+    }
+
+    static DurationString(t:number/*milliseconds*/):string {
+        let d:Date = new Date();
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+        d.setMilliseconds(t);
+        return d.toLocaleTimeString();
+    }
+
+    static NumberString(x:number):string {
+        let suffixes = ["", "k", "M", "G"];
+
+        suffixes.forEach((suffix) => {
+            if (x < 1000) {
+                return x + suffix;
+            }
+            x /= 1000
+        });
+
+        return x + "T";
+    }
+
+    static ParseFloats(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseFloat(item));
+        });
+        return result;
+    }
+
+    static ParseInts(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseInt(item));
+        });
+        return result;
+    }
+
+    static Fract(x:number):number {
+        return x - Math.floor(x);
+    }
+
+    static FractAddOne(x:number):number {
+        let f1 = x - Math.floor(x);
+        return f1 - Math.floor(f1 + 1);
+    }
+
+    static  Modf(f):{int:number,frac:number} {
+        var int = Math.floor(f);
+        var frac = f - int;
+        return {int: int, frac: frac};
+    }
+
+    static Clamp(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
+
+    static ClampInt(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
+}

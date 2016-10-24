@@ -6,11 +6,16 @@ let turbo = require("../../../../turbo.js/lib/compiler.js");
 let compiler = new turbo.Compiler();
 let modules = [
     "./src/common.tts",
+    "./src/util.tts",
     "./src/color.tts",
     "./src/vector.tts",
     "./src/box.tts",
     "./src/matrix.tts",
+    "./src/texture.tts",
     "./src/material.tts",
+    "./src/ray.tts",
+    "./src/shape.tts",
+    "./src/hit.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {

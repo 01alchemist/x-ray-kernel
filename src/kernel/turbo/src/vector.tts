@@ -4,7 +4,7 @@ type XYZ = {
     Z:number
 };
 
-@turbo:: class Vector{
+@turbo class Vector{
 
 	X:float64;
 	Y:float64;
