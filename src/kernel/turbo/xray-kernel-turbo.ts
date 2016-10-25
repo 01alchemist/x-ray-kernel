@@ -463,135 +463,6 @@ function len(ptr, T) {
 }*/
 
 
-
-export class Utils {
-
-    static Radians(degrees:number):number {
-        return degrees * Math.PI / 180
-    }
-
-    static Degrees(radians:number):number {
-        return radians * 180 / Math.PI
-    }
-
-    static Cone(direction:number /*Vector*/, theta:number, u:number, v:number):number /*Vector*/ {
-        if (theta < EPS) {
-            return direction;
-        }
-        theta = theta * (1 - (2 * Math.acos(u) / Math.PI));
-        let m1 = Math.sin(theta);
-        let m2 = Math.cos(theta);
-        let a = v * 2 * Math.PI;
-        let q = Vector.RandomUnitVector();
-        let s = Vector.Cross_mem(direction, q);
-        let t = Vector.Cross_mem(direction, s);
-        let d = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-        d = Vector.Add_mem(d, Vector.MulScalar_mem(s, m1 * Math.cos(a)));
-        d = Vector.Add_mem(d, Vector.MulScalar_mem(t, m1 * Math.sin(a)));
-        d = Vector.Add_mem(d, Vector.MulScalar_mem(direction, m2));
-        d = Vector.Normalize_mem(d);
-        return d;
-    }
-    
-    static LoadImage(path:string):number /*Image*/ {
-        //TODO: load image using img tag and canvas
-        return null;
-    }
-
-    static SavePNG(path:string, im:number /*Image*/):boolean {
-        //TODO: save using file
-        return null;
-    }
-
-    static Median(items:number[]):number {
-        let n = items.length;
-        if (n == 0) {
-            return 0
-        } else if (n % 2 == 1) {
-            return items[n / 2]
-        } else {
-            let a = items[n / 2 - 1];
-            let b = items[n / 2];
-            return (a + b) / 2
-        }
-    }
-
-    static DurationString(t:number/*milliseconds*/):string {
-        let d:Date = new Date();
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
-        d.setMilliseconds(t);
-        return d.toLocaleTimeString();
-    }
-
-    static NumberString(x:number):string {
-        let suffixes = ["", "k", "M", "G"];
-
-        suffixes.forEach((suffix) => {
-            if (x < 1000) {
-                return x + suffix;
-            }
-            x /= 1000
-        });
-
-        return x + "T";
-    }
-
-    static ParseFloats(items:string[]):number[] {
-        let result:number[] = [];
-
-        items.forEach((item) => {
-            result.push(parseFloat(item));
-        });
-        return result;
-    }
-
-    static ParseInts(items:string[]):number[] {
-        let result:number[] = [];
-
-        items.forEach((item) => {
-            result.push(parseInt(item));
-        });
-        return result;
-    }
-
-    static Fract(x:number):number {
-        return x - Math.floor(x);
-    }
-
-    static FractAddOne(x:number):number {
-        let f1 = x - Math.floor(x);
-        return f1 - Math.floor(f1 + 1);
-    }
-
-    static  Modf(f):{int:number,frac:number} {
-        var int = Math.floor(f);
-        var frac = f - int;
-        return {int: int, frac: frac};
-    }
-
-    static Clamp(x:number, lo:number, hi:number):number {
-        if (x < lo) {
-            return lo;
-        }
-        if (x > hi) {
-            return hi;
-        }
-        return x;
-    }
-
-    static ClampInt(x:number, lo:number, hi:number):number {
-        if (x < lo) {
-            return lo;
-        }
-        if (x > hi) {
-            return hi;
-        }
-        return x;
-    }
-}
-
 type RGBA  = {
     R:number,
     G:number,
@@ -963,6 +834,8 @@ export class Color extends MemoryObject{
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=194603; return SELF; }
 }
 turbo.Runtime._idToType[194603] = Color;
+
+
 
 type XYZ = {
     X:number,
@@ -1507,6 +1380,135 @@ export class Vector extends MemoryObject{
 }
 turbo.Runtime._idToType[1266219] = Vector;
 
+
+export class Utils {
+
+    static Radians(degrees:number):number {
+        return degrees * Math.PI / 180
+    }
+
+    static Degrees(radians:number):number {
+        return radians * 180 / Math.PI
+    }
+
+    static Cone(direction:number /*Vector*/, theta:number, u:number, v:number):number /*Vector*/ {
+        if (theta < EPS) {
+            return direction;
+        }
+        theta = theta * (1 - (2 * Math.acos(u) / Math.PI));
+        let m1 = Math.sin(theta);
+        let m2 = Math.cos(theta);
+        let a = v * 2 * Math.PI;
+        let q = Vector.RandomUnitVector();
+        let s = Vector.Cross_mem(direction, q);
+        let t = Vector.Cross_mem(direction, s);
+        let d = Vector.NewVector();
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(s, m1 * Math.cos(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(t, m1 * Math.sin(a)));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(direction, m2));
+        d = Vector.Normalize_mem(d);
+        return d;
+    }
+    
+    static LoadImage(path:string):number /*Image*/ {
+        //TODO: load image using img tag and canvas
+        return null;
+    }
+
+    static SavePNG(path:string, im:number /*Image*/):boolean {
+        //TODO: save using file
+        return null;
+    }
+
+    static Median(items:number[]):number {
+        let n = items.length;
+        if (n == 0) {
+            return 0
+        } else if (n % 2 == 1) {
+            return items[n / 2]
+        } else {
+            let a = items[n / 2 - 1];
+            let b = items[n / 2];
+            return (a + b) / 2
+        }
+    }
+
+    static DurationString(t:number/*milliseconds*/):string {
+        let d:Date = new Date();
+        d.setHours(0);
+        d.setMinutes(0);
+        d.setSeconds(0);
+        d.setMilliseconds(t);
+        return d.toLocaleTimeString();
+    }
+
+    static NumberString(x:number):string {
+        let suffixes = ["", "k", "M", "G"];
+
+        suffixes.forEach((suffix) => {
+            if (x < 1000) {
+                return x + suffix;
+            }
+            x /= 1000
+        });
+
+        return x + "T";
+    }
+
+    static ParseFloats(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseFloat(item));
+        });
+        return result;
+    }
+
+    static ParseInts(items:string[]):number[] {
+        let result:number[] = [];
+
+        items.forEach((item) => {
+            result.push(parseInt(item));
+        });
+        return result;
+    }
+
+    static Fract(x:number):number {
+        return x - Math.floor(x);
+    }
+
+    static FractAddOne(x:number):number {
+        let f1 = x - Math.floor(x);
+        return f1 - Math.floor(f1 + 1);
+    }
+
+    static  Modf(f):{int:number,frac:number} {
+        var int = Math.floor(f);
+        var frac = f - int;
+        return {int: int, frac: frac};
+    }
+
+    static Clamp(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
+
+    static ClampInt(x:number, lo:number, hi:number):number {
+        if (x < lo) {
+            return lo;
+        }
+        if (x > hi) {
+            return hi;
+        }
+        return x;
+    }
+}
+
 export class Box extends MemoryObject{
    static NAME:string = "Box";
    static SIZE:number = 12;
@@ -1961,7 +1963,7 @@ turbo.Runtime._idToType[2093537] = Matrix;
 
 export class Texture extends MemoryObject{
    static NAME:string = "Texture";
-   static SIZE:number = 16;
+   static SIZE:number = 20;
    static ALIGN:number = 4;
    static CLSID:number = 10502342;
 
@@ -1976,7 +1978,7 @@ export class Texture extends MemoryObject{
     static init(SELF, width:number, height:number, data:number){
          turbo.Runtime._mem_int32[(SELF + 4) >> 2] = width; 
          turbo.Runtime._mem_int32[(SELF + 8) >> 2] = height; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = data; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = data; 
     }
 
     static textures:any = [];
@@ -2003,34 +2005,34 @@ export class Texture extends MemoryObject{
 
     static NewTexture(im:number /*Image*/):number /*Texture*/{
         let size:number = turbo.Runtime._mem_int32[((Image.Bounds(im)) + 8) >> 2];
-        let data:number = turbo.Runtime.allocOrThrow(4 + (4 * (turbo.Runtime._mem_float64[(size + 8) >> 3] * turbo.Runtime._mem_float64[(size + 16) >> 3])), 4) /*Array*/;
+        let data:number = turbo.Runtime.allocOrThrow( (4 * (turbo.Runtime._mem_float64[(size + 8) >> 3] * turbo.Runtime._mem_float64[(size + 16) >> 3])), 4) /*Array*/;
         for (let y:number = 0; y < turbo.Runtime._mem_float64[(size + 16) >> 3]; y++) {
             for (let x:number = 0; x < turbo.Runtime._mem_float64[(size + 8) >> 3]; x++) {
                 let index = y * turbo.Runtime._mem_float64[(size + 8) >> 3] + x;
-                turbo.Runtime._mem_int32[(data+4*index) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
+                turbo.Runtime._mem_int32[(  data+4*index) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
             }
         }
-        let ptr:number = Texture.initInstance(turbo.Runtime.allocOrThrow(16,4));
+        let ptr:number = Texture.initInstance(turbo.Runtime.allocOrThrow(20,4));
         return Texture.init(ptr, turbo.Runtime._mem_float64[(size + 8) >> 3], turbo.Runtime._mem_float64[(size + 16) >> 3], data);
     }
 
     Pow(t:number, a:number):number {
-        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
-        let len:number = Color.Array.len(data);
+        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
+        let len:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
 
         for (let i:number = 0; i < len; i++) {
-            let d = turbo.Runtime._mem_int32[(data+4*i) >> 2];
+            let d = turbo.Runtime._mem_int32[(  data+4*i) >> 2];
             Color.Pow_mem(d, a, d);
         }
         return t;
     }
 
     static MulScalar(t:number, a:number):number{
-        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
-        let len:number = Color.Array.length(data);
+        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
+        let len:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
 
         for (let i:number = 0; i < len; i++) {
-            let d = turbo.Runtime._mem_int32[(data+4*i) >> 2];
+            let d = turbo.Runtime._mem_int32[(  data+4*i) >> 2];
             Color.MulScalar_mem(d, a, d);
         }
         return t;
@@ -2039,7 +2041,7 @@ export class Texture extends MemoryObject{
     static bilinearSample(t:number, u:number, v:number):number{
         let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
         let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
-        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
 
         let w:number = Width - 1;
         let h:number = Height - 1;
@@ -2056,10 +2058,10 @@ export class Texture extends MemoryObject{
         let y0:number = parseInt(Y);
         let x1:number = x0 + 1;
         let y1:number = y0 + 1;
-        let c00:number = turbo.Runtime._mem_int32[(data+4*(y0 * Width + x0)) >> 2];
-        let c01:number = turbo.Runtime._mem_int32[(data+4*(y1 * Width + x0)) >> 2];
-        let c10:number = turbo.Runtime._mem_int32[(data+4*(y0 * Width + x1)) >> 2];
-        let c11:number = turbo.Runtime._mem_int32[(data+4*(y1 * Width + x1)) >> 2];
+        let c00:number = turbo.Runtime._mem_int32[(  data+4*(y0 * Width + x0)) >> 2];
+        let c01:number = turbo.Runtime._mem_int32[(  data+4*(y1 * Width + x0)) >> 2];
+        let c10:number = turbo.Runtime._mem_int32[(  data+4*(y0 * Width + x1)) >> 2];
+        let c11:number = turbo.Runtime._mem_int32[(  data+4*(y1 * Width + x1)) >> 2];
         let c:number = Color.BLACK;
         c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
         c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
@@ -2084,7 +2086,7 @@ export class Texture extends MemoryObject{
     static BumpSample(t:number, u:number, v:number, c?:number):number {
         let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
         let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
-        let data:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
         u = Utils.FractAddOne(u);
         v = Utils.FractAddOne(v);
         v = 1 - v;
@@ -2094,15 +2096,14 @@ export class Texture extends MemoryObject{
         let x2 = Utils.ClampInt(x+1, 0, Width-1);
         let y1 = Utils.ClampInt(y-1, 0, Height-1);
         let y2 = Utils.ClampInt(y+1, 0, Height-1);
-        let cx = Color.Sub_mem(turbo.Runtime._mem_int32[(data+4*(y * Width + x1)) >> 2], turbo.Runtime._mem_int32[(data+4*(y * Width + x2)) >> 2]);
-        let cy = Color.Sub_mem(turbo.Runtime._mem_int32[(data+4*(y1 * Width + x)) >> 2], turbo.Runtime._mem_int32[(data+4*(y2 * Width + x)) >> 2]);
+        let cx = Color.Sub_mem(turbo.Runtime._mem_int32[(  data+4*(y * Width + x1)) >> 2], turbo.Runtime._mem_int32[(  data+4*(y * Width + x2)) >> 2]);
+        let cy = Color.Sub_mem(turbo.Runtime._mem_int32[(  data+4*(y1 * Width + x)) >> 2], turbo.Runtime._mem_int32[(  data+4*(y2 * Width + x)) >> 2]);
         let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
         return Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(cx + 8) >> 3], turbo.Runtime._mem_float64[(cy + 8) >> 3], 0);
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=10502342; return SELF; }
 }
 turbo.Runtime._idToType[10502342] = Texture;
-
 
 
 export class Material extends MemoryObject{
@@ -2285,7 +2286,9 @@ export class Ray extends MemoryObject{
             return { ray: Ray.WeightedBounce(n, u, v), reflected: false, strength: 1 - p };
         }
     }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=674; return SELF; }
 }
+turbo.Runtime._idToType[674] = Ray;
 
 interface Hit{
     Shape:number;
@@ -2299,8 +2302,22 @@ export enum ShapeType{
     SDFShape
 }
 
-@turbo class Shape{
-    static init(SELF:number):number{
+export class Shape extends MemoryObject{
+   static NAME:string = "Shape";
+   static SIZE:number = 8;
+   static ALIGN:number = 4;
+   static CLSID:number = 255446;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF:number, id):number{
+         turbo.Runtime._mem_uint32[(SELF + 4) >> 2] = id; 
 		return SELF;
 	}
     static Compile_impl(SELF:number, s:number){
@@ -2323,55 +2340,55 @@ export enum ShapeType{
 	}
     static Compile(SELF , s) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.Compile_impl(SELF , s);
+            case 255446:
+                return Shape.Compile_impl(SELF , s);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
     static BoundingBox(SELF , s) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.BoundingBox_impl(SELF , s);
+            case 255446:
+                return Shape.BoundingBox_impl(SELF , s);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
     static Intersect(SELF , s,ray) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.Intersect_impl(SELF , s,ray);
+            case 255446:
+                return Shape.Intersect_impl(SELF , s,ray);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
     static UV(SELF , s,p) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.UV_impl(SELF , s,p);
+            case 255446:
+                return Shape.UV_impl(SELF , s,p);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
     static NormalAt(SELF , s,p) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.NormalAt_impl(SELF , s,p);
+            case 255446:
+                return Shape.NormalAt_impl(SELF , s,p);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
     static MaterialAt(SELF , s,p) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 674:
-                return Ray.MaterialAt_impl(SELF , s,p);
+            case 255446:
+                return Shape.MaterialAt_impl(SELF , s,p);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=674; return SELF; }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=255446; return SELF; }
 }
-turbo.Runtime._idToType[674] = Ray;
+turbo.Runtime._idToType[255446] = Shape;
 
 export class TransformedShape extends MemoryObject{
    static NAME:string = "TransformedShape";
@@ -2427,58 +2444,6 @@ export class TransformedShape extends MemoryObject{
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=245094204; return SELF; }
 }
 turbo.Runtime._idToType[245094204] = TransformedShape;
-
-export var NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
-
-export class Hit{
-
-	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
-
-	}
-
-	Ok():boolean{
-		return this.T < Number.POSITIVE_INFINITY;
-	}
-
-	Info(r:number/*:Ray*/){
-		if(this.HitInfo != null){
-			return this.HitInfo;
-		}
-
-		let shape:number = this.Shape;
-		let position:number = Ray.Position(r, this.T);
-		let normal:number = Shape.NormalAt(this.Shape, position);
-		let material:number = Material.MaterialAt(shape, position);
-		let inside:boolean = false;
-
-		if(Vector.Dot_mem(normal, turbo.Runtime._mem_int32[(r + 8) >> 2]) > 0){
-			Vector.Negate_mem(normal, normal);
-			inside = true;
-			switch (Shape.Type(shape)) {
-				case ShapeType.Volume:
-				case ShapeType.SDFShape:
-					inside = false;
-					break;
-			}
-		}
-
-		let ptr:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
-		let ray = Ray.init(ptr, position, normal);
-		return new HitInfo(shape, position, normal, ray, material, inside);
-	}
-}
-
-export class HitInfo{
-
-	constructor(public Shape:number, //Shape
-				public Position:number, //Vector
-                public Normal:number, //Vector
-                public Ray:number, //Ray
-                public Material:number, //Material
-                public Inside:boolean){
-
-	}
-}
 
 
 

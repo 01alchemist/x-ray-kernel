@@ -1,7 +1,7 @@
 @turbo class Box{
 
-	Min:Vector;
-	Max:Vector;
+	Min:int32
+	Max:int32
 
 	@method init(SELF:number, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
         SELF.Min = Vector.NewVector(min);

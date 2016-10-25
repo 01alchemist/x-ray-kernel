@@ -6,20 +6,20 @@ let turbo = require("../../../../turbo.js/lib/compiler.js");
 let compiler = new turbo.Compiler();
 let modules = [
     "./src/common.tts",
-    "./src/util.tts",
     "./src/color.tts",
     "./src/vector.tts",
+    "./src/util.tts",
     "./src/box.tts",
     "./src/matrix.tts",
     "./src/texture.tts",
     "./src/material.tts",
     "./src/ray.tts",
     "./src/shape.tts",
-    "./src/hit.tts",
+    // "./src/hit.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {
-    var content = fs.readFileSync(path.resolve(__dirname, file));
+    let content = fs.readFileSync(path.resolve(__dirname, file));
     source += content + "\n\n";
 });
 source += "\n";

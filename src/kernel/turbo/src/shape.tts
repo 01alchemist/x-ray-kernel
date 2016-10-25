@@ -12,7 +12,10 @@ export enum ShapeType{
 
 @turbo class Shape{
 
-	@method init(SELF:number):number{
+    shapeId:uint32
+
+	@method init(SELF:number, id):number{
+        SELF.shapeId = id;
 		return SELF;
 	}
 

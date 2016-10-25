@@ -12,9 +12,9 @@ type RGB = {
 
 @turbo class Color{
 
-	R:float64;
-	G:float64;
-	B:float64;
+	R:float64
+	G:float64
+	B:float64
 
 	@method init(SELF:number, color = {R:0,G:0,B:0}):number {
 		SELF.R = color.R;
@@ -360,3 +360,4 @@ type RGB = {
     }
 
 } @end
+

@@ -6,9 +6,9 @@ type XYZ = {
 
 @turbo class Vector{
 
-	X:float64;
-	Y:float64;
-	Z:float64;
+	X:float64
+	Y:float64
+	Z:float64
 
 	@method init(SELF:number, vector = {X:0,Y:0,Z:0}):number {
 		SELF.X = vector.X;

@@ -20,7 +20,7 @@ export class Utils {
         let q = Vector.RandomUnitVector();
         let s = Vector.Cross_mem(direction, q);
         let t = Vector.Cross_mem(direction, s);
-        let d = @new Vector;
+        let d = Vector.NewVector();
         d = Vector.Add_mem(d, Vector.MulScalar_mem(s, m1 * Math.cos(a)));
         d = Vector.Add_mem(d, Vector.MulScalar_mem(t, m1 * Math.sin(a)));
         d = Vector.Add_mem(d, Vector.MulScalar_mem(direction, m2));

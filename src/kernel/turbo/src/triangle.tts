@@ -1,0 +1,199 @@
+@turbo  class Triangle{
+	V1:int32
+    V2:int32
+    V3:int32
+    N1:int32
+    N2:int32
+    N3:int32
+    T1:int32
+    T2:int32
+    T3:int32
+    Material:int32
+
+    @method init(SELF, v1:number=-1, v2:number=-1, v3:number=-1, n1:number=-1, n2:number=-1, n3:number=-1, t1:number=-1, t2:number=-1, t3:number=-1, material:number=-1){
+        SELF.V1 = v1;
+        SELF.V2 = v2;
+        SELF.V3 = v3;
+        SELF.N1 = n1;
+        SELF.N2 = n2;
+        SELF.N3 = n3;
+        SELF.T1 = t1;
+        SELF.T2 = t2;
+        SELF.T3 = t3;
+        SELF.Material = material;
+		return SELF;
+	}
+
+	static NewTriangle(v1:number, v2:number, v3:number, t1:number, t2:number, t3:number, material:number):number {
+		let SELF = @new Triangle;
+		SELF.V1 = v1;
+		SELF.V2 = v2;
+		SELF.V3 = v3;
+		SELF.T1 = t1;
+		SELF.T2 = t2;
+		SELF.T3 = t3;
+		SELF.Material = material;
+		SELF.FixNormals();
+		return SELF;
+	}
+
+    static Vertices(SELF){
+		return {
+            V1:SELF.V1,
+            V2:SELF.V2,
+            V3:SELF.V3
+        }
+	}
+
+	static Compile() {
+	}
+
+    static BoundingBox(SELF):number{
+		let min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
+		let max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
+        let ptr:number = @new Box;
+		return Box.Init_mem(ptr, min, max);
+	}
+
+	static Intersect(SELF, r:number /*Ray*/):Hit {
+
+        let dir = Ray.Direction(r);
+        let org = Ray.Origin(r);
+
+		let e1x = Vector.X(SELF.V2) - Vector.X(SELF.V1);
+        let e1y = Vector.Y(SELF.V2) - Vector.Y(SELF.V1);
+        let e1z = Vector.Z(SELF.V2) - Vector.Z(SELF.V1);
+        let e2x = Vector.X(SELF.V3) - Vector.X(SELF.V1);
+        let e2y = Vector.Y(SELF.V3) - Vector.Y(SELF.V1);
+        let e2z = Vector.Z(SELF.V3) - Vector.Z(SELF.V1);
+        let px = Vector.Y(dir) * e2z - Vector.Z(dir) * e2y;
+        let py = Vector.Z(dir) * e2x - Vector.X(dir) * e2z;
+        let pz = Vector.X(dir) * e2y - Vector.Y(dir) * e2x;
+		let det = e1x * px + e1y * py + e1z * pz;
+		if (det > -EPS && det < EPS) {
+			return Hit.NoHit;
+		}
+		let inv = 1 / det;
+        let tx = Vector.X(org) - Vector.X(SELF.V1);
+        let ty = Vector.Y(org) - Vector.Y(SELF.V1);
+        let tz = Vector.Z(org) - Vector.Z(SELF.V1);
+        let u = (tx * px + ty * py + tz * pz) * inv;
+		if (u < 0 || u > 1) {
+			return Hit.NoHit
+		}
+        let qx = ty * e1z - tz * e1y;
+        let qy = tz * e1x - tx * e1z;
+        let qz = tx * e1y - ty * e1x;
+        let v = (Vector.X(dir) * qx + Vector.Y(dir) * qy + Vector.Z(dir) * qz) * inv;
+		if (v < 0 || u+v > 1) {
+			return NoHit
+		}
+        let d = (e2x*qx + e2y*qy + e2z*qz) * inv;
+		if (d < EPS) {
+			return NoHit
+		}
+		return new Hit(SELF, d, null);
+	}
+
+	static UV(SELF, p:number/*Vector*/):number /*Vector*/ {
+        let uvw = Triangle.Barycentric(SELF, p);
+		let n = @new Vector;
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T1, uvw.u), n);
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T2, uvw.v), n);
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T3, uvw.w), n);
+        Vector.Z(n) = 0;
+		return n
+	}
+
+	static MaterialAt(SELF, p:number /*Vector*/):number /*Material*/ {
+		return SELF.Material;
+	}
+
+	static NormalAt(SELF, p:number /*Vector*/):number /*Vector*/ {
+		let uvw = Triangle.Barycentric(p);
+		let n = @ new Vector;
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N1, uvw.u), n);
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N2, uvw.v), n);
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N3, uvw.w), n);
+		n = Vector.Normalize_mem(n);
+		if (Material.NormalTexture(SELF.Material) != null) {
+			let b = @new Vector;
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T1, uvw.u), b);
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T2, uvw.v), b);
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T3, uvw.w), b);
+
+			let ns = Texture.NormalSample(Material.NormalTexture(SELF.Material), b.X, b.Y);
+			let dv1 = Vector.Sub_mem(SELF.V2, SELF.V1);
+            let dv2 = Vector.Sub_mem(SELF.V3, SELF.V1);
+            let dt1 = Vector.Sub_mem(SELF.T2, SELF.T1);
+            let dt2 = Vector.Sub_mem(SELF.T3, SELF.T1);
+
+			let T = dv1.MulScalar(dt2.Y).Sub(dv2.MulScalar(dt1.Y)).Normalize();
+            let B = dv2.MulScalar(dt1.X).Sub(dv1.MulScalar(dt2.X)).Normalize();
+            let N = T.Cross(B);
+			matrix := Matrix{
+				T.X, B.X, N.X, 0,
+					T.Y, B.Y, N.Y, 0,
+					T.Z, B.Z, N.Z, 0,
+					0, 0, 0, 1}
+			n = matrix.MulDirection(ns)
+		}
+		if SELF.Material.BumpTexture != nil {
+			b := Vector{}
+			b = b.Add(SELF.T1.MulScalar(u))
+			b = b.Add(SELF.T2.MulScalar(v))
+			b = b.Add(SELF.T3.MulScalar(w))
+			bump := SELF.Material.BumpTexture.BumpSample(b.X, b.Y)
+			dv1 := SELF.V2.Sub(SELF.V1)
+			dv2 := SELF.V3.Sub(SELF.V1)
+			dt1 := SELF.T2.Sub(SELF.T1)
+			dt2 := SELF.T3.Sub(SELF.T1)
+			tangent := dv1.MulScalar(dt2.Y).Sub(dv2.MulScalar(dt1.Y)).Normalize()
+			bitangent := dv2.MulScalar(dt1.X).Sub(dv1.MulScalar(dt2.X)).Normalize()
+			n = n.Add(tangent.MulScalar(bump.X * SELF.Material.BumpMultiplier))
+			n = n.Add(bitangent.MulScalar(bump.Y * SELF.Material.BumpMultiplier))
+		}
+		n = n.Normalize()
+		return n
+	}
+
+	static Area() float64 {
+		e1 := SELF.V2.Sub(SELF.V1)
+		e2 := SELF.V3.Sub(SELF.V1)
+		n := e1.Cross(e2)
+		return n.Length() / 2
+	}
+
+	static Barycentric(p Vector) (u, v, w float64) {
+		v0 := SELF.V2.Sub(SELF.V1)
+		v1 := SELF.V3.Sub(SELF.V1)
+		v2 := p.Sub(SELF.V1)
+		d00 := v0.Dot(v0)
+		d01 := v0.Dot(v1)
+		d11 := v1.Dot(v1)
+		d20 := v2.Dot(v0)
+		d21 := v2.Dot(v1)
+		d := d00*d11 - d01*d01
+		v = (d11*d20 - d01*d21) / d
+		w = (d00*d21 - d01*d20) / d
+		u = 1 - v - w
+		return
+	}
+
+	static FixNormals() {
+		e1 := SELF.V2.Sub(SELF.V1)
+		e2 := SELF.V3.Sub(SELF.V1)
+		n := e1.Cross(e2).Normalize()
+		zero := Vector{}
+		if SELF.N1 == zero {
+			SELF.N1 = n
+		}
+		if SELF.N2 == zero {
+			SELF.N2 = n
+		}
+		if SELF.N3 == zero {
+			SELF.N3 = n
+		}
+	}
+
+} @end
