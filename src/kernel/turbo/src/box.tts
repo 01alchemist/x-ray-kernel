@@ -3,135 +3,149 @@
 	Min:int32
 	Max:int32
 
-	@method init(SELF:number, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
+	@method init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
         SELF.Min = Vector.NewVector(min);
         SELF.Max = Vector.NewVector(max);
         return SELF;
 	}
 
-    static Init_mem(SELF:number, min:number, max:number){
+    static Init_mem(SELF, min:number, max:number){
         SELF.Min = min;
         SELF.Max = max;
         return SELF;
 	}
 
+	static BoxForShapes(shapes:number, numShapes:number):number{
+		if(numShapes == 0) {
+			return @new Box;
+		}
+		let box = Shape.BoundingBox(Shape.Array.at(shapes, 0));
 
-	static BoxForTriangles(){
-
+		for(let i:number = 0; i < numShapes; i++){
+			let shape:number = Shape.Array.at(shapes, i);
+			box = Box.Extend(box, Shape.BoundingBox(shape));
+		}
+		return box
 	}
 
-	static Anchor(){
+	static BoxForTriangles(shapes:number, numShapes:number):number {
+        if(numShapes == 0) {
+            return @new Box;
+        }
+        let box = Triangle.BoundingBox(Triangle.Array.at(shapes, 0));
 
+        for(let i:number = 0; i < numShapes; i++){
+            let shape:number = Triangle.Array.at(shapes, i);
+            box = Box.Extend(box, Triangle.BoundingBox(shape));
+        }
+        return box
+	}
+
+	static Anchor(SELF, anchor:number):number {
+		return Vector.Add_mem(SELF.Min, Vector.Mul_mem(Box.Size(SELF), anchor));
+	}
+
+	static Center(SELF):number {
+        let ptr:number = @new Vector;
+		return Box.Anchor(SELF, Vector.init(ptr, 0.5, 0.5, 0.5));
+	}
+
+	static OuterRadius(SELF):number {
+		return Vector.Length_mem(Vector.Sub_mem(SELF.Min, Box.Center(SELF)));
+	}
+
+	static InnerRadius(SELF):number {
+		return Vector.MaxComponent_mem(Vector.Sub_mem(Box.Center(SELF), SELF.Min));
+	}
+
+	static Size(SELF):number {
+		return Vector.Sub_mem(SELF.Max, SELF.Min);
+	}
+
+	static Extend(SELF, b:number):number{
+        //let ptr:number = @new Box;
+		return Box.Init_mem(SELF, Vector.Min(SELF.Min, Box.Min(b)), Vector.Max(SELF.Max, Box.Max(b)));
+	}
+
+	static Contains(SELF , b:number):boolean{
+
+        let a_min = SELF.Min;
+        let a_max = SELF.Max;
+
+		return Vector.X(a_min) <= Vector.X(b) && Vector.X(a_max) >= Vector.X(b) &&
+			Vector.Y(a_min) <= Vector.Y(b) && Vector.Y(a_max) >= Vector.Y(b) &&
+			Vector.Z(a_min) <= Vector.Z(b) && Vector.Z(a_max) >= Vector.Z(b);
+	}
+
+	static Intersects(a:number, b:number):boolean {
+        let a_min = Box.Min(a);
+        let a_max = Box.Max(a);
+        let b_min = Box.Min(b);
+        let b_max = Box.Max(b);
+
+		return !(Vector.X(a_min) > Vector.X(b_max) || Vector.X(a_max) < Vector.X(b_min) || Vector.Y(a_min) > Vector.Y(b_max) ||
+		Vector.Y(a_max) < Vector.Y(b_min) || Vector.Z(a_min) > Vector.Z(b_max) || Vector.Z(a_max) < Vector.Z(b_min));
+	}
+
+	static Intersect(SELF, r:number):{tmax:number, tmin:number} {
+
+        let min = SELF.Min;
+        let max = SELF.Max;
+        let origin = Ray.Origin(r);
+        let dir = Ray.Direction(r);
+
+		let x1 = (Vector.X(min) - Vector.X(origin)) / Vector.X(dir);
+        let y1 = (Vector.Y(min) - Vector.Y(origin)) / Vector.Y(dir);
+        let z1 = (Vector.Z(min) - Vector.Z(origin)) / Vector.Z(dir);
+        let x2 = (Vector.X(max) - Vector.X(origin)) / Vector.X(dir);
+        let y2 = (Vector.Y(max) - Vector.Y(origin)) / Vector.Y(dir);
+        let z2 = (Vector.Z(max) - Vector.Z(origin)) / Vector.Z(dir);
+        let tmp;
+		if (x1 > x2) {
+            tmp = x1;
+			x1 = x2;
+            x2 = tmp;
+		}
+		if (y1 > y2) {
+			tmp = y1;
+			y1 = y2;
+            y2 = tmp
+		}
+		if (z1 > z2) {
+            tmp = z1;
+            z1 = z2;
+            z2 = tmp
+		}
+		return {
+            tmax: Math.max(Math.max(x1, y1), z1),
+		    tmin: Math.min(Math.min(x2, y2), z2)
+        }
+	}
+
+	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
+        let min = SELF.Min;
+        let max = SELF.Max;
+        let left;
+        let right;
+		switch (axis) {
+			case Axis.AxisX:
+				left = Vector.X(min) <= point;
+				right = Vector.X(max) >= point;
+                break;
+			case Axis.AxisY:
+				left = Vector.Y(min) <= point;
+				right = Vector.Y(max) >= point;
+                break;
+			case Axis.AxisZ:
+				left = Vector.Z(min) <= point;
+				right = Vector.Z(min) >= point;
+                break;
+		}
+		return {
+            left :left,
+            right:right
+        };
 	}
 
 } @end
 
-
-// static BoxForShapes(shapes:Shape.Array):number{
-// let length:number = len(shapes, Shape);
-// if(length == 0) {
-// return _new Box;
-// }
-// let box = shapes[0].BoundingBox();
-//
-// for(let i:number = 0; i < length; i++){
-// let shape:number = Shape  .  Array  .  at(shapes, i);
-// box = Box.Extend(box, Shape.BoundingBox(shape));
-// }
-// return box
-// }
-
-/*
-func BoxForShapes(shapes []Shape) Box {
-	if len(shapes) == 0 {
-		return Box{}
-	}
-	box := shapes[0].BoundingBox()
-	for _, shape := range shapes {
-		box = box.Extend(shape.BoundingBox())
-	}
-	return box
-}
-
-func BoxForTriangles(shapes []*Triangle) Box {
-	if len(shapes) == 0 {
-		return Box{}
-	}
-	box := shapes[0].BoundingBox()
-	for _, shape := range shapes {
-		box = box.Extend(shape.BoundingBox())
-	}
-	return box
-}
-
-func (a Box) Anchor(anchor Vector) Vector {
-	return a.Min.Add(a.Size().Mul(anchor))
-}
-
-func (a Box) Center() Vector {
-	return a.Anchor(Vector{0.5, 0.5, 0.5})
-}
-
-func (a Box) OuterRadius() float64 {
-	return a.Min.Sub(a.Center()).Length()
-}
-
-func (a Box) InnerRadius() float64 {
-	return a.Center().Sub(a.Min).MaxComponent()
-}
-
-func (a Box) Size() Vector {
-	return a.Max.Sub(a.Min)
-}
-
-func (a Box) Extend(b Box) Box {
-	return Box{a.Min.Min(b.Min), a.Max.Max(b.Max)}
-}
-
-func (a Box) Contains(b Vector) bool {
-	return a.Min.X <= b.X && a.Max.X >= b.X &&
-		a.Min.Y <= b.Y && a.Max.Y >= b.Y &&
-		a.Min.Z <= b.Z && a.Max.Z >= b.Z
-}
-
-func (a Box) Intersects(b Box) bool {
-	return !(a.Min.X > b.Max.X || a.Max.X < b.Min.X || a.Min.Y > b.Max.Y ||
-		a.Max.Y < b.Min.Y || a.Min.Z > b.Max.Z || a.Max.Z < b.Min.Z)
-}
-
-func (b *Box) Intersect(r Ray) (float64, float64) {
-	x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-	y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-	z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-	x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-	y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-	z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
-	if x1 > x2 {
-		x1, x2 = x2, x1
-	}
-	if y1 > y2 {
-		y1, y2 = y2, y1
-	}
-	if z1 > z2 {
-		z1, z2 = z2, z1
-	}
-	t1 := math.Max(math.Max(x1, y1), z1)
-	t2 := math.Min(math.Min(x2, y2), z2)
-	return t1, t2
-}
-
-func (b *Box) Partition(axis Axis, point float64) (left, right bool) {
-	switch axis {
-	case AxisX:
-		left = b.Min.X <= point
-		right = b.Max.X >= point
-	case AxisY:
-		left = b.Min.Y <= point
-		right = b.Max.Y >= point
-	case AxisZ:
-		left = b.Min.Z <= point
-		right = b.Max.Z >= point
-	}
-	return
-}
-*/

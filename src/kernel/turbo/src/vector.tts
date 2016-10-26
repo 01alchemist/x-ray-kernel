@@ -518,6 +518,10 @@ type XYZ = {
         return Vector.X(a) === Vector.X(b) && Vector.Y(a) === Vector.Y(b) && Vector.Z(a) === Vector.Z(b);
     }
 
+    static ZERO:number = Vector.NewVector({X:0,Y:0,Y:0});
+    static ONE:number = Vector.NewVector({X:1,Y:1,Y:1});
+    static NegativeONE:number = Vector.NewVector({X:-1,Y:-1,Y:-1});
+
     static IsZero(a:number):boolean{
         return Vector.X(a) === 0 && Vector.Y(a) === 0 && Vector.Z(a) === 0;
     }

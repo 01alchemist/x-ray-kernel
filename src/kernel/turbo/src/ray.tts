@@ -45,7 +45,7 @@
         return Ray.init(c, Ray.Origin(r), Cone(Ray.Direction(r), theta, u, v));
     }
 
-    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, strength:number} {
+    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, coefficient:number} {
         let n = info.Ray;
         let material = info.Material;
         let n1 = 1.0;
@@ -80,13 +80,13 @@
         }
         if(reflect) {
             let reflected:number = Ray.Reflect(n, i);
-            return { ray: Ray.ConeBounce(reflected, Material.Gloss(material), u, v), reflected:true, strength:p };
+            return { ray: Ray.ConeBounce(reflected, Material.Gloss(material), u, v), reflected:true, coefficient:p };
         } else if (Material.Transparent(material)) {
             let refracted:number = Ray.Refract(n, i, n1, n2);
             Ray.Origin(refracted) = Vector.Add(Ray.Origin(refracted), Vector.MulScalar(Ray.Direction(refracted), 1e-4));
-            return { ray: Ray.ConeBounce(refracted, Material.Gloss(material), u, v), reflected: true, strength: 1 - p };
+            return { ray: Ray.ConeBounce(refracted, Material.Gloss(material), u, v), reflected: true, coefficient: 1 - p };
         } else {
-            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, strength: 1 - p };
+            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, coefficient: 1 - p };
         }
     }
 } @end

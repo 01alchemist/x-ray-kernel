@@ -331,13 +331,17 @@ type RGB = {
         return SELF;
     }
 
-    static Clone(SELF:number):number {
-        let ptr:number = @new Color;
+    static Clone(SELF:number, c?:number):number {
+        let ptr:number = c?c:@new Color;
         return Color.Init_mem(ptr, SELF.R, SELF.G, SELF.B);
     }
 
-    static BLACK:number = Color.HexColor(0x000000);
-    static WHITE:number = Color.HexColor(0xFFFFFF);
+    static get BLACK():number{
+        return Color.HexColor(0x000000);
+    }
+    static get WHITE():number {
+        return Color.HexColor(0xFFFFFF);
+    }
 
     static BrightColors = [
         Color.HexColor(0xFF00FF),

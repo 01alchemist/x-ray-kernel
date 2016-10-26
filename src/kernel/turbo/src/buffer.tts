@@ -1,0 +1,103 @@
+export enum Channel{
+	ColorChannel,
+	VarianceChannel,
+	StandardDeviationChannel
+}
+
+export class Pixel{
+	
+	private tmp:number;
+	
+	constructor(public Samples:number, public M:number, public V:number){
+		this.tmp = @new Color;
+	}
+
+	AddSample(sample:number) {
+		this.Samples++;
+		if (this.Samples == 1) {
+			this.M = sample;
+			return;
+		}
+		Color.Clone(this.M, this.tmp);
+		Color.Add_mem(this.M, Color.DivScalar_mem(Color.Sub_mem(sample, this.M), this.Samples), this.M);
+		Color.Add_mem(this.V, Color.Mul_mem(Color.Sub_mem(sample, this.tmp), Color.Sub_mem(sample, this.M)), this.V);
+	}
+
+	Color():number{
+		return this.M;
+	}
+
+	Variance():number {
+		if (this.Samples < 2) {
+			return Color.BLACK;
+		}
+		return Color.DivScalar_mem(this.V, this.Samples - 1);
+	}
+
+	StandardDeviation():number {
+		return Color.Pow_mem(this.Variance(), 0.5);
+	}
+}
+
+export class Buffer{
+
+	constructor(public W:number, public H:number, public Pixels:Pixel[]){
+    }
+    static NewBuffer(w:number, h:number):Buffer {
+        let pixels = [];//w*h
+        return new Buffer(w, h, pixels);
+    }
+
+    Copy():Buffer {
+        let pixels = [];//thus.w*this.h
+
+        this.Pixels.forEach((item) => {
+            pixels.push(item);
+        });
+
+        return new Buffer(this.W, this.H, pixels);
+    }
+
+    AddSample(x:number, y:number, sample:number) {
+        this.Pixels[y*this.W+x].AddSample(sample);
+    }
+
+    Samples(x:number, y:number):number {
+        return this.Pixels[y*this.W+x].Samples;
+    }
+
+    Color(x:number, y:number):number{
+        return this.Pixels[y*this.W+x].Color();
+    }
+
+    Variance(x:number, y:number):number {
+        return this.Pixels[y*this.W+x].Variance();
+    }
+
+    StandardDeviation(x:number, y:number):number {
+        return this.Pixels[y*this.W+x].StandardDeviation();
+    }
+
+    Image(channel:Channel):number {
+        let result = Image.NewRGBA64({x:0, y:0, width: this.W, height: this.H});
+        for (let y = 0; y < this.H; y++) {
+            for (let x = 0; x < this.W; x++) {
+                var c:number;
+                switch (channel) {
+                    case Channel.ColorChannel:
+                        c = Color.Pow_mem(this.Pixels[y*this.W+x].Color(), 1 / 2.2);
+                        break;
+                    case Channel.VarianceChannel:
+                        c = this.Pixels[y*this.W+x].Variance();
+                        break;
+                    case Channel.StandardDeviationChannel:
+                        c = this.Pixels[y*this.W+x].StandardDeviation();
+                        break;
+                }
+                result.SetRGBA64(x, y, Color.RGBA64(c));
+            }
+        }
+        return result
+    }
+
+}

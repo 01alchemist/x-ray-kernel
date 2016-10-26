@@ -1,0 +1,226 @@
+export enum LightMode{
+    LightModeRandom,
+    LightModeAll
+}
+export enum SpecularMode{
+    SpecularModeNaive,
+    SpecularModeFirst,
+    SpecularModeAll
+}
+
+export enum BounceType{
+    BounceTypeAny,
+    BounceTypeDiffuse,
+    BounceTypeSpecular
+}
+
+interface Sampler{
+	Sample(scene:number, ray:number):RGBA
+}
+
+export function NewSampler(firstHitSamples, maxBounces){
+	return new DefaultSampler(firstHitSamples, maxBounces, true, true, LightMode.LightModeRandom, SpecularMode.SpecularModeNaive);
+}
+
+export function NewDirectSampler():DefaultSampler {
+	return new DefaultSampler(1, 0, true, false, LightMode.LightModeAll, SpecularMode.SpecularModeAll);
+}
+
+export class Sampler {
+
+    static Sample(sampler:DefaultSampler, scene:number, ray:number):number {
+        return sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0)
+    }
+}
+export class DefaultSampler {
+
+    constructor(
+        public FirstHitSamples:number,
+        public MaxBounces:number,
+        public DirectLighting:boolean,
+        public SoftShadows:boolean,
+        public LightMode:LightMode,
+        public SpecularMode:SpecularMode) {
+
+    }
+
+    sample(scene:number, ray:number, emission:boolean, samples:number, depth:number):number {
+        if (depth > this.MaxBounces) {
+            return Color.BLACK;
+        }
+        let hit:Hit = Scene.Intersect(scene, ray);
+        if (!hit.Ok()) {
+            return this.sampleEnvironment(scene, ray);
+        }
+        let info = hit.Info(ray);
+        let material = info.Material;
+        let result:number = Color.BLACK;
+        if (Material.Emittance(material) > 0) {
+            if (this.DirectLighting && !emission) {
+                return Color.BLACK;
+            }
+            result = Color.Add_mem(result, Color.MulScalar_mem(Material.Color(material), Material.Emittance(material) * samples));
+        }
+        let n:number = Math.sqrt(samples);
+        let ma:BounceType;
+        let mb:BounceType;
+
+        if (this.SpecularMode == SpecularMode.SpecularModeAll || (depth == 0 && this.SpecularMode == SpecularMode.SpecularModeFirst)) {
+            ma = BounceType.BounceTypeDiffuse;
+            mb = BounceType.BounceTypeSpecular;
+        } else {
+            ma = BounceType.BounceTypeAny;
+            mb = BounceType.BounceTypeAny;
+        }
+
+        for (let u = 0; u < n; u++) {
+            for (let v = 0; v < n; v++) {
+                for (let mode = ma; mode <= mb; mode++) {
+                    let fu = (u + Math.random()) / n;
+                    let fv = (v + Math.random()) / n;
+                    let bounce = Ray.Bounce(ray, info, fu, fv, mode);
+                    if (mode == BounceType.BounceTypeAny) {
+                        bounce.coefficient = 1
+                    }
+                    if (bounce.coefficient > 0 && bounce.reflected) {
+                        // specular
+                        let indirect = this.sample(scene, bounce.ray, bounce.reflected, 1, depth+1);
+                        let tinted = Color.Mix_mem(indirect , Color.Mul_mem(Material.Color(material), indirect), Material.Tint(material));
+                        result = Color.Add_mem(result, Color.MulScalar_mem(tinted, bounce.coefficient));
+                    }
+                    if (bounce.coefficient > 0 && !bounce.reflected) {
+                        // diffuse
+                        let indirect = this.sample(scene, bounce.ray, bounce.reflected, 1, depth+1);
+                        let direct = Color.BLACK;
+                        if (this.DirectLighting) {
+                            direct = this.sampleLights(scene, info.Ray);
+                        }
+                        result = Color.Add_mem(result, Color.MulScalar_mem(Color.Mul_mem(Material.Color(material), Color.Add_mem(direct, indirect)), bounce.coefficient));
+                    }
+                }
+            }
+        }
+        return Color.DivScalar_mem(result, n * n, result);
+    }
+
+    sampleEnvironment(scene:number, ray:number):number{
+        if (Scene.Texture(scene) != null) {
+            let d:number = Ray.Direction(ray);
+            let u:number = Math.atan2(Vector.Z(d), Vector.X(d)) + Scene.TextureAngle(scene);
+            let v:number = Math.atan2(Vector.Y(d), Vector.Length_mem(Vector(Vector.X(d), 0, Vector.Z(d))));
+            u = (u + Math.PI) / (2 * Math.PI);
+            v = (v + Math.PI/2) / Math.PI;
+            return Texture.Sample(Scene.Texture(scene), u, v);
+        }
+        return Scene.Color(scene);
+    }
+
+    sampleLights(scene:number, n:number):number {
+        let nLights = Scene.NumLights(scene);
+        if (nLights == 0) {
+            return Color.BLACK;
+        }
+
+        let shapes = Scene.Shapes(scene);
+
+        if (this.LightMode == LightMode.LightModeAll) {
+            var result:number =  @new Color;
+            for (let i=0; i < nLights;i++) {
+                let lightIndex = int32.Array.at(Scane.Lights(scene), i);
+                let light = Shape.Array.at(shapes, lightIndex);
+                Color.Add(result, this.sampleLight(scene, n, light), result)
+            }
+            return result;
+        } else {
+            // pick a random light
+            let rndLight:number = Math.round(Math.random() * nLights);
+            let lightIndex = int32.Array.at(Scene.Lights(scene), rndLight);
+            let light = Shape.Array.at(shapes, lightIndex);
+            return Color.MulScalar_mem(this.sampleLight(scene, n, light), nLights);
+        }
+    }
+
+    sampleLight(scene:number, n:number, light:number):number {
+        // get bounding sphere center and radius
+        var center:number = @new Vector;
+        var radius:number;
+
+        switch(Shape.Type(light)){
+            case Shape.SPHERE:
+                radius = Sphere.Radius(light);
+                center = Sphere.Center(light);
+                break;
+
+            default:
+                // get bounding sphere from bounding box
+                let box = Shape.BoundingBox(light);
+                radius = Box.OuterRadius(box);
+                center = Box.Center(box);
+                break;
+        }
+
+        // get random point in disk
+        let point = center;
+        if (this.SoftShadows) {
+
+            let x;
+            let y;
+
+            while(true){
+
+                x = Math.random() * 2 - 1;
+                y = Math.random() * 2 - 1;
+
+                if(x*x+y*y <= 1) {
+                    let l = Vector.Normalize_mem(Vector.Sub_mem(center, Ray.Origin(n)));
+                    let u = Vector.Normalize_mem(Vector.Cross_mem(l, Vector.RandomUnitVector()));
+                    let v = Vector.Cross_mem(l, u);
+                    point = @new Vector;
+                    Vector.Add_mem(point, Vector.MulScalar_mem(u, x * radius), point);
+                    Vector.Add_mem(point, Vector.MulScalar_mem(v, y * radius), point);
+                    Vector.Add_mem(point, center, point);
+                    break;
+                }
+
+            }
+        }
+
+        // construct ray toward light point
+        let ray = Ray.init(@new Ray, Ray.Origin(n), Vector.Normalize_mem(Vector.Sub_mem(point, Ray.Origin(n))));
+
+        // get cosine term
+        let diffuse = Vector.Dot_mem(Ray.Direction(ray), Ray.Direction(n));
+        if (diffuse <= 0) {
+            return Color.BLACK;
+        }
+
+        // check for light visibility
+        let hit = Scene.Intersect(scene, ray);
+        if (!hit.Ok() || hit.Shape != light) {
+            return Color.BLACK
+        }
+
+        // compute solid angle (hemisphere coverage)
+        let hyp = Vector.Length_mem(Vector.Sub_mem(center, Ray.Origin(n)));
+        let opp = radius;
+        let theta = Math.asin(opp / hyp);
+        let adj = opp / Math.tan(theta);
+        let d = Math.cos(theta) * adj;
+        let r = Math.sin(theta) * adj;
+        let coverage = (r * r) / (d * d);
+
+        // TODO: fix issue where hyp < opp (point inside sphere)
+        if (hyp < opp) {
+            coverage = 1
+        }
+        coverage = Math.min(coverage, 1);
+
+        // get material properties from light
+        let material = Material.MaterialAt(light, point);
+
+        // combine factors
+        let m = Material.Emittance(material) * diffuse * coverage;
+        return Color.MulScalar_mem(Material.Color(material), m);
+    }
+
+}

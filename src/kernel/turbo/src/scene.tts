@@ -1,0 +1,65 @@
+@turbo class Scene {
+	Color:int32
+	Texture:int32
+	TextureAngle:float64
+	Shapes:int32
+	NumShapes:int32
+	Lights:int32
+	NumLights:int32
+	tree:int32
+	rays:int32
+
+	@method init(SELF){
+		return SELF;
+	}
+
+	Compile(SELF) {
+		for (let i=0; i < SELF.NumShapes;i++) {
+			let shape = Shape.Array.at(SELF.Shapes, i);
+			Shape.Compile(shape);
+		}
+		if (SELF.tree == null) {
+			SELF.tree = Tree.NewTree(SELF.Shapes, SELF.NumShapes);
+		}
+		return SELF;
+	}
+
+	static RayCount(SELF):number {
+		return Atomics.load(SELF.rays);
+	}
+
+	static Intersect(SELF, r:number):Hit {
+		Atomic.add(SELF.rays, 1);
+		return Tree.Intersect(SELF.tree, r);
+	}
+
+} @end
+
+
+export class MasterScene{
+
+	shapes:IShape[];
+	lights:IShape[];
+	scenePtr:Scene;
+
+	constructor(){
+		this.scenePtr = @new Scene;
+	}
+	Add(shape) {
+		this.shapes.push(shape);
+		
+		if (Shape.MaterialAt(shape, Vector.ZERO).Emittance > 0) {
+			this.lights.push(shape);
+		}
+	}
+	Commit(){
+		Scene.NumShapes(this.scenePtr) = this.shapes.length;
+		Scene.Shapes(this.scenePtr) = @new int32.Array(this.shapes.length);
+		Scene.NumLights(this.scenePtr) = this.lights.length;
+		Scene.Lights(this.scenePtr) = @new int32.Array(this.lights.length);
+
+		this.shapes.forEach((shape, index) => {
+
+		})
+	}
+}

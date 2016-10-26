@@ -125,4 +125,12 @@ export class Utils {
         }
         return x;
     }
+
+    static NumberSortFilter(a,b){
+        return a - b;
+    }
+
+    static SortFloat64s(f){
+        return ;
+    }
 }
