@@ -518,6 +518,10 @@ type XYZ = {
         return Vector.X(a) === Vector.X(b) && Vector.Y(a) === Vector.Y(b) && Vector.Z(a) === Vector.Z(b);
     }
 
+    static IsZero(a:number):boolean{
+        return Vector.X(a) === 0 && Vector.Y(a) === 0 && Vector.Z(a) === 0;
+    }
+
     static Set(SELF:number, X:number, Y:number, Z:number) {
         SELF.X = X;
         SELF.Y = Y;

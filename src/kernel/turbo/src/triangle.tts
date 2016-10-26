@@ -128,72 +128,73 @@
             let dt1 = Vector.Sub_mem(SELF.T2, SELF.T1);
             let dt2 = Vector.Sub_mem(SELF.T3, SELF.T1);
 
-			let T = dv1.MulScalar(dt2.Y).Sub(dv2.MulScalar(dt1.Y)).Normalize();
-            let B = dv2.MulScalar(dt1.X).Sub(dv1.MulScalar(dt2.X)).Normalize();
-            let N = T.Cross(B);
-			matrix := Matrix{
-				T.X, B.X, N.X, 0,
-					T.Y, B.Y, N.Y, 0,
-					T.Z, B.Z, N.Z, 0,
-					0, 0, 0, 1}
-			n = matrix.MulDirection(ns)
+			let T = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv1, Vector.Y(dt2)), Vector.MulScalar_mem(dv2, Vector.Y(dt1))));
+            let B = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv2, Vector.X(dt1)), Vector.MulScalar_mem(dv1, Vector.X(dt2))));
+            let N = Vector.Cross_mem(T, B);
+			let matrix = @new Matrix;
+			Matrix.init(matrix,
+					Vector.X(T), Vector.X(B), Vector.X(N), 0,
+					Vector.Y(T), Vector.Y(B), Vector.Y(N), 0,
+					Vector.Z(T), Vector.Z(B), Vector.Z(N), 0,
+					0, 0, 0, 1);
+			n = Matrix.MulDirection(matrix, ns);
 		}
-		if SELF.Material.BumpTexture != nil {
-			b := Vector{}
-			b = b.Add(SELF.T1.MulScalar(u))
-			b = b.Add(SELF.T2.MulScalar(v))
-			b = b.Add(SELF.T3.MulScalar(w))
-			bump := SELF.Material.BumpTexture.BumpSample(b.X, b.Y)
-			dv1 := SELF.V2.Sub(SELF.V1)
-			dv2 := SELF.V3.Sub(SELF.V1)
-			dt1 := SELF.T2.Sub(SELF.T1)
-			dt2 := SELF.T3.Sub(SELF.T1)
-			tangent := dv1.MulScalar(dt2.Y).Sub(dv2.MulScalar(dt1.Y)).Normalize()
-			bitangent := dv2.MulScalar(dt1.X).Sub(dv1.MulScalar(dt2.X)).Normalize()
-			n = n.Add(tangent.MulScalar(bump.X * SELF.Material.BumpMultiplier))
-			n = n.Add(bitangent.MulScalar(bump.Y * SELF.Material.BumpMultiplier))
+		if (Material.BumpTexture(SELF.Material) != null) {
+			let b = @new Vector;
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(SELF.T1, uvw.u), b);
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(SELF.T2, uvw.v), b);
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(SELF.T3, uvw.w), b);
+			let bump = Texture.BumpSample(Material.BumpTexture(SELF.Material), Vector.X(b), Vector.Y(b));
+			let dv1 = Vector.Sub_mem(SELF.V2, SELF.V1);
+			let dv2 = Vector.Sub_mem(SELF.V3, SELF.V1);
+			let dt1 = Vector.Sub_mem(SELF.T2, SELF.T1);
+			let dt2 = Vector.Sub_mem(SELF.T3, SELF.T1);
+			let tangent = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv1, Vector.Y(dt2)), Vector.MulScalar_mem(dv2, Vector.Y(dt1))));
+			let bitangent = Vector.Sub_mem(Vector.Normalize_mem(Vector.MulScalar_mem(dv2, Vector.X(dt1)), Vector.MulScalar_mem(dv1, Vector.X(dt2))));
+			n = Vector.Add_mem(n, Vector.MulScalar_mem(tangent, Vector.X(bump) * Material.BumpMultiplier(SELF.Material)), n);
+			n = Vector.Add_mem(n, Vector.MulScalar_mem(bitangent, Vector.Y(bump) * Material.BumpMultiplier(SELF.Material)), n);
 		}
-		n = n.Normalize()
-		return n
+		n = Vector.Normalize_mem(n, n);
+		return n;
 	}
 
-	static Area() float64 {
-		e1 := SELF.V2.Sub(SELF.V1)
-		e2 := SELF.V3.Sub(SELF.V1)
-		n := e1.Cross(e2)
-		return n.Length() / 2
+	static Area(SELF):number {
+		let e1 = Vector.Sub_mem(SELF.V2, SELF.V1);
+		let e2 = Vector.Sub_mem(SELF.V3, SELF.V1);
+		let n = Vector.Cross_mem(e1, e2);
+		return Vector.Length_mem(n) / 2;
 	}
 
-	static Barycentric(p Vector) (u, v, w float64) {
-		v0 := SELF.V2.Sub(SELF.V1)
-		v1 := SELF.V3.Sub(SELF.V1)
-		v2 := p.Sub(SELF.V1)
-		d00 := v0.Dot(v0)
-		d01 := v0.Dot(v1)
-		d11 := v1.Dot(v1)
-		d20 := v2.Dot(v0)
-		d21 := v2.Dot(v1)
-		d := d00*d11 - d01*d01
-		v = (d11*d20 - d01*d21) / d
-		w = (d00*d21 - d01*d20) / d
-		u = 1 - v - w
-		return
+	static Barycentric(SELF, p:number /*Vector*/):{u:number, v:number, w:number} {
+		let v0 = Vector.Sub_mem(SELF.V2, SELF.V1);
+		let v1 = Vector.Sub_mem(SELF.V3, SELF.V1);
+		let v2 = Vector.Sub_mem(p, SELF.V1);
+		let d00 = Vector.Dot_mem(v0, v0);
+		let d01 = Vector.Dot_mem(v0, v1);
+		let d11 = Vector.Dot_mem(v1, v1);
+		let d20 = Vector.Dot_mem(v2, v0);
+		let d21 = Vector.Dot_mem(v2, v1);
+		let d = d00*d11 - d01*d01;
+		let v = (d11*d20 - d01*d21) / d;
+		let w = (d00*d21 - d01*d20) / d;
+		let u = 1 - v - w;
+		return {u:u,v:v,w:w};
 	}
 
-	static FixNormals() {
-		e1 := SELF.V2.Sub(SELF.V1)
-		e2 := SELF.V3.Sub(SELF.V1)
-		n := e1.Cross(e2).Normalize()
-		zero := Vector{}
-		if SELF.N1 == zero {
-			SELF.N1 = n
-		}
-		if SELF.N2 == zero {
-			SELF.N2 = n
-		}
-		if SELF.N3 == zero {
-			SELF.N3 = n
-		}
+	static FixNormals(SELF) {
+		let e1 = Vector.Sub_mem(SELF.V2, SELF.V1);
+		let e2 = SELF.V3.Sub(SELF.V1);
+		let n = Vector.Normalize_mem(Vector.Cross_mem(e1, e2));
+
+        if(Vector.IsZero(SELF.N1)) {
+            SELF.N1 = n;
+        }
+        if(Vector.IsZero(SELF.N2)) {
+            SELF.N2 = n;
+        }
+        if(Vector.IsZero(SELF.N3)) {
+            SELF.N3 = n;
+        }
 	}
 
 } @end
