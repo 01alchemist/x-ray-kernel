@@ -6,7 +6,7 @@ onmessage = (msg) => {
     let RAW_MEMORY = msg.data;
     turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
     importScripts('../xray-kernel-turbo.js');
-    xray.unsafe.RAW_MEMORY = RAW_MEMORY;
+    unsafe.RAW_MEMORY = RAW_MEMORY;
 };
 
 postMessage("INITED");

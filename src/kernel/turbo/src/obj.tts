@@ -2,7 +2,7 @@
 export class OBJLoader {
 
     static parentMaterial:number;
-    static lastMesh:Mesh;
+    static lastMesh:number;
     static materials:Map<string, number>;
     static hasMaterials:boolean = false;
     static materialsLoaded:boolean = false;
@@ -15,7 +15,10 @@ export class OBJLoader {
         let xhr:XMLHttpRequest = new XMLHttpRequest();
         xhr.open('GET', url, true);
         xhr.onload = function () {
+            console.time("Parsing OBJ file");
             OBJLoader.lastMesh = OBJLoader.parseOBJ(xhr.response, basePath);
+            console.timeEnd("Parsing OBJ file");
+            console.log("Parsing completed, Mesh Ref:"+OBJLoader.lastMesh);
             if (onLoad) {
                 if (OBJLoader.hasMaterials && OBJLoader.materialsLoaded) {
                     onLoad(OBJLoader.lastMesh);
@@ -82,6 +85,9 @@ export class OBJLoader {
         var material:number = this.parentMaterial;
         var lines = data.split("\n");
 
+        console.log("OBJ File Details");
+        console.log(`    lines: ${lines.length}`);
+
         for (var i = 0; i < lines.length; i++) {
             let line:string = lines[i].trim();
             if (line.length == 0) {
@@ -96,11 +102,11 @@ export class OBJLoader {
                     case "mtllib":
                         this.hasMaterials = true;
                         this.materialsLoaded = false;
-                        OBJLoader.LoadMTL(item.value[0], basePath);
+                        //OBJLoader.LoadMTL(item.value[0], basePath);
                         break;
 
                     case "usemtl":
-                        material = OBJLoader.GetMaterial(item.value[0]);
+                        //material = OBJLoader.GetMaterial(item.value[0]);
                         break;
 
                     case "v":
@@ -149,7 +155,7 @@ export class OBJLoader {
                             Triangle.N2(t) = vns[fvns[i2]];
                             Triangle.N3(t) = vns[fvns[i3]];
                             // Triangle.UpdateBox(t);
-                            Triangle.FixNormals(t);
+                            //Triangle.FixNormals(t);
                             triangles = Utils.append(triangles, t);
                         }
                         break;
@@ -161,7 +167,8 @@ export class OBJLoader {
 
     static GetMaterial(index:string):number {
         if (this.materials[index] == undefined) {
-            var material:number = Material.Clone(this.parentMaterial);
+            // var material:number = Material.Clone(this.parentMaterial);
+            var material:number = this.parentMaterial;
             this.materials[index] = material;
             return material;
         } else {
@@ -193,7 +200,8 @@ export class OBJLoader {
                     switch (item.keyword) {
                         case "newmtl":
                             material = self.materials[item.value[0]];
-                            material = material ? material : Material.Clone(self.parentMaterial);
+                            // material = material ? material : Material.Clone(self.parentMaterial);
+                            material = 0;
                             self.materials[item.value[0]] = material;
                             break;
                         case "Ke":

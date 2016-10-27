@@ -29,7 +29,7 @@ type RGB = {
 		SELF.B = B;
 		return SELF;
 	}
-
+    
     static NewColor(color?,G:number = 0,B:number = 0):number {
         let ptr:number = @new Color;
         if(typeof color === "object"){

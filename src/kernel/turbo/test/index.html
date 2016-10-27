@@ -5,28 +5,25 @@
     <title>X Ray kernel Test 1</title>
 
     <script>
-        exports = window.exports?window.exports:{};
+        exports = window.exports ? window.exports : {};
         SharedInt8Array = Int8Array;
     </script>
 
     <script src="../turbo-runtime.js"></script>
-    <script src="../xray-kernel-turbo.js"></script>
     <!--<script src="../src/api/Kernel.js"></script>§-->
 </head>
 <body>
 <script>
-//    require(["../xray-kernel-turbo.js"], function () {
-       console.log(xray);
-
-        let worker = new Worker("thread.js");
-        worker.onmessage = function (msg) {
-            console.log(msg);
-            worker.postMessage(xray.unsafe.RAW_MEMORY, [xray.unsafe.RAW_MEMORY]);
-        };
-//    });
-
-
-
+    turbo.init(512);
+</script>
+<script src="../xray-kernel-turbo.js"></script>
+<script>
+    let worker = new Worker("thread.js");
+    worker.onmessage = function (msg) {
+        console.log(msg);
+        worker.postMessage(unsafe.RAW_MEMORY, [unsafe.RAW_MEMORY]);
+        xray.OBJLoader.Load("models/cornellbox_suzanne_lucy.obj");
+    };
 </script>
 </body>
 </html>

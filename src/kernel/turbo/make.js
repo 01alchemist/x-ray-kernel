@@ -16,6 +16,7 @@ let modules = [
     "./src/material.tts",
     "./src/ray.tts",
     "./src/shape.tts",
+    "./src/tree.tts",
     "./src/triangle.tts",
     "./src/mesh.tts",
     "./src/hit.tts",

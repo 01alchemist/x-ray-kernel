@@ -171,24 +171,24 @@ interface Ray{
         return Matrix.Mul(m, Matrix.TranslateUnitMatrix(v), c);
     }
 
-    static Scale(m:number, v:number):number{
-        return Matrix.Mul(m, Matrix.ScaleUnitMatrix(v));
+    static Scale(m:number, v:number, c?:number):number{
+        return Matrix.Mul(m, Matrix.ScaleUnitMatrix(v), c);
     }
 
-    static Rotate(m:number, v:number, a:number):number {
-        return Matrix.Mul(m, Matrix.RotateUnitMatrix(v, a));
+    static Rotate(m:number, v:number, a:number, c?:number):number {
+        return Matrix.Mul(m, Matrix.RotateUnitMatrix(v, a), c);
     }
 
-    static Frustum(m:number, l:number, r:number, b:number, t:number, n:number, f:number):number {
-        return Matrix.Mul(m, Matrix.FrustumUnitMatrix(l, r, b, t, n, f));
+    static Frustum(m:number, l:number, r:number, b:number, t:number, n:number, f:number, c?:number):number {
+        return Matrix.Mul(m, Matrix.FrustumUnitMatrix(l, r, b, t, n, f, c), c);
     }
 
-    static Orthographic(m:number, l:number, r:number, b:number, t:number, n:number, f:number):number {
-        return Matrix.Mul(m, Matrix.OrthographicUnitMatrix(l, r, b, t, n, f));
+    static Orthographic(m:number, l:number, r:number, b:number, t:number, n:number, f:number, c?:number):number {
+        return Matrix.Mul(m, Matrix.OrthographicUnitMatrix(l, r, b, t, n, f, c), c);
     }
 
-    static Perspective(m:number, fovy:number, aspect:number, near:number, far:number):number {
-        return Matrix.Mul(m, Matrix.PerspectiveUnitMatrix(fovy, aspect, near, far));
+    static Perspective(m:number, fovy:number, aspect:number, near:number, far:number, c?:number):number {
+        return Matrix.Mul(m, Matrix.PerspectiveUnitMatrix(fovy, aspect, near, far, c), c);
     }
 
     static Mul(a:number, b:number, m?:number):number{

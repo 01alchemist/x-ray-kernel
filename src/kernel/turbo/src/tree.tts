@@ -1,12 +1,12 @@
 @turbo class Node{
-    Axis:uin8
+    Axis:uint8
     Point:float64
     Shapes:int32
     NumShapes:int32
     Left:int32
     Right:int32
 
-    @mehod init(SELF, axis:number, point:number, shapes:number, numShapes:number, left:number, right:number):number{
+    @method init(SELF, axis:number, point:number, shapes:number, numShapes:number, left:number, right:number):number{
         SELF.Axis = axis;
         SELF.Point = point;
         SELF.Shapes = shapes;
@@ -15,7 +15,7 @@
         SELF.Right = right;
         return SELF;
     }
-
+    
     static NewNode(shapes:number, numShapes:number):number {
         let ptr:number = @new Node;
         return Node.init(ptr, Axis.AxisNone, 0, shapes, numShapes, null, null);

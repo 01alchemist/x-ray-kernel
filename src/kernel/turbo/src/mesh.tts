@@ -121,7 +121,7 @@
 		}
         for (let i=0; i < SELF.NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
-			Triangle.N1(t) = lookup[Triangle.V1(t)];
+            Triangle.N1(t) = lookup[Triangle.V1(t)];
 			Triangle.N2(t) = lookup[Triangle.V2(t)];
 			Triangle.N3(t) = lookup[Triangle.V3(t)];
 		}
@@ -133,41 +133,46 @@
 	}
 
 	static MoveTo(SELF, position:number, anchor:number):number {
-		let matrix = Matrix.Translate(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
-		m.Transform(matrix)
+		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
+		Matrix.Transform(SELF, matrix);
 	}
 
-	func (m *Mesh) FitInside(box Box, anchor Vector) {
-		scale := box.Size().Div(m.BoundingBox().Size()).MinComponent()
-		extra := box.Size().Sub(m.BoundingBox().Size().MulScalar(scale))
-		matrix := Identity()
-		matrix = matrix.Translate(m.BoundingBox().Min.Negate())
-		matrix = matrix.Scale(Vector{scale, scale, scale})
-		matrix = matrix.Translate(box.Min.Add(extra.Mul(anchor)))
-		m.Transform(matrix)
+	static FitInside(SELF, box:number, anchor:number) {
+        let bsize:number = Box.Size(box);
+        let mbox:number = Mesh.BoundingBox(SELF);
+        let mbsize:number = Box.Size(mbox);
+		let scale:number = Vector.MinComponent_mem(Vector.Div_mem(bsize, mbsize));
+		let extra:number = Vector.MulScalar_mem(Vector.Sub_mem(bsize, mbsize), scale);
+		let matrix:number = Matrix.Identity();
+		Matrix.Translate(matrix, Vector.Negate_mem(Box.Min(mbox)), matrix);
+		Matrix.Scale(matrix, Vector.NewVector(scale, scale, scale), matrix);
+		Matrix.Translate(matrix, Vector.Add_mem(Box.Min(mbox), Vector.Mul_mem(extra, anchor)));
+		Mesh.Transform(SELF, matrix);
 	}
 
-	func (m *Mesh) Transform(matrix Matrix) {
-		for _, Triangle := range m.Triangles {
-			Triangle.V1 = matrix.MulPosition(Triangle.V1)
-			Triangle.V2 = matrix.MulPosition(Triangle.V2)
-			Triangle.V3 = matrix.MulPosition(Triangle.V3)
-			Triangle.N1 = matrix.MulDirection(Triangle.N1)
-			Triangle.N2 = matrix.MulDirection(Triangle.N2)
-			Triangle.N3 = matrix.MulDirection(Triangle.N3)
+	static Transform(SELF, matrix:number) {
+        for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			Triangle.V1(t) = Matrix.MulPosition(matrix, Triangle.V1(t));
+			Triangle.V2(t) = Matrix.MulPosition(matrix, Triangle.V2(t));
+			Triangle.V3(t) = Matrix.MulPosition(matrix, Triangle.V3(t));
+			Triangle.N1(t) = Matrix.MulDirection(matrix, Triangle.N1(t));
+			Triangle.N2(t) = Matrix.MulDirection(matrix, Triangle.N2(t));
+			Triangle.N3(t) = Matrix.MulDirection(matrix, Triangle.N3(t));
 		}
-		m.dirty()
+		Mesh.dirty(SELF);
 	}
 
-	func (m *Mesh) SetMaterial(material Material) {
-		for _, Triangle := range m.Triangles {
-			Triangle.Material = &material
+	static SetMaterial(material:number) {
+        for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			Triangle.Material(t) = material;
 		}
 	}
 
-	func (m *Mesh) SaveSTL(path string) error {
-		return SaveSTL(path, m)
+	static SaveSTL(SELF, path:number):boolean {
+		//return STL.SaveSTL(path, SELF)
+        //TODO: Implement
 	}
-
 
 } @end
