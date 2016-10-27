@@ -1,6 +1,6 @@
-export var NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
-
 export class Hit{
+
+	static NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
 
 	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
 

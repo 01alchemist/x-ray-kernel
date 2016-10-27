@@ -1,7 +1,7 @@
 @turbo class Box{
 
-	Min:int32
-	Max:int32
+	Min:Vector
+	Max:Vector
 
 	@method init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
         SELF.Min = Vector.NewVector(min);
@@ -15,6 +15,20 @@
         return SELF;
 	}
 
+    static NewBox(min?:number, max?:number){
+        let SELF = @new Box;
+        SELF.Min = min?min:Vector.NewVector();
+        SELF.Max = max?max:Vector.NewVector();
+        return SELF;
+	}
+
+    static ToJSON(SELF){
+        return {
+            min:Vector.ToJSON(SELF.Min),
+            max:Vector.ToJSON(SELF.Max)
+        };
+	}
+    
 	static BoxForShapes(shapes:number, numShapes:number):number{
 		if(numShapes == 0) {
 			return @new Box;

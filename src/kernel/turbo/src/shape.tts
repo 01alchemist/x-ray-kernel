@@ -19,27 +19,27 @@ export enum ShapeType{
 		return SELF;
 	}
 
-	@virtual Compile(SELF:number, s:number){
+	@virtual Compile(SELF:number, c?:number){
 		throw "Pure: Shape.Compile()";
 	}
 
-	@virtual BoundingBox(SELF:number, s:number):number{
+	@virtual BoundingBox(SELF:number, c?:number):number{
 		throw "Pure: Shape.BoundingBox()";
 	}
 
-	@virtual Intersect(SELF:number, s:number, ray:Ray):Hit{
+	@virtual Intersect(SELF:number, ray:Ray, c?:number):Hit{
 		throw "Pure: Shape.Intersect()";
 	}
 
-	@virtual UV(SELF:number, s:number, p:number):number{
+	@virtual UV(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.UV()";
 	}
 
-	@virtual NormalAt(SELF:number, s:number, p:number):number{
+	@virtual NormalAt(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.NormalAt()";
 	}
 
-	@virtual MaterialAt(SELF:number, s:number, p:number):number{
+	@virtual MaterialAt(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.MaterialAt()";
 	}
 

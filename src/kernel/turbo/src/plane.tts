@@ -1,0 +1,59 @@
+@turbo class Plane {
+	Point:Vector
+	Normal:Vector
+	Material:Material
+
+	@method init(SELF){
+        return SELF;
+    }
+
+    static NewPlane(point:number, normal:number, material:Material):number {
+        Vector.Normalize_mem(normal, normal);
+        let ptr:number = @new Plane;
+        return Plane.init(ptr, point, normal, material);
+    }
+
+    static Compile() {
+    }
+
+    static BoundingBox():number {
+        let ptr:number = @new Box;
+        return Box.init(ptr, Vector.NewVector({
+            X:Number.NEGATIVE_INFINITY,
+            Y:Number.NEGATIVE_INFINITY,
+            Z:Number.NEGATIVE_INFINITY
+        }),
+            Vector.NewVector({
+                X:Number.POSITIVE_INFINITY,
+                Y:Number.POSITIVE_INFINITY,
+                Z:Number.POSITIVE_INFINITY
+            })
+        );
+    }
+
+    static Intersect(SELF, ray:number):Hit {
+        let d = Vector.Dot_mem(SELF.Normal, Ray.Direction(ray));
+        if (Math.abs(d) < EPS) {
+            return Hit.NoHit
+        }
+        let a:number = Vector.Sub_mem(SELF.Point, Ray.Origin(ray));
+        let t:number = Vector.Dot_mem(a, SELF.Normal) / d;
+        if (t < EPS) {
+            return Hit.NoHit
+        }
+        return new Hit(SELF, t, null);
+    }
+
+    static UV(SELF, a:number):number {
+        return Vector.NewVector();
+    }
+
+    static MaterialAt(SELF, a:number):number {
+        return SELF.Material;
+    }
+
+    static NormalAt(SELF, a:number):number {
+        return SELF.Normal;
+    }
+
+} @end

@@ -126,11 +126,24 @@ export class Utils {
         return x;
     }
 
-    static NumberSortFilter(a,b){
-        return a - b;
+    static append(slice:Array<any>, ...elements):Array<any>{
+        if (slice == undefined) {
+            return elements;
+        } else {
+            slice.push.apply(slice, elements);
+        }
+        return slice;
     }
 
-    static SortFloat64s(f){
-        return ;
+    static sortAscending(slice) {
+        slice.sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+    static sortDescending(slice) {
+        slice.sort(function (a, b) {
+            return b - a;
+        });
     }
 }

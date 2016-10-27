@@ -11,6 +11,7 @@ module.exports = function (config) {
             require('karma-coverage')
         ],
         files: [
+            {pattern: 'turbo-runtime.js', watched: true},
             {pattern: 'xray-kernel-turbo.ts', watched: true},
             {pattern: 'xray-kernel-turbo.spec.ts', watched: true}
         ],

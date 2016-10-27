@@ -30,9 +30,13 @@ type RGB = {
 		return SELF;
 	}
 
-    static NewColor(color?):number {
+    static NewColor(color?,G:number = 0,B:number = 0):number {
         let ptr:number = @new Color;
-        return Color.init(ptr, color);
+        if(typeof color === "object"){
+            return Color.init(ptr, color);
+        }else{
+            return Color.Init_mem(ptr, color, G, B);
+        }
     }
     
 	static HexColor(hex:number):number {

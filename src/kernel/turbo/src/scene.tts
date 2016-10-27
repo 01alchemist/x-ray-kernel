@@ -40,7 +40,7 @@ export class MasterScene{
 
 	shapes:IShape[];
 	lights:IShape[];
-	scenePtr:Scene;
+	scenePtr:number;
 
 	constructor(){
 		this.scenePtr = @new Scene;
@@ -48,7 +48,7 @@ export class MasterScene{
 	Add(shape) {
 		this.shapes.push(shape);
 		
-		if (Shape.MaterialAt(shape, Vector.ZERO).Emittance > 0) {
+		if (Material.Emittance(Shape.MaterialAt(shape, Vector.ZERO)) > 0) {
 			this.lights.push(shape);
 		}
 	}

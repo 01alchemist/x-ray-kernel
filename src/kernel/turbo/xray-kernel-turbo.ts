@@ -1,379 +1,4 @@
 //turbo.js bundle
-/**
- * Created by Nidin Vinayakan on 6/13/2016.
- */
-var Atomics:any = window["Atomics"];
-var SharedArrayBuffer:any = window["SharedArrayBuffer"];
-if (typeof "Atomics" == "undefined") {
-    window["Atomics"] = {
-        load: function () {
-            throw "No Atomics";
-        },
-        store: function () {
-            throw "No Atomics";
-        },
-        add: function () {
-            throw "No Atomics";
-        },
-        sub: function () {
-            throw "No Atomics";
-        },
-        and: function () {
-            throw "No Atomics";
-        },
-        or: function () {
-            throw "No Atomics";
-        },
-        xor: function () {
-            throw "No Atomics";
-        },
-        compareExchange: function () {
-            throw "No Atomics";
-        }
-    };
-}
-
-function MemoryError(msg) {
-    this.message = msg;
-}
-
-MemoryError.prototype = new Error("Memory Error");
-
-export class RuntimeConstructor {
-
-    NULL = 0;
-    int8 = {SIZE: 1, ALIGN: 1, NAME: "int8"};
-    uint8 = {SIZE: 1, ALIGN: 1, NAME: "uint8"};
-    int16 = {SIZE: 2, ALIGN: 2, NAME: "int16"};
-    uint16 = {SIZE: 2, ALIGN: 2, NAME: "uint16"};
-    int32 = {SIZE: 4, ALIGN: 4, NAME: "int32"};
-    uint32 = {SIZE: 4, ALIGN: 4, NAME: "uint32"};
-    float32 = {SIZE: 4, ALIGN: 4, NAME: "float32"};
-    float64 = {SIZE: 8, ALIGN: 8, NAME: "float64"};
-    int32x4 = {SIZE: 16, ALIGN: 16, NAME: "int32x4"};
-    float32x4 = {SIZE: 16, ALIGN: 16, NAME: "float32x4"};
-    float64x2 = {SIZE: 16, ALIGN: 16, NAME: "float64x2"};
-
-    _mem_int8 = null;
-    _mem_uint8 = null;
-    _mem_int16 = null;
-    _mem_uint16 = null;
-    _mem_int32 = null;
-    _mem_uint32 = null;
-    _mem_float32 = null;
-    _mem_float64 = null;
-
-
-    _now = (typeof 'performance' != 'undefined' && typeof performance.now == 'function' ?
-        performance.now.bind(performance) :
-        Date.now.bind(Date));
-
-    // Map of class type IDs to type objects.
-
-    _idToType:any = {};
-    /*
-     * Initialize the local Turbo instance.
-     *
-     * "buffer" can be an ArrayBuffer or SharedArrayBuffer.  In the
-     * latter case, all workers must pass the same buffer during
-     * initialization.
-     *
-     * The buffer must be zero-initialized before being passed to
-     * init().  Turbo assumes ownership of the buffer, client code
-     * should not access it directly after using it to initialize
-     * the heap.
-     *
-     * "start" must be a valid offset within the buffer, it is the
-     * first byte that may be used.
-     *
-     * "limit" must be a valid offset within the buffer, limit-1 is
-     * the last byte that may be used.
-     *
-     * "initialize" must be true in exactly one agent and that call
-     * must return before any agent can call any other methods on
-     * their local Turbo objects.  Normally, you would allocate your
-     * memory in the main thread, call Turbo.init(buffer, true) in
-     * the main thread, and then distribute the buffer to workers.
-     */
-    init(buffer, start, limit, initialize) {
-        if (arguments.length < 3) {
-            throw new Error("Required arguments: buffer, start, limit");
-        }
-
-        if ((start | 0) != start || (limit | 0) != limit) {
-            throw new Error("Invalid bounds: " + start + " " + limit);
-        }
-
-        start = (start + 7) & ~7;
-        limit = (limit & ~7);
-
-        if (start < 0 || limit <= start || limit > buffer.byteLength) {
-            throw new Error("Invalid bounds: " + start + " " + limit);
-        }
-
-        var len = (limit - start);
-
-        if (len < 16) {
-            throw new Error("The memory is too small even for metadata");
-        }
-
-        if (buffer instanceof ArrayBuffer) {
-            this.alloc = alloc_ab;
-        } else if (buffer instanceof SharedArrayBuffer) {
-            this.alloc = alloc_sab;
-        } else {
-            throw new Error("Turbo can be initialized only on SharedArrayBuffer or ArrayBuffer");
-        }
-
-        this._mem_int8 = new Int8Array(buffer, start, len);
-        this._mem_uint8 = new Uint8Array(buffer, start, len);
-        this._mem_int16 = new Int16Array(buffer, start, len / 2);
-        this._mem_uint16 = new Uint16Array(buffer, start, len / 2);
-        this._mem_int32 = new Int32Array(buffer, start, len / 4);
-        this._mem_uint32 = new Uint32Array(buffer, start, len / 4);
-        this._mem_float32 = new Float32Array(buffer, start, len / 4);
-        this._mem_float64 = new Float64Array(buffer, start, len / 8);
-
-        if (initialize) {
-            this._mem_int32[2] = len;
-            if (buffer instanceof ArrayBuffer) {
-                this._mem_int32[1] = 16;
-            } else if (buffer instanceof SharedArrayBuffer) {
-                Atomics.store(this._mem_int32, 1, 16);
-            }
-        }
-    }
-
-    /*
-     * Given a nonnegative size in bytes and a nonnegative
-     * power-of-two alignment, allocate and zero-initialize an object
-     * of the necessary size (or larger) and required alignment, and
-     * return its address.
-     *
-     * Return NULL if no memory is available.
-     */
-    alloc(nbytes, alignment):number {
-        // Overridden during initialization.
-        throw new Error("Not initialized");
-    }
-
-    /*
-     * Ditto, but throw if no memory is available.
-     *
-     * Interesting possibility is to avoid this function
-     * and instead move the test into each initInstance().
-     */
-    allocOrThrow(nbytes, alignment) {
-        var p = this.alloc(nbytes, alignment);
-        if (p == 0)
-            throw new MemoryError("Out of memory");
-        return p;
-    }
-
-    /*
-     * Given a pointer returned from alloc or calloc, free the memory.
-     * p may be NULL in which case the call does nothing.
-     */
-    free(p) {
-        // Drop it on the floor, for now
-        // In the future: figure out the size from the header or other info,
-        // add to free list, etc etc.
-    }
-
-    /*
-     * Given an pointer to a class instance, return its type object.
-     * Return null if no type object is found.
-     */
-    identify(p) {
-        if (p == 0)
-            return null;
-        if (this._idToType.hasOwnProperty(this._mem_int32[p >> 2]))
-            return this._idToType[this._mem_int32[p >> 2]];
-        return null;
-    }
-
-    _badType(self) {
-        var t = this.identify(self);
-        return new Error("Observed type: " + (t ? t.NAME : "*invalid*") + ", address=" + self);
-    }
-
-    // Synchronic layout is 8 bytes (2 x int32) of metadata followed by
-    // the type-specific payload.  The two int32 words are the number
-    // of waiters and the wait word (generation count).
-    //
-    // In the following:
-    //
-    // self is the base address for the Synchronic.
-    // mem is the array to use for the value
-    // idx is the index in mem of the value: (p+8)>>log2(mem.BYTES_PER_ELEMENT)
-    //
-    // _synchronicLoad is just Atomics.load, expand it in-line.
-
-    _synchronicStore(self, mem, idx, value) {
-        Atomics.store(mem, idx, value);
-        this._notify(self);
-        return value;
-    }
-
-    _synchronicCompareExchange(self, mem, idx, oldval, newval) {
-        var v = Atomics.compareExchange(mem, idx, oldval, newval);
-        if (v == oldval)
-            this._notify(self);
-        return v;
-    }
-
-    _synchronicAdd(self, mem, idx, value) {
-        var v = Atomics.add(mem, idx, value);
-        this._notify(self);
-        return v;
-    }
-
-    _synchronicSub(self, mem, idx, value) {
-        var v = Atomics.sub(mem, idx, value);
-        this._notify(self);
-        return v;
-    }
-
-    _synchronicAnd(self, mem, idx, value) {
-        var v = Atomics.and(mem, idx, value);
-        this._notify(self);
-        return v;
-    }
-
-    _synchronicOr(self, mem, idx, value) {
-        var v = Atomics.or(mem, idx, value);
-        this._notify(self);
-        return v;
-    }
-
-    _synchronicXor(self, mem, idx, value) {
-        var v = Atomics.xor(mem, idx, value);
-        this._notify(self);
-        return v;
-    }
-
-    _synchronicLoadWhenNotEqual(self, mem, idx, value) {
-        for (; ;) {
-            var tag = Atomics.load(this._mem_int32, (self + 4) >> 2);
-            var v = Atomics.load(mem, idx);
-            if (v !== value)
-                break;
-            this._waitForUpdate(self, tag, Number.POSITIVE_INFINITY);
-        }
-        return v;
-    }
-
-    _synchronicLoadWhenEqual(self, mem, idx, value) {
-        for (; ;) {
-            var tag = Atomics.load(this._mem_int32, (self + 4) >> 2);
-            var v = Atomics.load(mem, idx);
-            if (v === value)
-                break;
-            this._waitForUpdate(self, tag, Number.POSITIVE_INFINITY);
-        }
-        return v;
-    }
-
-    _synchronicExpectUpdate(self, mem, idx, value, timeout) {
-        var now = this._now();
-        var limit = now + timeout;
-        for (; ;) {
-            var tag = Atomics.load(this._mem_int32, (self + 4) >> 2);
-            var v = Atomics.load(mem, idx);
-            if (v !== value || now >= limit)
-                break;
-            this._waitForUpdate(self, tag, limit - now);
-            now = this._now();
-        }
-    }
-
-    _waitForUpdate(self, tag, timeout) {
-        // Spin for a short time before going into the futexWait.
-        //
-        // Hard to know what a good count should be - it is machine
-        // dependent, for sure, and "typical" applications should
-        // influence the choice.  If the count is high without
-        // hindering an eventual drop into futexWait then it will just
-        // decrease performance.  If the count is low it is pointless.
-        // (This is why Synchronic really wants a native implementation.)
-        //
-        // Data points from a 2.6GHz i7 MacBook Pro:
-        //
-        // - the simple send-integer benchmark (test-sendint.html),
-        //   which is the very simplest case we can really imagine,
-        //   gets noisy timings with an iteration count below 4000
-        //
-        // - the simple send-object benchmark (test-sendmsg.html)
-        //   gets a boost when the count is at least 10000
-        //
-        // 10000 is perhaps 5us (CPI=1, naive) and seems like a
-        // reasonable cutoff, for now - but note, it is reasonable FOR
-        // THIS SYSTEM ONLY, which is a big flaw.
-        //
-        // The better fix might well be to add some kind of spin/nanosleep
-        // functionality to futexWait, see https://bugzil.la/1134973.
-        // That functionality can be platform-dependent and even
-        // adaptive, with JIT support.
-        var i = 10000;
-        do {
-            // May want this to be a relaxed load, though on x86 it won't matter.
-            if (Atomics.load(this._mem_int32, (self + 4) >> 2) != tag)
-                return;
-        } while (--i > 0);
-        Atomics.add(this._mem_int32, self >> 2, 1);
-        Atomics.futexWait(this._mem_int32, (self + 4) >> 2, tag, timeout);
-        Atomics.sub(this._mem_int32, self >> 2, 1);
-    }
-
-    _notify(self) {
-        Atomics.add(this._mem_int32, (self + 4) >> 2, 1);
-        // Would it be appropriate & better to wake n waiters, where n
-        // is the number loaded in the load()?  I almost think so,
-        // since our futexes are fair.
-        if (Atomics.load(this._mem_int32, self >> 2) > 0)
-            Atomics.futexWake(this._mem_int32, (self + 4) >> 2, Number.POSITIVE_INFINITY);
-    }
-}
-
-export var turbo = {
-    Runtime: new RuntimeConstructor()
-};
-
-window["turbo"] = turbo;
-
-// For allocators: Do not round up nbytes, for now.  References to
-// fields within structures can be to odd addresses and there's no
-// particular reason that an object can't be allocated on an odd
-// address.  (Later, with a header or similar info, it will be
-// different.)
-
-// Note, actual zero-initialization is not currently necessary
-// since the buffer must be zero-initialized by the client code
-// and this is a simple bump allocator.
-
-function alloc_sab(nbytes, alignment) {
-    do {
-        var p = Atomics.load(this._mem_int32, 1);
-        var q = (p + (alignment - 1)) & ~(alignment - 1);
-        var top = q + nbytes;
-        if (top >= this._mem_int32[2])
-            return 0;
-    } while (Atomics.compareExchange(this._mem_int32, 1, p, top) != p);
-    return q;
-}
-
-function alloc_ab(nbytes, alignment) {
-    var p = this._mem_int32[1];
-    p = (p + (alignment - 1)) & ~(alignment - 1);
-    var top = p + nbytes;
-    if (top >= this._mem_int32[2])
-        return 0;
-    this._mem_int32[1] = top;
-    return p;
-}
-
-
-
 class MemoryObject {
 
    private _pointer:number;
@@ -385,6 +10,7 @@ class MemoryObject {
    }
 }
 
+namespace xray {
 // Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
@@ -394,8 +20,14 @@ type float64 = number;
 
 const height:number = 600;
 const width:number = 800;
-const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
-turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
+if(!turbo.IsWorker){
+    const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
+    turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
+
+}
+export var unsafe = {
+    RAW_MEMORY:RAW_MEMORY
+};
 
 const shadows:boolean = true;		// Compute object shadows
 const reflection:boolean = true;	// Compute object reflections
@@ -463,6 +95,13 @@ function len(ptr, T) {
 }*/
 
 
+export enum Axis{
+    AxisNone,
+    AxisX,
+    AxisY,
+    AxisZ,
+}
+
 type RGBA  = {
     R:number,
     G:number,
@@ -503,9 +142,13 @@ export class Color extends MemoryObject{
 		return SELF;
 	}
 
-    static NewColor(color?):number {
+    static NewColor(color?,G:number = 0,B:number = 0):number {
         let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
-        return Color.init(ptr, color);
+        if(typeof color === "object"){
+            return Color.init(ptr, color);
+        }else{
+            return Color.Init_mem(ptr, color, G, B);
+        }
     }
     
 	static HexColor(hex:number):number {
@@ -804,13 +447,17 @@ export class Color extends MemoryObject{
         return SELF;
     }
 
-    static Clone(SELF:number):number {
-        let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+    static Clone(SELF:number, c?:number):number {
+        let ptr:number = c?c:Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
         return Color.Init_mem(ptr, turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3]);
     }
 
-    static BLACK:number = Color.HexColor(0x000000);
-    static WHITE:number = Color.HexColor(0xFFFFFF);
+    static get BLACK():number{
+        return Color.HexColor(0x000000);
+    }
+    static get WHITE():number {
+        return Color.HexColor(0xFFFFFF);
+    }
 
     static BrightColors = [
         Color.HexColor(0xFF00FF),
@@ -874,6 +521,14 @@ export class Vector extends MemoryObject{
     static NewVector(vector?):number {
         let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
         return Vector.init(ptr, vector);
+    }
+
+    static ToJSON(SELF){
+        return {
+            X:turbo.Runtime._mem_float64[(SELF + 8) >> 3],
+            Y:turbo.Runtime._mem_float64[(SELF + 16) >> 3],
+            Z:turbo.Runtime._mem_float64[(SELF + 24) >> 3]
+        };
     }
 
     static XYZ(a:number):XYZ {
@@ -1365,6 +1020,14 @@ export class Vector extends MemoryObject{
         return turbo.Runtime._mem_float64[(a + 8) >> 3] === turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[(a + 16) >> 3] === turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[(a + 24) >> 3] === turbo.Runtime._mem_float64[(b + 24) >> 3];
     }
 
+    static ZERO:number = Vector.NewVector({X:0,Y:0,Y:0});
+    static ONE:number = Vector.NewVector({X:1,Y:1,Y:1});
+    static NegativeONE:number = Vector.NewVector({X:-1,Y:-1,Y:-1});
+
+    static IsZero(a:number):boolean{
+        return turbo.Runtime._mem_float64[(a + 8) >> 3] === 0 && turbo.Runtime._mem_float64[(a + 16) >> 3] === 0 && turbo.Runtime._mem_float64[(a + 24) >> 3] === 0;
+    }
+
     static Set(SELF:number, X:number, Y:number, Z:number) {
          turbo.Runtime._mem_float64[(SELF + 8) >> 3] = X; 
          turbo.Runtime._mem_float64[(SELF + 16) >> 3] = Y; 
@@ -1372,8 +1035,8 @@ export class Vector extends MemoryObject{
         return SELF;
     }
 
-    static Clone(SELF:number):number {
-        let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+    static Clone(SELF:number, c?:number):number {
+        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
         return Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3]);
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1266219; return SELF; }
@@ -1507,6 +1170,27 @@ export class Utils {
         }
         return x;
     }
+
+    static append(slice:Array<any>, ...elements):Array<any>{
+        if (slice == undefined) {
+            return elements;
+        } else {
+            slice.push.apply(slice, elements);
+        }
+        return slice;
+    }
+
+    static sortAscending(slice) {
+        slice.sort(function (a, b) {
+            return a - b;
+        });
+    }
+
+    static sortDescending(slice) {
+        slice.sort(function (a, b) {
+            return b - a;
+        });
+    }
 }
 
 export class Box extends MemoryObject{
@@ -1523,139 +1207,167 @@ export class Box extends MemoryObject{
        super(p);
    }
 
-    static init(SELF:number, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
+    static init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
          turbo.Runtime._mem_int32[(SELF + 4) >> 2] = (Vector.NewVector(min)); 
          turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (Vector.NewVector(max)); 
         return SELF;
 	}
 
-    static Init_mem(SELF:number, min:number, max:number){
+    static Init_mem(SELF, min:number, max:number){
          turbo.Runtime._mem_int32[(SELF + 4) >> 2] = min; 
          turbo.Runtime._mem_int32[(SELF + 8) >> 2] = max; 
         return SELF;
 	}
 
-
-	static BoxForTriangles(){
-
+    static NewBox(min?:number, max?:number){
+        let SELF = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = (min?min:Vector.NewVector()); 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (max?max:Vector.NewVector()); 
+        return SELF;
 	}
 
-	static Anchor(){
+    static ToJSON(SELF){
+        return {
+            min:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
+            max:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2])
+        };
+	}
+    
+	static BoxForShapes(shapes:number, numShapes:number):number{
+		if(numShapes == 0) {
+			return Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		}
+		let box = Shape.BoundingBox(turbo.Runtime._mem_int32[(  shapes+4*0) >> 2]);
 
+		for(let i:number = 0; i < numShapes; i++){
+			let shape:number = turbo.Runtime._mem_int32[(  shapes+4*i) >> 2];
+			box = Box.Extend(box, Shape.BoundingBox(shape));
+		}
+		return box
+	}
+
+	static BoxForTriangles(shapes:number, numShapes:number):number {
+        if(numShapes == 0) {
+            return Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        }
+        let box = Triangle.BoundingBox(turbo.Runtime._mem_int32[(  shapes+4*0) >> 2]);
+
+        for(let i:number = 0; i < numShapes; i++){
+            let shape:number = turbo.Runtime._mem_int32[(  shapes+4*i) >> 2];
+            box = Box.Extend(box, Triangle.BoundingBox(shape));
+        }
+        return box
+	}
+
+	static Anchor(SELF, anchor:number):number {
+		return Vector.Add_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], Vector.Mul_mem(Box.Size(SELF), anchor));
+	}
+
+	static Center(SELF):number {
+        let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		return Box.Anchor(SELF, Vector.init(ptr, 0.5, 0.5, 0.5));
+	}
+
+	static OuterRadius(SELF):number {
+		return Vector.Length_mem(Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], Box.Center(SELF)));
+	}
+
+	static InnerRadius(SELF):number {
+		return Vector.MaxComponent_mem(Vector.Sub_mem(Box.Center(SELF), turbo.Runtime._mem_int32[(SELF + 4) >> 2]));
+	}
+
+	static Size(SELF):number {
+		return Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+	}
+
+	static Extend(SELF, b:number):number{
+        //let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		return Box.Init_mem(SELF, Vector.Min(turbo.Runtime._mem_int32[(SELF + 4) >> 2], turbo.Runtime._mem_int32[(b + 4) >> 2]), Vector.Max(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(b + 8) >> 2]));
+	}
+
+	static Contains(SELF , b:number):boolean{
+
+        let a_min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
+        let a_max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+
+		return turbo.Runtime._mem_float64[((a_min) + 8) >> 3] <= turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[((a_max) + 8) >> 3] >= turbo.Runtime._mem_float64[(b + 8) >> 3] &&
+			turbo.Runtime._mem_float64[((a_min) + 16) >> 3] <= turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[((a_max) + 16) >> 3] >= turbo.Runtime._mem_float64[(b + 16) >> 3] &&
+			turbo.Runtime._mem_float64[((a_min) + 24) >> 3] <= turbo.Runtime._mem_float64[(b + 24) >> 3] && turbo.Runtime._mem_float64[((a_max) + 24) >> 3] >= turbo.Runtime._mem_float64[(b + 24) >> 3];
+	}
+
+	static Intersects(a:number, b:number):boolean {
+        let a_min = turbo.Runtime._mem_int32[(a + 4) >> 2];
+        let a_max = turbo.Runtime._mem_int32[(a + 8) >> 2];
+        let b_min = turbo.Runtime._mem_int32[(b + 4) >> 2];
+        let b_max = turbo.Runtime._mem_int32[(b + 8) >> 2];
+
+		return !(turbo.Runtime._mem_float64[((a_min) + 8) >> 3] > turbo.Runtime._mem_float64[((b_max) + 8) >> 3] || turbo.Runtime._mem_float64[((a_max) + 8) >> 3] < turbo.Runtime._mem_float64[((b_min) + 8) >> 3] || turbo.Runtime._mem_float64[((a_min) + 16) >> 3] > turbo.Runtime._mem_float64[((b_max) + 16) >> 3] ||
+		turbo.Runtime._mem_float64[((a_max) + 16) >> 3] < turbo.Runtime._mem_float64[((b_min) + 16) >> 3] || turbo.Runtime._mem_float64[((a_min) + 24) >> 3] > turbo.Runtime._mem_float64[((b_max) + 24) >> 3] || turbo.Runtime._mem_float64[((a_max) + 24) >> 3] < turbo.Runtime._mem_float64[((b_min) + 24) >> 3]);
+	}
+
+	static Intersect(SELF, r:number):{tmax:number, tmin:number} {
+
+        let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
+        let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let origin = turbo.Runtime._mem_int32[(r + 4) >> 2];
+        let dir = turbo.Runtime._mem_int32[(r + 8) >> 2];
+
+		let x1 = (turbo.Runtime._mem_float64[(min + 8) >> 3] - turbo.Runtime._mem_float64[(origin + 8) >> 3]) / turbo.Runtime._mem_float64[(dir + 8) >> 3];
+        let y1 = (turbo.Runtime._mem_float64[(min + 16) >> 3] - turbo.Runtime._mem_float64[(origin + 16) >> 3]) / turbo.Runtime._mem_float64[(dir + 16) >> 3];
+        let z1 = (turbo.Runtime._mem_float64[(min + 24) >> 3] - turbo.Runtime._mem_float64[(origin + 24) >> 3]) / turbo.Runtime._mem_float64[(dir + 24) >> 3];
+        let x2 = (turbo.Runtime._mem_float64[(max + 8) >> 3] - turbo.Runtime._mem_float64[(origin + 8) >> 3]) / turbo.Runtime._mem_float64[(dir + 8) >> 3];
+        let y2 = (turbo.Runtime._mem_float64[(max + 16) >> 3] - turbo.Runtime._mem_float64[(origin + 16) >> 3]) / turbo.Runtime._mem_float64[(dir + 16) >> 3];
+        let z2 = (turbo.Runtime._mem_float64[(max + 24) >> 3] - turbo.Runtime._mem_float64[(origin + 24) >> 3]) / turbo.Runtime._mem_float64[(dir + 24) >> 3];
+        let tmp;
+		if (x1 > x2) {
+            tmp = x1;
+			x1 = x2;
+            x2 = tmp;
+		}
+		if (y1 > y2) {
+			tmp = y1;
+			y1 = y2;
+            y2 = tmp
+		}
+		if (z1 > z2) {
+            tmp = z1;
+            z1 = z2;
+            z2 = tmp
+		}
+		return {
+            tmax: Math.max(Math.max(x1, y1), z1),
+		    tmin: Math.min(Math.min(x2, y2), z2)
+        }
+	}
+
+	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
+        let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
+        let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let left;
+        let right;
+		switch (axis) {
+			case Axis.AxisX:
+				left = turbo.Runtime._mem_float64[(min + 8) >> 3] <= point;
+				right = turbo.Runtime._mem_float64[(max + 8) >> 3] >= point;
+                break;
+			case Axis.AxisY:
+				left = turbo.Runtime._mem_float64[(min + 16) >> 3] <= point;
+				right = turbo.Runtime._mem_float64[(max + 16) >> 3] >= point;
+                break;
+			case Axis.AxisZ:
+				left = turbo.Runtime._mem_float64[(min + 24) >> 3] <= point;
+				right = turbo.Runtime._mem_float64[(min + 24) >> 3] >= point;
+                break;
+		}
+		return {
+            left :left,
+            right:right
+        };
 	}
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1841; return SELF; }
 }
 turbo.Runtime._idToType[1841] = Box;
 
-
-// static BoxForShapes(shapes:Shape.Array):number{
-// let length:number = len(shapes, Shape);
-// if(length == 0) {
-// return _new Box;
-// }
-// let box = shapes[0].BoundingBox();
-//
-// for(let i:number = 0; i < length; i++){
-// let shape:number = Shape  .  Array  .  at(shapes, i);
-// box = Box.Extend(box, Shape.BoundingBox(shape));
-// }
-// return box
-// }
-
-/*
-func BoxForShapes(shapes []Shape) Box {
-	if len(shapes) == 0 {
-		return Box{}
-	}
-	box := shapes[0].BoundingBox()
-	for _, shape := range shapes {
-		box = box.Extend(shape.BoundingBox())
-	}
-	return box
-}
-
-func BoxForTriangles(shapes []*Triangle) Box {
-	if len(shapes) == 0 {
-		return Box{}
-	}
-	box := shapes[0].BoundingBox()
-	for _, shape := range shapes {
-		box = box.Extend(shape.BoundingBox())
-	}
-	return box
-}
-
-func (a Box) Anchor(anchor Vector) Vector {
-	return a.Min.Add(a.Size().Mul(anchor))
-}
-
-func (a Box) Center() Vector {
-	return a.Anchor(Vector{0.5, 0.5, 0.5})
-}
-
-func (a Box) OuterRadius() float64 {
-	return a.Min.Sub(a.Center()).Length()
-}
-
-func (a Box) InnerRadius() float64 {
-	return a.Center().Sub(a.Min).MaxComponent()
-}
-
-func (a Box) Size() Vector {
-	return a.Max.Sub(a.Min)
-}
-
-func (a Box) Extend(b Box) Box {
-	return Box{a.Min.Min(b.Min), a.Max.Max(b.Max)}
-}
-
-func (a Box) Contains(b Vector) bool {
-	return a.Min.X <= b.X && a.Max.X >= b.X &&
-		a.Min.Y <= b.Y && a.Max.Y >= b.Y &&
-		a.Min.Z <= b.Z && a.Max.Z >= b.Z
-}
-
-func (a Box) Intersects(b Box) bool {
-	return !(a.Min.X > b.Max.X || a.Max.X < b.Min.X || a.Min.Y > b.Max.Y ||
-		a.Max.Y < b.Min.Y || a.Min.Z > b.Max.Z || a.Max.Z < b.Min.Z)
-}
-
-func (b *Box) Intersect(r Ray) (float64, float64) {
-	x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-	y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-	z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-	x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-	y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-	z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
-	if x1 > x2 {
-		x1, x2 = x2, x1
-	}
-	if y1 > y2 {
-		y1, y2 = y2, y1
-	}
-	if z1 > z2 {
-		z1, z2 = z2, z1
-	}
-	t1 := math.Max(math.Max(x1, y1), z1)
-	t2 := math.Min(math.Min(x2, y2), z2)
-	return t1, t2
-}
-
-func (b *Box) Partition(axis Axis, point float64) (left, right bool) {
-	switch axis {
-	case AxisX:
-		left = b.Min.X <= point
-		right = b.Max.X >= point
-	case AxisY:
-		left = b.Min.Y <= point
-		right = b.Max.Y >= point
-	case AxisZ:
-		left = b.Min.Z <= point
-		right = b.Max.Z >= point
-	}
-	return
-}
-*/
 
 
 interface Ray{
@@ -2135,6 +1847,24 @@ export class Material extends MemoryObject{
          turbo.Runtime._mem_uint8[(SELF + 72) >> 0] = Transparent; 
     }
 
+    static Clone(SELF, c?:number):number {
+        let ptr:number = c?c:Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        return Material.init(ptr,
+            Color.Clone(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
+            turbo.Runtime._mem_int32[(SELF + 8) >> 2],
+            turbo.Runtime._mem_int32[(SELF + 12) >> 2],
+            turbo.Runtime._mem_int32[(SELF + 16) >> 2],
+            turbo.Runtime._mem_int32[(SELF + 20) >> 2],
+            turbo.Runtime._mem_float64[(SELF + 24) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 32) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 40) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 48) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 56) >> 3],
+            turbo.Runtime._mem_float64[(SELF + 64) >> 3],
+            turbo.Runtime._mem_uint8[(SELF + 72) >> 0]
+        );
+    }
+
     static DiffuseMaterial(color:number):number{
         let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
         return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);
@@ -2242,7 +1972,7 @@ export class Ray extends MemoryObject{
         return Ray.init(c, turbo.Runtime._mem_int32[(r + 4) >> 2], Cone(turbo.Runtime._mem_int32[(r + 8) >> 2], theta, u, v));
     }
 
-    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, strength:number} {
+    static Bounce(i:number, info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:number, reflected:boolean, coefficient:number} {
         let n = info.Ray;
         let material = info.Material;
         let n1 = 1.0;
@@ -2277,13 +2007,13 @@ export class Ray extends MemoryObject{
         }
         if(reflect) {
             let reflected:number = Ray.Reflect(n, i);
-            return { ray: Ray.ConeBounce(reflected, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected:true, strength:p };
+            return { ray: Ray.ConeBounce(reflected, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected:true, coefficient:p };
         } else if (turbo.Runtime._mem_uint8[(material + 72) >> 0]) {
             let refracted:number = Ray.Refract(n, i, n1, n2);
             turbo.Runtime._mem_int32[(refracted + 4) >> 2] = Vector.Add(turbo.Runtime._mem_int32[(refracted + 4) >> 2], Vector.MulScalar(turbo.Runtime._mem_int32[(refracted + 8) >> 2], 1e-4));
-            return { ray: Ray.ConeBounce(refracted, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected: true, strength: 1 - p };
+            return { ray: Ray.ConeBounce(refracted, turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected: true, coefficient: 1 - p };
         } else {
-            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, strength: 1 - p };
+            return { ray: Ray.WeightedBounce(n, u, v), reflected: false, coefficient: 1 - p };
         }
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=674; return SELF; }
@@ -2320,68 +2050,68 @@ export class Shape extends MemoryObject{
          turbo.Runtime._mem_uint32[(SELF + 4) >> 2] = id; 
 		return SELF;
 	}
-    static Compile_impl(SELF:number, s:number){
+    static Compile_impl(SELF:number, c?:number){
 		throw "Pure: Shape.Compile()";
 	}
-    static BoundingBox_impl(SELF:number, s:number):number{
+    static BoundingBox_impl(SELF:number, c?:number):number{
 		throw "Pure: Shape.BoundingBox()";
 	}
-    static Intersect_impl(SELF:number, s:number, ray:Ray):Hit{
+    static Intersect_impl(SELF:number, ray:Ray, c?:number):Hit{
 		throw "Pure: Shape.Intersect()";
 	}
-    static UV_impl(SELF:number, s:number, p:number):number{
+    static UV_impl(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.UV()";
 	}
-    static NormalAt_impl(SELF:number, s:number, p:number):number{
+    static NormalAt_impl(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.NormalAt()";
 	}
-    static MaterialAt_impl(SELF:number, s:number, p:number):number{
+    static MaterialAt_impl(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.MaterialAt()";
 	}
-    static Compile(SELF , s) {
+    static Compile(SELF , c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.Compile_impl(SELF , s);
+                return Shape.Compile_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static BoundingBox(SELF , s) {
+    static BoundingBox(SELF , c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.BoundingBox_impl(SELF , s);
+                return Shape.BoundingBox_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static Intersect(SELF , s,ray) {
+    static Intersect(SELF , ray,c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.Intersect_impl(SELF , s,ray);
+                return Shape.Intersect_impl(SELF , ray,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static UV(SELF , s,p) {
+    static UV(SELF , p,c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.UV_impl(SELF , s,p);
+                return Shape.UV_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static NormalAt(SELF , s,p) {
+    static NormalAt(SELF , p,c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.NormalAt_impl(SELF , s,p);
+                return Shape.NormalAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
     }
-    static MaterialAt(SELF , s,p) {
+    static MaterialAt(SELF , p,c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
-                return Shape.MaterialAt_impl(SELF , s,p);
+                return Shape.MaterialAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2445,5 +2175,677 @@ export class TransformedShape extends MemoryObject{
 }
 turbo.Runtime._idToType[245094204] = TransformedShape;
 
+export class Triangle extends MemoryObject{
+   static NAME:string = "Triangle";
+   static SIZE:number = 44;
+   static ALIGN:number = 4;
+   static CLSID:number = 182249270;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, v1:number=-1, v2:number=-1, v3:number=-1, n1:number=-1, n2:number=-1, n3:number=-1, t1:number=-1, t2:number=-1, t3:number=-1, material:number=-1){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = v1; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = v2; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v3; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = n1; 
+         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = n2; 
+         turbo.Runtime._mem_int32[(SELF + 24) >> 2] = n3; 
+         turbo.Runtime._mem_int32[(SELF + 28) >> 2] = t1; 
+         turbo.Runtime._mem_int32[(SELF + 32) >> 2] = t2; 
+         turbo.Runtime._mem_int32[(SELF + 36) >> 2] = t3; 
+         turbo.Runtime._mem_int32[(SELF + 40) >> 2] = material; 
+		return SELF;
+	}
+
+	static NewTriangle(v1:number, v2:number, v3:number, t1:number, t2:number, t3:number, material:number):number {
+		let SELF = Triangle.initInstance(turbo.Runtime.allocOrThrow(44,4));
+		 turbo.Runtime._mem_int32[(SELF + 4) >> 2] = v1; 
+		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = v2; 
+		 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v3; 
+		 turbo.Runtime._mem_int32[(SELF + 28) >> 2] = t1; 
+		 turbo.Runtime._mem_int32[(SELF + 32) >> 2] = t2; 
+		 turbo.Runtime._mem_int32[(SELF + 36) >> 2] = t3; 
+		 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = material; 
+		Triangle.FixNormals(SELF );
+		return SELF;
+	}
+
+    static Pack(triangles:number[]):number {
+        let packed = turbo.Runtime.allocOrThrow( (4 * (triangles.length)), 4) /*Array*/;
+        triangles.forEach((triangle, i) =>{
+            turbo.Runtime._mem_int32[(  packed+4*i) >> 2] = triangle;
+        });
+        return packed;
+    }
+
+    static Copy(a:number, b:number):number{
+        turbo.Runtime._mem_int32[(b + 4) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 4) >> 2]);
+        turbo.Runtime._mem_int32[(b + 8) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 8) >> 2]);
+        turbo.Runtime._mem_int32[(b + 12) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 12) >> 2]);
+        turbo.Runtime._mem_int32[(b + 16) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 16) >> 2]);
+        turbo.Runtime._mem_int32[(b + 20) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 20) >> 2]);
+        turbo.Runtime._mem_int32[(b + 24) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 24) >> 2]);
+        turbo.Runtime._mem_int32[(b + 28) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 28) >> 2]);
+        turbo.Runtime._mem_int32[(b + 32) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 32) >> 2]);
+        turbo.Runtime._mem_int32[(b + 36) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 36) >> 2]);
+        turbo.Runtime._mem_int32[(b + 40) >> 2] = Material.Clone(turbo.Runtime._mem_int32[(a + 40) >> 2]);
+        return b;
+    }
+
+    static Vertices(SELF){
+		return {
+            V1:turbo.Runtime._mem_int32[(SELF + 4) >> 2],
+            V2:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
+            V3:turbo.Runtime._mem_int32[(SELF + 12) >> 2]
+        }
+	}
+
+	static Compile() {
+	}
+
+    static BoundingBox(SELF, c?:number):number{
+		let min = Vector.Min_mem(Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]), turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+		let max = Vector.Max_mem(Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]), turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        let ptr:number = c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		return Box.Init_mem(ptr, min, max);
+	}
+
+	static Intersect(SELF, r:number /*Ray*/):Hit {
+
+        let dir = turbo.Runtime._mem_int32[(r + 8) >> 2];
+        let org = turbo.Runtime._mem_int32[(r + 4) >> 2];
+
+		let e1x = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 8) >> 3];
+        let e1y = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 16) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 16) >> 3];
+        let e1z = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 24) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 24) >> 3];
+        let e2x = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 8) >> 3];
+        let e2y = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 16) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 16) >> 3];
+        let e2z = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 24) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 24) >> 3];
+        let px = turbo.Runtime._mem_float64[(dir + 16) >> 3] * e2z - turbo.Runtime._mem_float64[(dir + 24) >> 3] * e2y;
+        let py = turbo.Runtime._mem_float64[(dir + 24) >> 3] * e2x - turbo.Runtime._mem_float64[(dir + 8) >> 3] * e2z;
+        let pz = turbo.Runtime._mem_float64[(dir + 8) >> 3] * e2y - turbo.Runtime._mem_float64[(dir + 16) >> 3] * e2x;
+		let det = e1x * px + e1y * py + e1z * pz;
+		if (det > -EPS && det < EPS) {
+			return Hit.NoHit;
+		}
+		let inv = 1 / det;
+        let tx = turbo.Runtime._mem_float64[(org + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 8) >> 3];
+        let ty = turbo.Runtime._mem_float64[(org + 16) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 16) >> 3];
+        let tz = turbo.Runtime._mem_float64[(org + 24) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 4) >> 2]) + 24) >> 3];
+        let u = (tx * px + ty * py + tz * pz) * inv;
+		if (u < 0 || u > 1) {
+			return Hit.NoHit;
+		}
+        let qx = ty * e1z - tz * e1y;
+        let qy = tz * e1x - tx * e1z;
+        let qz = tx * e1y - ty * e1x;
+        let v = (turbo.Runtime._mem_float64[(dir + 8) >> 3] * qx + turbo.Runtime._mem_float64[(dir + 16) >> 3] * qy + turbo.Runtime._mem_float64[(dir + 24) >> 3] * qz) * inv;
+		if (v < 0 || u+v > 1) {
+			return Hit.NoHit;
+		}
+        let d = (e2x*qx + e2y*qy + e2z*qz) * inv;
+		if (d < EPS) {
+			return Hit.NoHit;
+		}
+		return new Hit(SELF, d, null);
+	}
+
+	static UV(SELF, p:number/*Vector*/):number /*Vector*/ {
+        let uvw = Triangle.Barycentric(SELF, p);
+		let n = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 28) >> 2], uvw.u), n);
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 32) >> 2], uvw.v), n);
+		n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 36) >> 2], uvw.w), n);
+        turbo.Runtime._mem_float64[(n + 24) >> 3] = 0;
+		return n
+	}
+
+	static MaterialAt(SELF, p:number /*Vector*/):number /*Material*/ {
+		return turbo.Runtime._mem_int32[(SELF + 40) >> 2];
+	}
+
+	static NormalAt(SELF, p:number /*Vector*/):number /*Vector*/ {
+		let uvw = Triangle.Barycentric(p);
+		let n = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 16) >> 2], uvw.u), n);
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 20) >> 2], uvw.v), n);
+        n = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 24) >> 2], uvw.w), n);
+		n = Vector.Normalize_mem(n);
+		if (turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 12) >> 2] != null) {
+			let b = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 28) >> 2], uvw.u), b);
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 32) >> 2], uvw.v), b);
+            b = Vector.Add_mem(n, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 36) >> 2], uvw.w), b);
+
+			let ns = Texture.NormalSample(turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 12) >> 2], b.X, b.Y);
+			let dv1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+            let dv2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+            let dt1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 32) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2]);
+            let dt2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 36) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2]);
+
+			let T = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv1, turbo.Runtime._mem_float64[(dt2 + 16) >> 3]), Vector.MulScalar_mem(dv2, turbo.Runtime._mem_float64[(dt1 + 16) >> 3])));
+            let B = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv2, turbo.Runtime._mem_float64[(dt1 + 8) >> 3]), Vector.MulScalar_mem(dv1, turbo.Runtime._mem_float64[(dt2 + 8) >> 3])));
+            let N = Vector.Cross_mem(T, B);
+			let matrix = Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+			Matrix.init(matrix,
+					turbo.Runtime._mem_float64[(T + 8) >> 3], turbo.Runtime._mem_float64[(B + 8) >> 3], turbo.Runtime._mem_float64[(N + 8) >> 3], 0,
+					turbo.Runtime._mem_float64[(T + 16) >> 3], turbo.Runtime._mem_float64[(B + 16) >> 3], turbo.Runtime._mem_float64[(N + 16) >> 3], 0,
+					turbo.Runtime._mem_float64[(T + 24) >> 3], turbo.Runtime._mem_float64[(B + 24) >> 3], turbo.Runtime._mem_float64[(N + 24) >> 3], 0,
+					0, 0, 0, 1);
+			n = Matrix.MulDirection(matrix, ns);
+		}
+		if (turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 16) >> 2] != null) {
+			let b = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 28) >> 2], uvw.u), b);
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 32) >> 2], uvw.v), b);
+			b = Vector.Add_mem(b, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(SELF + 36) >> 2], uvw.w), b);
+			let bump = Texture.BumpSample(turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 16) >> 2], turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3]);
+			let dv1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+			let dv2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+			let dt1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 32) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2]);
+			let dt2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 36) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2]);
+			let tangent = Vector.Normalize_mem(Vector.Sub_mem(Vector.MulScalar_mem(dv1, turbo.Runtime._mem_float64[(dt2 + 16) >> 3]), Vector.MulScalar_mem(dv2, turbo.Runtime._mem_float64[(dt1 + 16) >> 3])));
+			let bitangent = Vector.Sub_mem(Vector.Normalize_mem(Vector.MulScalar_mem(dv2, turbo.Runtime._mem_float64[(dt1 + 8) >> 3]), Vector.MulScalar_mem(dv1, turbo.Runtime._mem_float64[(dt2 + 8) >> 3])));
+			n = Vector.Add_mem(n, Vector.MulScalar_mem(tangent, turbo.Runtime._mem_float64[(bump + 8) >> 3] * turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 24) >> 3]), n);
+			n = Vector.Add_mem(n, Vector.MulScalar_mem(bitangent, turbo.Runtime._mem_float64[(bump + 16) >> 3] * turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 40) >> 2]) + 24) >> 3]), n);
+		}
+		n = Vector.Normalize_mem(n, n);
+		return n;
+	}
+
+	static Area(SELF):number {
+		let e1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let e2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let n = Vector.Cross_mem(e1, e2);
+		return Vector.Length_mem(n) / 2;
+	}
+
+	static Barycentric(SELF, p:number /*Vector*/):{u:number, v:number, w:number} {
+		let v0 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let v1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let v2 = Vector.Sub_mem(p, turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let d00 = Vector.Dot_mem(v0, v0);
+		let d01 = Vector.Dot_mem(v0, v1);
+		let d11 = Vector.Dot_mem(v1, v1);
+		let d20 = Vector.Dot_mem(v2, v0);
+		let d21 = Vector.Dot_mem(v2, v1);
+		let d = d00*d11 - d01*d01;
+		let v = (d11*d20 - d01*d21) / d;
+		let w = (d00*d21 - d01*d20) / d;
+		let u = 1 - v - w;
+		return {u:u,v:v,w:w};
+	}
+
+	static FixNormals(SELF) {
+		let e1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let e2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		let n = Vector.Normalize_mem(Vector.Cross_mem(e1, e2));
+
+        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 16) >> 2])) {
+             turbo.Runtime._mem_int32[(SELF + 16) >> 2] = n; 
+        }
+        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 20) >> 2])) {
+             turbo.Runtime._mem_int32[(SELF + 20) >> 2] = n; 
+        }
+        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 24) >> 2])) {
+             turbo.Runtime._mem_int32[(SELF + 24) >> 2] = n; 
+        }
+	}
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=182249270; return SELF; }
+}
+turbo.Runtime._idToType[182249270] = Triangle;
 
 
+export class Hit{
+
+	static NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
+
+	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
+
+	}
+
+	Ok():boolean{
+		return this.T < Number.POSITIVE_INFINITY;
+	}
+
+	Info(r:number/*:Ray*/){
+		if(this.HitInfo != null){
+			return this.HitInfo;
+		}
+
+		let shape:number = this.Shape;
+		let position:number = Ray.Position(r, this.T);
+		let normal:number = Shape.NormalAt(this.Shape, position);
+		let material:number = Material.MaterialAt(shape, position);
+		let inside:boolean = false;
+
+		if(Vector.Dot_mem(normal, turbo.Runtime._mem_int32[(r + 8) >> 2]) > 0){
+			Vector.Negate_mem(normal, normal);
+			inside = true;
+			switch (Shape.Type(shape)) {
+				case ShapeType.Volume:
+				case ShapeType.SDFShape:
+					inside = false;
+					break;
+			}
+		}
+
+		let ptr:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		let ray = Ray.init(ptr, position, normal);
+		return new HitInfo(shape, position, normal, ray, material, inside);
+	}
+}
+
+export class HitInfo{
+
+	constructor(public Shape:number, //Shape
+				public Position:number, //Vector
+                public Normal:number, //Vector
+                public Ray:number, //Ray
+                public Material:number, //Material
+                public Inside:boolean){
+
+	}
+}
+
+export class Camera extends MemoryObject{
+   static NAME:string = "Camera";
+   static SIZE:number = 48;
+   static ALIGN:number = 8;
+   static CLSID:number = 1632962;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, p:number, u:number, v:number, w:number, m:number, focalDistance:number=0, apertureRadius:number=0){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = p; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = u; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = w; 
+         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = m; 
+         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = focalDistance; 
+         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = apertureRadius; 
+        return SELF;
+    }
+
+    static NewCamera(p:number, u?:number, v?:number, w?:number, m?:number, focalDistance?:number, apertureRadius?:number){
+        let ptr:number = Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        p = p?p:Vector.NewVector();
+        u = u?u:Vector.NewVector();
+        v = v?v:Vector.NewVector();
+        w = w?w:Vector.NewVector();
+        m = m?m:Vector.NewVector();
+        return Camera.init(ptr, p, u, v, w, m, focalDistance, apertureRadius);
+    }
+
+    static ToJSON(SELF){
+        return {
+            p:turbo.Runtime._mem_int32[(SELF + 4) >> 2],
+            u:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
+            v:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
+            w:turbo.Runtime._mem_int32[(SELF + 16) >> 2],
+            m:turbo.Runtime._mem_float64[(SELF + 24) >> 3],
+            focalDistance:turbo.Runtime._mem_float64[(SELF + 32) >> 3],
+            apertureRadius:turbo.Runtime._mem_float64[(SELF + 40) >> 3]
+        };
+    }
+
+    static LookAt(eye, center, up, fovy:number, c?:number):number {
+        c = c?c:Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        Camera.init(c);
+        turbo.Runtime._mem_int32[(c + 4) >> 2] = eye;
+        let w:number = Vector.Normalize_mem(Vector.Sub_mem(center, eye));
+        turbo.Runtime._mem_int32[(c + 16) >> 2] = w;
+        let u:number = Vector.Normalize_mem(Vector.Cross_mem(up, w));
+        turbo.Runtime._mem_int32[(c + 8) >> 2] = u;
+        turbo.Runtime._mem_int32[(c + 12) >> 2] = Vector.Normalize_mem(Vector.Cross_mem(w, u));
+        turbo.Runtime._mem_float64[(c + 24) >> 3] = 1 / Math.tan(fovy*Math.PI/360);
+        return c;
+    }
+
+    static SetFocus(c:number, focalPoint:number, apertureRadius:number) {
+        turbo.Runtime._mem_float64[(c + 32) >> 3] = Vector.Length_mem(Vector.Sub_mem(focalPoint, turbo.Runtime._mem_int32[(c + 4) >> 2]));
+        turbo.Runtime._mem_float64[(c + 40) >> 3] = apertureRadius;
+    }
+
+    static CastRay(c:number, x:number, y:number, w:number, h:number, u:number, v:number):number {
+        let aspect = float64(w) / float64(h);
+        let px = ((float64(x)+u-0.5)/(float64(w)-1))*2 - 1;
+        let py = ((float64(y)+v-0.5)/(float64(h)-1))*2 - 1;
+        let d = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 8) >> 2], -px * aspect), d);
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 12) >> 2], -py), d);
+        d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 16) >> 2], turbo.Runtime._mem_float64[(c + 24) >> 3]), d);
+        d = Vector.Normalize_mem(d);
+        let p = turbo.Runtime._mem_int32[(c + 4) >> 2];
+        if (turbo.Runtime._mem_float64[(c + 40) >> 3] > 0) {
+            let focalPoint = Vector.Add_mem(turbo.Runtime._mem_int32[(c + 4) >> 2], Vector.MulScalar_mem(d, turbo.Runtime._mem_float64[(c + 32) >> 3]));
+            let angle = Math.random() * 2 * Math.PI;
+            let radius = Math.random() * turbo.Runtime._mem_float64[(c + 40) >> 3];
+            p = Vector.Add_mem(p, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 8) >> 2], Math.cos(angle) * radius), p);
+            p = Vector.Add_mem(p, Vector.MulScalar_mem(Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 12) >> 2], Math.sin(angle) * radius), p));
+            d = Vector.Normalize_mem(Vector.Sub_mem(focalPoint, p))
+        }
+        let ptr:number = Ray.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        return Ray.init(ptr, p, d);
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1632962; return SELF; }
+}
+turbo.Runtime._idToType[1632962] = Camera;
+
+export class Scene extends MemoryObject{
+   static NAME:string = "Scene";
+   static SIZE:number = 48;
+   static ALIGN:number = 8;
+   static CLSID:number = 237222;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF){
+		return SELF;
+	}
+
+	Compile(SELF) {
+		for (let i=0; i < turbo.Runtime._mem_int32[(SELF + 28) >> 2];i++) {
+			let shape = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 24) >> 2])+4*i) >> 2];
+			Shape.Compile(shape);
+		}
+		if (turbo.Runtime._mem_int32[(SELF + 40) >> 2] == null) {
+			 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 24) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2])); 
+		}
+		return SELF;
+	}
+
+	static RayCount(SELF):number {
+		return Atomics.load(turbo.Runtime._mem_int32[(SELF + 44) >> 2]);
+	}
+
+	static Intersect(SELF, r:number):Hit {
+		Atomic.add(turbo.Runtime._mem_int32[(SELF + 44) >> 2], 1);
+		return Tree.Intersect(turbo.Runtime._mem_int32[(SELF + 40) >> 2], r);
+	}
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=237222; return SELF; }
+}
+turbo.Runtime._idToType[237222] = Scene;
+
+
+export class MasterScene{
+
+	shapes:IShape[];
+	lights:IShape[];
+	scenePtr:number;
+
+	constructor(){
+		this.scenePtr = Scene.initInstance(turbo.Runtime.allocOrThrow(48,8));
+	}
+	Add(shape) {
+		this.shapes.push(shape);
+		
+		if (turbo.Runtime._mem_float64[((Shape.MaterialAt(shape, Vector.ZERO)) + 32) >> 3] > 0) {
+			this.lights.push(shape);
+		}
+	}
+	Commit(){
+		turbo.Runtime._mem_int32[((this.scenePtr) + 28) >> 2] = this.shapes.length;
+		turbo.Runtime._mem_int32[((this.scenePtr) + 24) >> 2] = turbo.Runtime.allocOrThrow( (4 * (this.shapes.length)), 4) /*Array*/;
+		turbo.Runtime._mem_int32[((this.scenePtr) + 36) >> 2] = this.lights.length;
+		turbo.Runtime._mem_int32[((this.scenePtr) + 32) >> 2] = turbo.Runtime.allocOrThrow( (4 * (this.lights.length)), 4) /*Array*/;
+
+		this.shapes.forEach((shape, index) => {
+
+		})
+	}
+}
+
+
+export class OBJLoader {
+
+    static parentMaterial:number;
+    static lastMesh:Mesh;
+    static materials:Map<string, number>;
+    static hasMaterials:boolean = false;
+    static materialsLoaded:boolean = false;
+    static materialsLoading:boolean = false;
+    static pendingCallback:Function = null;
+
+    static Load(url:string, onLoad:Function) {
+        console.log("Loading OBJ:" + url);
+        let basePath = url.substring(0, url.lastIndexOf("/"));
+        let xhr:XMLHttpRequest = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onload = function () {
+            OBJLoader.lastMesh = OBJLoader.parseOBJ(xhr.response, basePath);
+            if (onLoad) {
+                if (OBJLoader.hasMaterials && OBJLoader.materialsLoaded) {
+                    onLoad(OBJLoader.lastMesh);
+                } else if (!OBJLoader.hasMaterials) {
+                    onLoad(OBJLoader.lastMesh);
+                } else {
+                    OBJLoader.pendingCallback = onLoad;
+                }
+            }
+        };
+        xhr.send(null);
+        return null;
+    }
+
+    static parseIndex(value:string, length:number):number {
+        var n = parseInt(value);
+        if (n < 0) {
+            n += length;
+        }
+        return n;
+    }
+
+    static parseLine(line:string):{keyword:string, value:string[]} {
+        try {
+            var result = line.match(/^(\S+)\s(.*)/)
+            if (result) {
+                var _str = result.slice(1);
+            } else {
+                return null;
+            }
+        } catch (e) {
+            console.log("Error in line:", line, e);
+            return null;
+        }
+        if (!_str) {
+            return null;
+        } else {
+            return {
+                keyword: _str[0],
+                value: _str[1].split(/ {1,}/)
+            };
+        }
+    }
+
+    static parseFloats(fs:string[]):number[] {
+        var floats:number[] = [];
+        fs.forEach(function (f:string) {
+            floats.push(parseFloat(f));
+        });
+        return floats;
+    }
+
+    static parseOBJ(data:string, basePath:string):number {
+
+        this.hasMaterials = false;
+        this.materialsLoaded = false;
+        this.materialsLoading = false;
+
+        var vs:XYZ[] = [null]; //1024 // 1-based indexing
+        var vts:XYZ[] = [null]; // 1-based indexing
+        var vns:XYZ[] = [null]; // 1-based indexing
+        var triangles:number[];
+        this.materials = new Map<string, number>();//make(map[string]*Material)
+        var material:number = this.parentMaterial;
+        var lines = data.split("\n");
+
+        for (var i = 0; i < lines.length; i++) {
+            let line:string = lines[i].trim();
+            if (line.length == 0) {
+                continue;
+            }
+            let item = OBJLoader.parseLine(line);
+            if (item) {
+                let f:number[];
+                let v:XYZ;
+
+                switch (item.keyword) {
+                    case "mtllib":
+                        this.hasMaterials = true;
+                        this.materialsLoaded = false;
+                        OBJLoader.LoadMTL(item.value[0], basePath);
+                        break;
+
+                    case "usemtl":
+                        material = OBJLoader.GetMaterial(item.value[0]);
+                        break;
+
+                    case "v":
+                        f = OBJLoader.parseFloats(item.value);
+                        v = xyz(f[0], f[1], f[2]);
+                        vs = Utils.append(vs, v);
+                        break;
+
+                    case "vt":
+                        f = OBJLoader.parseFloats(item.value);
+                        v = xyz(f[0], f[1], 0);
+                        vts = Utils.append(vts, v);
+                        break;
+
+                    case "vn":
+                        f = OBJLoader.parseFloats(item.value);
+                        v = xyz(f[0], f[1], f[2]);
+                        vns = Utils.append(vns, v);
+                        break;
+
+                    case "f":
+                        var fvs:number[] = [];
+                        var fvts:number[] = [];
+                        var fvns:number[] = [];
+
+                        item.value.forEach(function (str:string, i) {
+                            let vertex:string[] = str.split(/\/\/{1,}/);
+                            fvs[i] = OBJLoader.parseIndex(vertex[0], vs.length);
+                            fvts[i] = OBJLoader.parseIndex(vertex[1], vts.length);
+                            fvns[i] = OBJLoader.parseIndex(vertex[2], vns.length);
+                        });
+
+                        for (let i:number = 1; i < fvs.length - 1; i++) {
+                            let i1 = 0;
+                            let i2 = i;
+                            let i3 = i + 1;
+                            let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(44,4));
+                            turbo.Runtime._mem_int32[(t + 40) >> 2] = material;
+                            turbo.Runtime._mem_int32[(t + 4) >> 2] = vs[fvs[i1]];
+                            turbo.Runtime._mem_int32[(t + 8) >> 2] = vs[fvs[i2]];
+                            turbo.Runtime._mem_int32[(t + 12) >> 2] = vs[fvs[i3]];
+                            turbo.Runtime._mem_int32[(t + 28) >> 2] = vts[fvts[i1]];
+                            turbo.Runtime._mem_int32[(t + 32) >> 2] = vts[fvts[i2]];
+                            turbo.Runtime._mem_int32[(t + 36) >> 2] = vts[fvts[i3]];
+                            turbo.Runtime._mem_int32[(t + 16) >> 2] = vns[fvns[i1]];
+                            turbo.Runtime._mem_int32[(t + 20) >> 2] = vns[fvns[i2]];
+                            turbo.Runtime._mem_int32[(t + 24) >> 2] = vns[fvns[i3]];
+                            // Triangle.UpdateBox(t);
+                            Triangle.FixNormals(t);
+                            triangles = Utils.append(triangles, t);
+                        }
+                        break;
+                }
+            }
+        }
+        return Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
+    }
+
+    static GetMaterial(index:string):number {
+        if (this.materials[index] == undefined) {
+            var material:number = Material.Clone(this.parentMaterial);
+            this.materials[index] = material;
+            return material;
+        } else {
+            return this.materials[index];
+        }
+    }
+
+    static LoadMTL(url:string, basePath:string) {
+        if (this.materialsLoaded || this.materialsLoading) {
+            return;
+        }
+        this.materialsLoading = true;
+        url = basePath == "" ? url : basePath + "/" + url;
+        console.log("Loading MTL:" + url);
+        var self = this;
+        var xhr:XMLHttpRequest = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.onload = function () {
+            var lines = xhr.response.split("\n");
+
+            for (var i = 0; i < lines.length; i++) {
+                let line:string = lines[i].trim();
+                if (line.length == 0) {
+                    continue;
+                }
+                let item = OBJLoader.parseLine(line);
+                if (item) {
+                    var material:number;
+                    switch (item.keyword) {
+                        case "newmtl":
+                            material = self.materials[item.value[0]];
+                            material = material ? material : Material.Clone(self.parentMaterial);
+                            self.materials[item.value[0]] = material;
+                            break;
+                        case "Ke":
+                            var c:number[] = OBJLoader.parseFloats(item.value);
+                            let max = Math.max(Math.max(c[0], c[1]), c[2]);
+                            if (max > 0) {
+                                turbo.Runtime._mem_int32[(material + 4) >> 2] = Color.NewColor(c[0] / max, c[1] / max, c[2] / max);
+                                turbo.Runtime._mem_float64[(material + 32) >> 3] = max;
+                            }
+                            break;
+                        case "Kd":
+                            var c:number[] = OBJLoader.parseFloats(item.value);
+                            turbo.Runtime._mem_int32[(material + 4) >> 2] = Color.NewColor(c[0], c[1], c[2]);
+                            break;
+                        case "map_Kd":
+                            //material.texture = Texture.getTexture(item.value[0]);
+                            break;
+                        case "map_bump":
+                            //material.texture = Texture.getTexture(item.value[0]);
+                            break;
+                    }
+                }
+            }
+            self.materialsLoaded = true;
+            if (self.pendingCallback) {
+                self.pendingCallback(self.lastMesh);
+                self.pendingCallback = null;
+            }
+        };
+        xhr.send(null);
+
+        return null;
+    }
+}
+
+
+
+
+}

@@ -1,0 +1,173 @@
+@turbo class Mesh {
+	NumTriangles:int32
+	Triangles:int32
+	box:Box
+	tree:Tree
+
+	@method init(SELF, triangles:number, numTriangles:number){
+        SELF.Triangles = triangles;
+        SELF.NumTriangles = triangles;
+        return SELF;
+	}
+	static NewMesh(triangles:number, numTriangles:number):number{
+		let ptr:number = @new Mesh;
+		return Mesh.init(ptr, triangles, numTriangles);
+	}
+
+	static dirty(SELF) {
+		SELF.box = null;
+		SELF.tree = null;
+	}
+    
+	Copy(SELF):number {
+
+		let triangles = @new Triangle.Array(SELF.NumTriangles);
+		for (let i=0; i < SELF.NumTriangles;i++) {
+			let t = Triangle.Array.at(SELF.Triangles, i);
+			let a = @new Triangle;
+			Triangle.Copy(t, a);
+			Triangle.Array.setAt(triangles, i, a);
+		}
+		return Mesh.NewMesh(triangles);
+	}
+    
+	static Compile(SELF) {
+		if (SELF.tree == null) {
+			let numShapes:number = SELF.NumTriangles;
+			let shapes = @new Shape.Array(numShapes);
+			for (let i=0; i < numShapes; i++) {
+				let t = Triangle.Array.at(SELF.Triangles, i);
+				Shape.Array.setAt(shapes, i, t);
+			}
+			SELF.tree = Tree.NewTree(shapes, numShapes);
+		}
+	}
+    
+	static Add(SELF, mesh:Mesh) {
+        //TODO: Implement
+        Mesh.dirty(SELF);
+	}
+
+	static BoundingBox(SELF):number {
+		if (!SELF.box) {
+
+            let t = int32.Array.at(SELF.Triangles, 0);
+			let min = Vector.Clone(Triangle.V1(t));
+			let max = Vector.Clone(min);
+			for (let i=1;i < SELF.NumTriangles;i++) {
+				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, t.V1, min), t.V2, min), t.V3, min);
+				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, t.V1, max), t.V2, max), t.V3, max);
+			}
+            let ptr:number = @new Box;
+			SELF.box = Box.Init_mem(ptr, min, max);
+		}
+		return SELF.box;
+	}
+
+	static Intersect(SELF, r:number):Hit {
+		return Tree.Intersect(SELF.tree, r);
+	}
+
+	static UV(p:number):number {
+		return null; // not implemented
+	}
+
+	static MaterialAt(p:number):number {
+		return null; // not implemented
+	}
+
+	static NormalAt(p:number):number {
+		return null; // not implemented
+	}
+
+	static _SmoothNormalsThreshold(SELF, normal:number, normals:number[], threshold:number):number {
+		let result = Vector.NewVector();
+		for (let i=0;i < normals.length; i++) {
+            let x:number = normals[i];
+			if (Vector.Dot_mem(x, normal) >= threshold) {
+				Vector.Add_mem(result, x, result);
+			}
+		}
+		return Vector.Normalize_mem(result);
+	}
+
+	static SmoothNormalsThreshold(SELF, radians:number) {
+		let threshold:number = Math.cos(radians);
+		let lookup:number[] = [];
+		for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			lookup[Triangle.V1(t)] = Utils.append(lookup[Triangle.V1(t)], Triangle.N1(t));
+			lookup[Triangle.V2(t)] = Utils.append(lookup[Triangle.V2(t)], Triangle.N2(t));
+			lookup[Triangle.V3(t)] = Utils.append(lookup[Triangle.V3(t)], Triangle.N3(t));
+		}
+        for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			Triangle.N1(t) = Mesh._SmoothNormalsThreshold(SELF, Triangle.N1(t), lookup[Triangle.V1(t)], threshold);
+			Triangle.N2(t) = Mesh._SmoothNormalsThreshold(SELF, Triangle.N2(t), lookup[Triangle.V2(t)], threshold);
+			Triangle.N3(t) = Mesh._SmoothNormalsThreshold(SELF, Triangle.N3(t), lookup[Triangle.V3(t)], threshold);
+		}
+	}
+
+	static SmoothNormals(SELF) {
+		let lookup:number[] = [];
+        for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			lookup[Triangle.V1(t)] = lookup[Triangle.V1(t)].Add(Triangle.N1(t));
+			lookup[Triangle.V2(t)] = lookup[Triangle.V2(t)].Add(Triangle.N2(t));
+			lookup[Triangle.V3(t)] = lookup[Triangle.V3(t)].Add(Triangle.N3(t));
+		}
+		for (let i=0;i < lookup.length;i++) {
+			 Vector.Normalize_mem(lookup[i], lookup[i]);
+		}
+        for (let i=0; i < SELF.NumTriangles; i++) {
+            let t:number = int32.Array.at(SELF.Triangles, i);
+			Triangle.N1(t) = lookup[Triangle.V1(t)];
+			Triangle.N2(t) = lookup[Triangle.V2(t)];
+			Triangle.N3(t) = lookup[Triangle.V3(t)];
+		}
+	}
+
+	static UnitCube(SELF) {
+		Mesh.FitInside(SELF, Box.NewBox(Vector.NewVector(), Vector.NewVector(1, 1, 1)), Vector.NewVector());
+        Mesh.MoveTo(SELF, Vector.NewVector(), Vector.NewVector(0.5, 0.5, 0.5));
+	}
+
+	static MoveTo(SELF, position:number, anchor:number):number {
+		let matrix = Matrix.Translate(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
+		m.Transform(matrix)
+	}
+
+	func (m *Mesh) FitInside(box Box, anchor Vector) {
+		scale := box.Size().Div(m.BoundingBox().Size()).MinComponent()
+		extra := box.Size().Sub(m.BoundingBox().Size().MulScalar(scale))
+		matrix := Identity()
+		matrix = matrix.Translate(m.BoundingBox().Min.Negate())
+		matrix = matrix.Scale(Vector{scale, scale, scale})
+		matrix = matrix.Translate(box.Min.Add(extra.Mul(anchor)))
+		m.Transform(matrix)
+	}
+
+	func (m *Mesh) Transform(matrix Matrix) {
+		for _, Triangle := range m.Triangles {
+			Triangle.V1 = matrix.MulPosition(Triangle.V1)
+			Triangle.V2 = matrix.MulPosition(Triangle.V2)
+			Triangle.V3 = matrix.MulPosition(Triangle.V3)
+			Triangle.N1 = matrix.MulDirection(Triangle.N1)
+			Triangle.N2 = matrix.MulDirection(Triangle.N2)
+			Triangle.N3 = matrix.MulDirection(Triangle.N3)
+		}
+		m.dirty()
+	}
+
+	func (m *Mesh) SetMaterial(material Material) {
+		for _, Triangle := range m.Triangles {
+			Triangle.Material = &material
+		}
+	}
+
+	func (m *Mesh) SaveSTL(path string) error {
+		return SaveSTL(path, m)
+	}
+
+
+} @end

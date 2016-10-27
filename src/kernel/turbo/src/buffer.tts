@@ -4,94 +4,109 @@ export enum Channel{
 	StandardDeviationChannel
 }
 
-export class Pixel{
+@turbo class Pixel{
+
+    Samples:int32
+    M:int32
+    V:int32
+
+	static tmp:number;
 	
-	private tmp:number;
-	
-	constructor(public Samples:number, public M:number, public V:number){
-		this.tmp = @new Color;
+	@method init(SELF, Samples:number=0, M:number=0, V:number=0){
+		Pixel.tmp = @new Color;
+        SELF.Samples = Samples;
+        SELF.M = M;
+        SELF.V = V;
 	}
 
-	AddSample(sample:number) {
-		this.Samples++;
-		if (this.Samples == 1) {
-			this.M = sample;
+	static AddSample(SELF, sample:number) {
+		SELF.Samples++;
+		if (SELF.Samples == 1) {
+            SELF.M = sample;
 			return;
 		}
-		Color.Clone(this.M, this.tmp);
-		Color.Add_mem(this.M, Color.DivScalar_mem(Color.Sub_mem(sample, this.M), this.Samples), this.M);
-		Color.Add_mem(this.V, Color.Mul_mem(Color.Sub_mem(sample, this.tmp), Color.Sub_mem(sample, this.M)), this.V);
+		Color.Clone(SELF.M, Pixel.tmp);
+		Color.Add_mem(SELF.M, Color.DivScalar_mem(Color.Sub_mem(sample, SELF.M), SELF.Samples), SELF.M);
+		Color.Add_mem(SELF.V, Color.Mul_mem(Color.Sub_mem(sample, Pixel.tmp), Color.Sub_mem(sample, SELF.M)), SELF.V);
 	}
 
-	Color():number{
-		return this.M;
+	static Color(SELF):number{
+		return SELF.M;
 	}
 
-	Variance():number {
-		if (this.Samples < 2) {
+	static Variance(SELF):number {
+		if (SELF.Samples < 2) {
 			return Color.BLACK;
 		}
-		return Color.DivScalar_mem(this.V, this.Samples - 1);
+		return Color.DivScalar_mem(SELF.V, SELF.Samples - 1);
 	}
 
-	StandardDeviation():number {
-		return Color.Pow_mem(this.Variance(), 0.5);
+    static StandardDeviation(SELF):number {
+		return Color.Pow_mem(Pixel.Variance(SELF), 0.5);
 	}
-}
+} @end
 
-export class Buffer{
+@turbo class Buffer{
 
-	constructor(public W:number, public H:number, public Pixels:Pixel[]){
+    W:int32
+    H:int32
+    Pixela:int32
+
+	@method init(SELF, W:number, H:number, Pixels:number){
+        SELF.W = W;
+        SELF.H = H;
+        SELF.Pixels = Pixels;
+        return SELF;
     }
     static NewBuffer(w:number, h:number):Buffer {
-        let pixels = [];//w*h
-        return new Buffer(w, h, pixels);
+        let pixels:number = @new Pixel.Array(w*h);
+        return Buffer.init(@new Buffer, w, h, pixels);
     }
 
-    Copy():Buffer {
+    static Copy(SELF):Buffer {
         let pixels = [];//thus.w*this.h
 
-        this.Pixels.forEach((item) => {
+        SELF.Pixels.forEach((item) => {
             pixels.push(item);
         });
 
-        return new Buffer(this.W, this.H, pixels);
+        return new Buffer(SELF.W, SELF.H, pixels);
     }
 
-    AddSample(x:number, y:number, sample:number) {
-        this.Pixels[y*this.W+x].AddSample(sample);
+    static AddSample(SELF, x:number, y:number, sample:number) {
+        SELF.Pixels[y*SELF.W+x].AddSample(sample);
     }
 
-    Samples(x:number, y:number):number {
-        return this.Pixels[y*this.W+x].Samples;
+    static Samples(SELF, x:number, y:number):number {
+        return SELF.Pixels[y*SELF.W+x].Samples;
     }
 
-    Color(x:number, y:number):number{
-        return this.Pixels[y*this.W+x].Color();
+    static Color(SELF, x:number, y:number):number{
+        return SELF.Pixels[y*SELF.W+x].Color();
     }
 
-    Variance(x:number, y:number):number {
-        return this.Pixels[y*this.W+x].Variance();
+    static Variance(SELF, x:number, y:number):number {
+        return SELF.Pixels[y*SELF.W+x].Variance();
     }
 
-    StandardDeviation(x:number, y:number):number {
-        return this.Pixels[y*this.W+x].StandardDeviation();
+    static StandardDeviation(SELF, x:number, y:number):number {
+        return SELF.Pixels[y*SELF.W+x].StandardDeviation();
     }
 
-    Image(channel:Channel):number {
-        let result = Image.NewRGBA64({x:0, y:0, width: this.W, height: this.H});
-        for (let y = 0; y < this.H; y++) {
-            for (let x = 0; x < this.W; x++) {
+    static Image(SELF, channel:Channel):number {
+        let result = Image.NewRGBA64({x:0, y:0, width: SELF.W, height: SELF.H});
+        for (let y = 0; y < SELF.H; y++) {
+            for (let x = 0; x < SELF.W; x++) {
                 var c:number;
                 switch (channel) {
                     case Channel.ColorChannel:
-                        c = Color.Pow_mem(this.Pixels[y*this.W+x].Color(), 1 / 2.2);
+                        c = Color.Pow_mem(SELF.Pixels[y*SELF.W+x].Color(), 1 / 2.2);
                         break;
                     case Channel.VarianceChannel:
-                        c = this.Pixels[y*this.W+x].Variance();
+                        c = SELF.Pixels[y*SELF.W+x].Variance();
                         break;
                     case Channel.StandardDeviationChannel:
-                        c = this.Pixels[y*this.W+x].StandardDeviation();
+                        c = SELF.Pixels[y*SELF.W+x].StandardDeviation();
                         break;
                 }
                 result.SetRGBA64(x, y, Color.RGBA64(c));

@@ -17,3 +17,5 @@ tell application "Terminal"
     do script "cd \"`pwd`\";npm run test"
 end tell
 END
+
+exit 0

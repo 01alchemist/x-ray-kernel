@@ -37,6 +37,28 @@
 		return SELF;
 	}
 
+    static Pack(triangles:number[]):number {
+        let packed = @new int32.Array(triangles.length);
+        triangles.forEach((triangle, i) =>{
+            int32.Array.setAt(packed, i, triangle);
+        });
+        return packed;
+    }
+
+    static Copy(a:number, b:number):number{
+        Triangle.V1(b) = Vector.Clone(Triangle.V1(a));
+        Triangle.V2(b) = Vector.Clone(Triangle.V2(a));
+        Triangle.V3(b) = Vector.Clone(Triangle.V3(a));
+        Triangle.N1(b) = Vector.Clone(Triangle.N1(a));
+        Triangle.N2(b) = Vector.Clone(Triangle.N2(a));
+        Triangle.N3(b) = Vector.Clone(Triangle.N3(a));
+        Triangle.T1(b) = Vector.Clone(Triangle.T1(a));
+        Triangle.T2(b) = Vector.Clone(Triangle.T2(a));
+        Triangle.T3(b) = Vector.Clone(Triangle.T3(a));
+        Triangle.Material(b) = Material.Clone(Triangle.Material(a));
+        return b;
+    }
+
     static Vertices(SELF){
 		return {
             V1:SELF.V1,
@@ -48,10 +70,10 @@
 	static Compile() {
 	}
 
-    static BoundingBox(SELF):number{
+    static BoundingBox(SELF, c?:number):number{
 		let min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
 		let max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
-        let ptr:number = @new Box;
+        let ptr:number = c?c:@new Box;
 		return Box.Init_mem(ptr, min, max);
 	}
 
@@ -79,18 +101,18 @@
         let tz = Vector.Z(org) - Vector.Z(SELF.V1);
         let u = (tx * px + ty * py + tz * pz) * inv;
 		if (u < 0 || u > 1) {
-			return Hit.NoHit
+			return Hit.NoHit;
 		}
         let qx = ty * e1z - tz * e1y;
         let qy = tz * e1x - tx * e1z;
         let qz = tx * e1y - ty * e1x;
         let v = (Vector.X(dir) * qx + Vector.Y(dir) * qy + Vector.Z(dir) * qz) * inv;
 		if (v < 0 || u+v > 1) {
-			return NoHit
+			return Hit.NoHit;
 		}
         let d = (e2x*qx + e2y*qy + e2z*qz) * inv;
 		if (d < EPS) {
-			return NoHit
+			return Hit.NoHit;
 		}
 		return new Hit(SELF, d, null);
 	}
@@ -111,7 +133,7 @@
 
 	static NormalAt(SELF, p:number /*Vector*/):number /*Vector*/ {
 		let uvw = Triangle.Barycentric(p);
-		let n = @ new Vector;
+		let n = @new Vector;
         n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N1, uvw.u), n);
         n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N2, uvw.v), n);
         n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N3, uvw.w), n);
@@ -183,7 +205,7 @@
 
 	static FixNormals(SELF) {
 		let e1 = Vector.Sub_mem(SELF.V2, SELF.V1);
-		let e2 = SELF.V3.Sub(SELF.V1);
+		let e2 = Vector.Sub_mem(SELF.V3, SELF.V1);
 		let n = Vector.Normalize_mem(Vector.Cross_mem(e1, e2));
 
         if(Vector.IsZero(SELF.N1)) {

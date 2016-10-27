@@ -6,6 +6,7 @@ let turbo = require("../../../../turbo.js/lib/compiler.js");
 let compiler = new turbo.Compiler();
 let modules = [
     "./src/common.tts",
+    "./src/axis.tts",
     "./src/color.tts",
     "./src/vector.tts",
     "./src/util.tts",
@@ -15,7 +16,12 @@ let modules = [
     "./src/material.tts",
     "./src/ray.tts",
     "./src/shape.tts",
-    // "./src/hit.tts",
+    "./src/triangle.tts",
+    "./src/mesh.tts",
+    "./src/hit.tts",
+    "./src/camera.tts",
+    "./src/scene.tts",
+    "./src/obj.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {
@@ -30,6 +36,7 @@ compiler.compile({
     sources: [path.resolve(__dirname, "xray-kernel-turbo.tts")],
     options:{
         bundle:true,
+        moduleName:"xray",
         outDir: __dirname,
         outFile: "xray-kernel-turbo.ts",
         target:turbo.CompilerTarget.TypeScript

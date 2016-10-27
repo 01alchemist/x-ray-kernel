@@ -28,6 +28,24 @@
         SELF.Transparent = Transparent;
     }
 
+    static Clone(SELF, c?:number):number {
+        let ptr:number = c?c:@new Material;
+        return Material.init(ptr,
+            Color.Clone(SELF.Color),
+            SELF.Texture,
+            SELF.NormalTexture,
+            SELF.BumpTexture,
+            SELF.GlossTexture,
+            SELF.BumpMultiplier,
+            SELF.Emittance,
+            SELF.Index,
+            SELF.Gloss,
+            SELF.Tint,
+            SELF.Reflectivity,
+            SELF.Transparent
+        );
+    }
+
     static DiffuseMaterial(color:number):number{
         let ptr:number = @new Material;
         return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);

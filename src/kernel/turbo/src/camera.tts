@@ -7,7 +7,7 @@
 	focalDistance :float64
 	apertureRadius:float64
 
-    @method init(SELF, p:number, u:number, v:number, w:number, m:number, focalDistance:number, apertureRadius:number){
+    @method init(SELF, p:number, u:number, v:number, w:number, m:number, focalDistance:number=0, apertureRadius:number=0){
         SELF.p = p;
         SELF.u = u;
         SELF.v = v;
@@ -15,7 +15,31 @@
         SELF.m = m;
         SELF.focalDistance = focalDistance;
         SELF.apertureRadius = apertureRadius;
+        return SELF;
     }
+
+    static NewCamera(p:number, u?:number, v?:number, w?:number, m?:number, focalDistance?:number, apertureRadius?:number){
+        let ptr:number = @new Camera;
+        p = p?p:Vector.NewVector();
+        u = u?u:Vector.NewVector();
+        v = v?v:Vector.NewVector();
+        w = w?w:Vector.NewVector();
+        m = m?m:Vector.NewVector();
+        return Camera.init(ptr, p, u, v, w, m, focalDistance, apertureRadius);
+    }
+
+    static ToJSON(SELF){
+        return {
+            p:SELF.p,
+            u:SELF.u,
+            v:SELF.v,
+            w:SELF.w,
+            m:SELF.m,
+            focalDistance:SELF.focalDistance,
+            apertureRadius:SELF.apertureRadius
+        };
+    }
+
     static LookAt(eye, center, up, fovy:number, c?:number):number {
         c = c?c:@new Camera;
         Camera.init(c);
@@ -49,11 +73,11 @@
             let angle = Math.random() * 2 * Math.PI;
             let radius = Math.random() * Camera.apertureRadius(c);
             p = Vector.Add_mem(p, Vector.MulScalar_mem(Camera.u(c), Math.cos(angle) * radius), p);
-            p = Vector.Add_mem(p, Vector.MulScalar_mem(Vector.MulScalar_mem(Camera.v(c), Math.sin(angle) * radius), p);
+            p = Vector.Add_mem(p, Vector.MulScalar_mem(Vector.MulScalar_mem(Camera.v(c), Math.sin(angle) * radius), p));
             d = Vector.Normalize_mem(Vector.Sub_mem(focalPoint, p))
         }
         let ptr:number = @new Ray;
         return Ray.init(ptr, p, d);
     }
-
-}
+    
+} @end

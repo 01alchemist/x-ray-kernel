@@ -24,9 +24,21 @@ type XYZ = {
 		return SELF;
 	}
 
-    static NewVector(vector?):number {
+    static NewVector(vector?,Y:number=0,Z:number=0):number {
         let ptr:number = @new Vector;
-        return Vector.init(ptr, vector);
+        if(typeof vector === "object"){
+            return Vector.init(ptr, vector);
+        }else{
+            return Vector.Init_mem(ptr, vector, Y, Z);
+        }
+    }
+
+    static ToJSON(SELF){
+        return {
+            X:SELF.X,
+            Y:SELF.Y,
+            Z:SELF.Z
+        };
     }
 
     static XYZ(a:number):XYZ {
@@ -533,8 +545,8 @@ type XYZ = {
         return SELF;
     }
 
-    static Clone(SELF:number):number {
-        let ptr:number = @new Vector;
+    static Clone(SELF:number, c?:number):number {
+        let ptr:number = c?c:@new Vector;
         return Vector.Init_mem(ptr, SELF.X, SELF.Y, SELF.Z);
     }
 

@@ -4,8 +4,14 @@ type float64 = number;
 
 const height:number = 600;
 const width:number = 800;
-const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
-turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
+if(!turbo.IsWorker){
+    const RAW_MEMORY:ArrayBuffer = new SharedArrayBuffer(height * width * 4 + 65536);
+    turbo.Runtime.init(RAW_MEMORY, 0, RAW_MEMORY.byteLength, true);
+
+}
+export var unsafe = {
+    RAW_MEMORY:RAW_MEMORY
+};
 
 const shadows:boolean = true;		// Compute object shadows
 const reflection:boolean = true;	// Compute object reflections
