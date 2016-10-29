@@ -22,6 +22,7 @@ let modules = [
     "./src/hit.tts",
     "./src/camera.tts",
     "./src/scene.tts",
+    "./src/three/buffer_geometry.tts",
     "./src/obj.tts",
 ];
 var source = "//Turbo module\n";

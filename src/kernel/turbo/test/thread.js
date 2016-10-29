@@ -1,5 +1,5 @@
 exports = {};
-importScripts('../turbo-runtime.js');
+importScripts('../turbo-runtime.js', '../../../../node_modules/three/build/three.js');
 
 onmessage = (msg) => {
     console.log(msg);

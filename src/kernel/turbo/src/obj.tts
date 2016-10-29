@@ -162,6 +162,7 @@ export class OBJLoader {
                 }
             }
         }
+        console.log(`Num triangles: ${triangles.length}`);
         return Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
     }
 

@@ -5,8 +5,9 @@
 	tree:Tree
 
 	@method init(SELF, triangles:number, numTriangles:number){
+        console.log(`numTriangles:${numTriangles}`);
         SELF.Triangles = triangles;
-        SELF.NumTriangles = triangles;
+        SELF.NumTriangles = numTriangles;
         return SELF;
 	}
 	static NewMesh(triangles:number, numTriangles:number):number{
@@ -32,17 +33,21 @@
 	}
     
 	static Compile(SELF) {
-		if (SELF.tree == null) {
+		if (!SELF.tree) {
+            console.time("Mesh:Compile");
 			let numShapes:number = SELF.NumTriangles;
-			let shapes = @new Shape.Array(numShapes);
-			for (let i=0; i < numShapes; i++) {
-				let t = Triangle.Array.at(SELF.Triangles, i);
-				Shape.Array.setAt(shapes, i, t);
-			}
-			SELF.tree = Tree.NewTree(shapes, numShapes);
+            console.log(`Num shapes:${numShapes}`);
+			// let shapes = @new int32.Array(numShapes);
+			// for (let i=0; i < numShapes; i++) {
+			// 	let t = Triangle.Array.at(SELF.Triangles, i);
+             //    int32.Array.setAt(shapes, i, t);
+			// }
+			SELF.tree = Tree.NewTree(SELF.Triangles, SELF.NumTriangles);
+            console.timeEnd("Mesh:Compile");
 		}
+        return SELF.tree;
 	}
-    
+
 	static Add(SELF, mesh:Mesh) {
         //TODO: Implement
         Mesh.dirty(SELF);

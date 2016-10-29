@@ -1,4 +1,4 @@
-@turbo  class Triangle{
+@turbo  class Triangle extends Shape{
 	V1:int32
     V2:int32
     V3:int32
@@ -70,7 +70,7 @@
 	static Compile() {
 	}
 
-    static BoundingBox(SELF, c?:number):number{
+    @virtual BoundingBox(SELF, c?:number):number{
 		let min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
 		let max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
         let ptr:number = c?c:@new Box;

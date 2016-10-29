@@ -15,7 +15,7 @@
         SELF.Right = right;
         return SELF;
     }
-    
+
     static NewNode(shapes:number, numShapes:number):number {
         let ptr:number = @new Node;
         return Node.init(ptr, Axis.AxisNone, 0, shapes, numShapes, null, null);
@@ -232,9 +232,13 @@
 
     static NewTree(shapes:number, numShapes:number):number {
         console.log(`Building k-d tree (${numShapes} shapes)... `);
+        console.time("Tree:BuildingBox");
         let box = Box.BoxForShapes(shapes, numShapes);
+        console.timeEnd("Tree:BuildingBox");
         let node = Node.NewNode(shapes, numShapes);
+        console.time("Node:Split");
         Node.Split(node, 0);
+        console.timeEnd("Node:Split");
         let ptr:number = @new Tree;
         return Tree.init(ptr, box, node);
     }
