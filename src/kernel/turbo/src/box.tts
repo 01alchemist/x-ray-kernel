@@ -28,7 +28,7 @@
             max:Vector.ToJSON(SELF.Max)
         };
 	}
-    
+
 	static BoxForShapes(shapes:number, numShapes:number):number{
 		if(numShapes == 0) {
 			return @new Box;

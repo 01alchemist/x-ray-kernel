@@ -1227,7 +1227,7 @@ export class Box extends MemoryObject{
             max:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2])
         };
 	}
-    
+
 	static BoxForShapes(shapes:number, numShapes:number):number{
 		if(numShapes == 0) {
 			return Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
@@ -3176,7 +3176,7 @@ export class BufferGeometry {
         return this.buildGeometry(src.geometry, 0, src.smooth);
     }
 
-    static buildGeometry(geometry:THREE.BufferGeometry|any, material:number, smooth:boolean=false):Shape {
+    static buildGeometry(geometry:THREE.BufferGeometry|any, material:number, smooth:boolean=false):number {
 
         if (geometry["_bufferGeometry"]) {
             geometry = geometry["_bufferGeometry"];
@@ -3192,13 +3192,6 @@ export class BufferGeometry {
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
                     var t:number = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
-                    triangle.material = material;
-                    triangle.v1 = new Vector3(vertices[face.a].x, vertices[face.a].y, vertices[face.a].z);
-                    triangle.v2 = new Vector3(vertices[face.b].x, vertices[face.b].y, vertices[face.b].z);
-                    triangle.v3 = new Vector3(vertices[face.c].x, vertices[face.c].y, vertices[face.c].z);
-                    triangle.n1 = new Vector3();
-                    triangle.n2 = new Vector3();
-                    triangle.n3 = new Vector3();
 
                     turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
                     turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(vertices[face.a].x, vertices[face.a].y, vertices[face.a].z);
@@ -3330,6 +3323,7 @@ export class BufferGeometry {
 
         // console.log(`Num triangles: ${triangles.length}`);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
+        // console.log(turbo.getMemoryUsage());
         Mesh.Compile(meshRef);
         return meshRef;
         // if(smooth){
