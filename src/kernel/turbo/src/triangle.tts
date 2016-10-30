@@ -9,6 +9,8 @@
     T2:int32
     T3:int32
     Material:int32
+    Box:int32
+    HasBox:uint8
 
     @method init(SELF, v1:number=-1, v2:number=-1, v3:number=-1, n1:number=-1, n2:number=-1, n3:number=-1, t1:number=-1, t2:number=-1, t3:number=-1, material:number=-1){
         SELF.V1 = v1;
@@ -71,10 +73,15 @@
 	}
 
     @virtual BoundingBox(SELF, c?:number):number{
-		let min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
-		let max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
-        let ptr:number = c?c:@new Box;
-		return Box.Init_mem(ptr, min, max);
+        if(SELF.HasBox){
+            return SELF.Box;
+        }else {
+            var min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
+            var max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
+            SELF.Box = c?c:@new Box;
+            SELF.HasBox = 1;
+        }
+		return Box.Init_mem(SELF.Box, min, max);
 	}
 
 	static Intersect(SELF, r:number /*Ray*/):Hit {

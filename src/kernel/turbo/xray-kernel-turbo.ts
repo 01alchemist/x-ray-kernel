@@ -2330,9 +2330,9 @@ export class Node extends MemoryObject{
         }
 
         let size:number = turbo.Runtime._mem_int32[(SELF + 20) >> 2] * 2;
-        let xs = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
-        let ys = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
-        let zs = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
+        // let xs = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
+        // let ys = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
+        // let zs = turbo.Runtime.allocOrThrow( (8 * size), 8) /*Array*/;
 
         let _xs = new Float64Array(size);
         let _ys = new Float64Array(size);
@@ -2358,11 +2358,11 @@ export class Node extends MemoryObject{
         _ys.sort();
         _zs.sort();
 
-        for(let i=0;i < size;i++) {
-            turbo.Runtime._mem_float64[(  xs+8*i) >> 3] = (_xs[i]);
-            turbo.Runtime._mem_float64[(  ys+8*i) >> 3] = (_ys[i]);
-            turbo.Runtime._mem_float64[(  zs+8*i) >> 3] = (_zs[i]);
-        }
+        // for(let i=0;i < size;i++) {
+        //     turbo.Runtime._mem_float64[(  xs+8*i) >> 3] = (_xs[i]);
+        //     turbo.Runtime._mem_float64[(  ys+8*i) >> 3] = (_ys[i]);
+        //     turbo.Runtime._mem_float64[(  zs+8*i) >> 3] = (_zs[i]);
+        // }
 
         let mx = Utils.Median(_xs);
         let my = Utils.Median(_ys);
@@ -2429,13 +2429,13 @@ export class Tree extends MemoryObject{
 
     static NewTree(shapes:number, numShapes:number):number {
         console.log(`Building k-d tree (${numShapes} shapes)... `);
-        console.time("Tree:BuildingBox");
+        // console.time("Tree:BuildingBox");
         let box = Box.BoxForShapes(shapes, numShapes);
-        console.timeEnd("Tree:BuildingBox");
+        // console.timeEnd("Tree:BuildingBox");
         let node = Node.NewNode(shapes, numShapes);
-        console.time("Node:Split");
+        // console.time("Node:Split");
         Node.Split(node, 0);
-        console.timeEnd("Node:Split");
+        // console.timeEnd("Node:Split");
         let ptr:number = Tree.initInstance(turbo.Runtime.allocOrThrow(12,4));
         return Tree.init(ptr, box, node);
     }
@@ -2452,9 +2452,10 @@ export class Tree extends MemoryObject{
 turbo.Runtime._idToType[27694] = Tree;
 
 
+
 export class Triangle extends Shape{
    static NAME:string = "Triangle";
-   static SIZE:number = 48;
+   static SIZE:number = 53;
    static ALIGN:number = 4;
    static CLSID:number = 232773086;
 
@@ -2481,7 +2482,7 @@ export class Triangle extends Shape{
 	}
 
 	static NewTriangle(v1:number, v2:number, v3:number, t1:number, t2:number, t3:number, material:number):number {
-		let SELF = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+		let SELF = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
 		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = v1; 
 		 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v2; 
 		 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = v3; 
@@ -2526,10 +2527,15 @@ export class Triangle extends Shape{
 	static Compile() {
 	}
     static BoundingBox_impl(SELF, c?:number):number{
-		let min = Vector.Min_mem(Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-		let max = Vector.Max_mem(Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-        let ptr:number = c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-		return Box.Init_mem(ptr, min, max);
+        if(turbo.Runtime._mem_uint8[(SELF + 52) >> 0]){
+            return turbo.Runtime._mem_int32[(SELF + 48) >> 2];
+        }else {
+            var min = Vector.Min_mem(Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+            var max = Vector.Max_mem(Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+             turbo.Runtime._mem_int32[(SELF + 48) >> 2] = (c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4))); 
+             turbo.Runtime._mem_uint8[(SELF + 52) >> 0] = 1; 
+        }
+		return Box.Init_mem(turbo.Runtime._mem_int32[(SELF + 48) >> 2], min, max);
 	}
 
 	static Intersect(SELF, r:number /*Ray*/):Hit {
@@ -2731,7 +2737,7 @@ export class Mesh extends MemoryObject{
    }
 
     static init(SELF, triangles:number, numTriangles:number){
-        console.log(`numTriangles:${numTriangles}`);
+        // console.log(`numTriangles:${numTriangles}`);
          turbo.Runtime._mem_int32[(SELF + 8) >> 2] = triangles; 
          turbo.Runtime._mem_int32[(SELF + 4) >> 2] = numTriangles; 
         return SELF;
@@ -2751,7 +2757,7 @@ export class Mesh extends MemoryObject{
 		let triangles = turbo.Runtime.allocOrThrow( (4 * (turbo.Runtime._mem_int32[(SELF + 4) >> 2])), 4) /*Array*/;
 		for (let i=0; i < turbo.Runtime._mem_int32[(SELF + 4) >> 2];i++) {
 			let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2])+4*i) >> 2];
-			let a = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+			let a = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
 			Triangle.Copy(t, a);
 			turbo.Runtime._mem_int32[(  triangles+4*i) >> 2] = a;
 		}
@@ -2760,16 +2766,16 @@ export class Mesh extends MemoryObject{
     
 	static Compile(SELF) {
 		if (!turbo.Runtime._mem_int32[(SELF + 16) >> 2]) {
-            console.time("Mesh:Compile");
-			let numShapes:number = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
-            console.log(`Num shapes:${numShapes}`);
+            // console.time("Mesh:Compile");
+            // let numShapes:number = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
+            // console.log(`Num shapes:${numShapes}`);
 			// let shapes = turbo.Runtime.allocOrThrow( (4 * numShapes), 4) /*Array*/;
 			// for (let i=0; i < numShapes; i++) {
 			// 	let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2])+4*i) >> 2];
              //    turbo.Runtime._mem_int32[(  shapes+4*i) >> 2] = t;
 			// }
 			 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2])); 
-            console.timeEnd("Mesh:Compile");
+            // console.timeEnd("Mesh:Compile");
 		}
         return turbo.Runtime._mem_int32[(SELF + 16) >> 2];
 	}
@@ -3185,7 +3191,7 @@ export class BufferGeometry {
             if (vertices && faces) {
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
-                    var t:number = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+                    var t:number = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
                     triangle.material = material;
                     triangle.v1 = new Vector3(vertices[face.a].x, vertices[face.a].y, vertices[face.a].z);
                     triangle.v2 = new Vector3(vertices[face.b].x, vertices[face.b].y, vertices[face.b].z);
@@ -3274,7 +3280,7 @@ export class BufferGeometry {
                     var cu = c * 2;
                     var cv = (c * 2) + 1;
 
-                    var t = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+                    var t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
                     turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
                     turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(positions[ax], positions[ay], positions[az]);
                     turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(positions[bx], positions[by], positions[bz]);
@@ -3299,7 +3305,7 @@ export class BufferGeometry {
             } else {
                 uvIndex = 0;
                 for (var i = 0; i < positions.length; i = i + 9) {
-                    var t = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+                    var t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
                     turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
                     turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(positions[i], positions[i + 1], positions[i + 2]);
                     turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(positions[i + 3], positions[i + 4], positions[i + 5]);
@@ -3322,7 +3328,7 @@ export class BufferGeometry {
             }
         }
 
-        console.log(`Num triangles: ${triangles.length}`);
+        // console.log(`Num triangles: ${triangles.length}`);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
         Mesh.Compile(meshRef);
         return meshRef;
@@ -3483,7 +3489,7 @@ export class OBJLoader {
                             let i1 = 0;
                             let i2 = i;
                             let i3 = i + 1;
-                            let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(48,4));
+                            let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
                             turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
                             turbo.Runtime._mem_int32[(t + 8) >> 2] = vs[fvs[i1]];
                             turbo.Runtime._mem_int32[(t + 12) >> 2] = vs[fvs[i2]];

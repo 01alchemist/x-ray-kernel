@@ -145,9 +145,9 @@
         }
 
         let size:number = SELF.NumShapes * 2;
-        let xs = @new float64.Array(size);
-        let ys = @new float64.Array(size);
-        let zs = @new float64.Array(size);
+        // let xs = @new float64.Array(size);
+        // let ys = @new float64.Array(size);
+        // let zs = @new float64.Array(size);
 
         let _xs = new Float64Array(size);
         let _ys = new Float64Array(size);
@@ -173,11 +173,11 @@
         _ys.sort();
         _zs.sort();
 
-        for(let i=0;i < size;i++) {
-            float64.Array.setAt(xs, i, _xs[i]);
-            float64.Array.setAt(ys, i, _ys[i]);
-            float64.Array.setAt(zs, i, _zs[i]);
-        }
+        // for(let i=0;i < size;i++) {
+        //     float64.Array.setAt(xs, i, _xs[i]);
+        //     float64.Array.setAt(ys, i, _ys[i]);
+        //     float64.Array.setAt(zs, i, _zs[i]);
+        // }
 
         let mx = Utils.Median(_xs);
         let my = Utils.Median(_ys);
@@ -232,13 +232,13 @@
 
     static NewTree(shapes:number, numShapes:number):number {
         console.log(`Building k-d tree (${numShapes} shapes)... `);
-        console.time("Tree:BuildingBox");
+        // console.time("Tree:BuildingBox");
         let box = Box.BoxForShapes(shapes, numShapes);
-        console.timeEnd("Tree:BuildingBox");
+        // console.timeEnd("Tree:BuildingBox");
         let node = Node.NewNode(shapes, numShapes);
-        console.time("Node:Split");
+        // console.time("Node:Split");
         Node.Split(node, 0);
-        console.timeEnd("Node:Split");
+        // console.timeEnd("Node:Split");
         let ptr:number = @new Tree;
         return Tree.init(ptr, box, node);
     }
@@ -251,3 +251,4 @@
         return Node.Intersect(Tree.Root(tree), r, hit.tmin, hit.tmax);
     }
 } @end
+

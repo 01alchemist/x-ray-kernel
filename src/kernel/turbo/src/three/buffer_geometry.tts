@@ -199,7 +199,7 @@ export class BufferGeometry {
             }
         }
 
-        console.log(`Num triangles: ${triangles.length}`);
+        // console.log(`Num triangles: ${triangles.length}`);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
         Mesh.Compile(meshRef);
         return meshRef;
