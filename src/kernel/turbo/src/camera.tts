@@ -59,9 +59,9 @@
     }
 
     static CastRay(c:number, x:number, y:number, w:number, h:number, u:number, v:number):number {
-        let aspect = float64(w) / float64(h);
-        let px = ((float64(x)+u-0.5)/(float64(w)-1))*2 - 1;
-        let py = ((float64(y)+v-0.5)/(float64(h)-1))*2 - 1;
+        let aspect = w / h;
+        let px = ((x+u-0.5)/(w-1))*2 - 1;
+        let py = ((y+v-0.5)/(h-1))*2 - 1;
         let d = @new Vector;
         d = Vector.Add_mem(d, Vector.MulScalar_mem(Camera.u(c), -px * aspect), d);
         d = Vector.Add_mem(d, Vector.MulScalar_mem(Camera.v(c), -py), d);
@@ -79,5 +79,5 @@
         let ptr:number = @new Ray;
         return Ray.init(ptr, p, d);
     }
-    
+
 } @end

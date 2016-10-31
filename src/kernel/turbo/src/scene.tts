@@ -44,6 +44,8 @@ export class MasterScene{
 
 	constructor(){
 		this.scenePtr = @new Scene;
+        this.shapes = [];
+        this.lights = [];
 	}
 	Add(shape) {
 		this.shapes.push(shape);
@@ -54,12 +56,19 @@ export class MasterScene{
 	}
 	Commit(){
 		Scene.NumShapes(this.scenePtr) = this.shapes.length;
-		Scene.Shapes(this.scenePtr) = @new int32.Array(this.shapes.length);
+		let shapeList = @new int32.Array(this.shapes.length);
+        Scene.Shapes(this.scenePtr) = shapeList;
 		Scene.NumLights(this.scenePtr) = this.lights.length;
-		Scene.Lights(this.scenePtr) = @new int32.Array(this.lights.length);
+		let lightList = @new int32.Array(this.lights.length);
+        Scene.Lights(this.scenePtr) = lightList;
 
 		this.shapes.forEach((shape, index) => {
+            Mesh.Compile(shape);
+            int32.Array.setAt(shapeList, index, shape);
+		});
 
+		this.lights.forEach((shape, index) => {
+            int32.Array.setAt(lightList, index, shape);
 		})
 	}
 }

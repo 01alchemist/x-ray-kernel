@@ -29,7 +29,7 @@ type RGB = {
 		SELF.B = B;
 		return SELF;
 	}
-    
+
     static NewColor(color?,G:number = 0,B:number = 0):number {
         let ptr:number = @new Color;
         if(typeof color === "object"){
@@ -103,6 +103,15 @@ type RGB = {
             B: Color.B(SELF),
             A: 1.0
         };
+    }
+
+    static RGB(SELF:number):RGB {
+        let _d:Uint8ClampedArray = new Uint8ClampedArray([
+            Color.R(SELF) * 255,
+            Color.G(SELF) * 255,
+            Color.B(SELF) * 255
+        ]);
+        return rgb(_d[0], _d[1], _d[2]);
     }
 
     static RGBA(SELF:number):RGBA {

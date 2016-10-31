@@ -63,15 +63,15 @@ export enum Channel{
         return Buffer.init(@new Buffer, w, h, pixels);
     }
 
-    static Copy(SELF):Buffer {
-        let pixels = [];//thus.w*this.h
-
-        SELF.Pixels.forEach((item) => {
-            pixels.push(item);
-        });
-
-        return new Buffer(SELF.W, SELF.H, pixels);
-    }
+    // static Copy(SELF):Buffer {
+    //     let pixels = [];//thus.w*this.h
+    //
+    //     SELF.Pixels.forEach((item) => {
+    //         pixels.push(item);
+    //     });
+    //
+    //     return new Buffer(SELF.W, SELF.H, pixels);
+    // }
 
     static AddSample(SELF, x:number, y:number, sample:number) {
         SELF.Pixels[y*SELF.W+x].AddSample(sample);

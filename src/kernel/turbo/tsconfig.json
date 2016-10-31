@@ -7,13 +7,13 @@
     "listFiles": true,
     "moduleResolution": "node",
     "experimentalDecorators": true,
-    "outDir": "bin",
     "target": "es5",
     "module": "commonjs"
   },
   "files": [
     "xray-kernel-turbo.spec.ts",
-    "turbo-runtime.ts"
+    "turbo-runtime.ts",
+    "./src/worker/xray-tracer.ts"
   ],
   "exclude": [
     "node_modules",

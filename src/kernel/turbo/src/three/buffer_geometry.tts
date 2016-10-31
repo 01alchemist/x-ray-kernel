@@ -4,19 +4,19 @@ export class BufferGeometry {
 
     }
 
-    static NewBufferGeometry(obj){
-        BufferGeometry.loadChildren(obj);
+    static NewBufferGeometry(obj, scene:MasterScene){
+        BufferGeometry.loadChildren(obj, scene);
     }
 
-    static loadChildren(parent) {
+    static loadChildren(parent, scene) {
         var child;
         for (var i:number = 0; i < parent.children.length; i++) {
             child = parent.children[i];
 
             if (child.children.length > 0) {
-                this.loadChildren(child);
+                this.loadChildren(child, scene);
             }else{
-                this.buildSceneObject(child);
+                scene.Add(this.buildSceneObject(child));
             }
         }
     }
@@ -195,7 +195,7 @@ export class BufferGeometry {
         // console.log(`Num triangles: ${triangles.length}`);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
         // console.log(turbo.getMemoryUsage());
-        Mesh.Compile(meshRef);
+        // Mesh.Compile(meshRef);
         return meshRef;
         // if(smooth){
         //     mesh.smoothNormals();

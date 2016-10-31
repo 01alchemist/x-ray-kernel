@@ -69,7 +69,7 @@
         }
 	}
 
-	static Compile() {
+    @virtual Compile(SELF) {
 	}
 
     @virtual BoundingBox(SELF, c?:number):number{
@@ -84,7 +84,7 @@
 		return Box.Init_mem(SELF.Box, min, max);
 	}
 
-	static Intersect(SELF, r:number /*Ray*/):Hit {
+    @virtual Intersect(SELF, r:number /*Ray*/):Hit {
 
         let dir = Ray.Direction(r);
         let org = Ray.Origin(r);
@@ -124,7 +124,7 @@
 		return new Hit(SELF, d, null);
 	}
 
-	static UV(SELF, p:number/*Vector*/):number /*Vector*/ {
+    @virtual UV(SELF, p:number/*Vector*/):number /*Vector*/ {
         let uvw = Triangle.Barycentric(SELF, p);
 		let n = @new Vector;
 		n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.T1, uvw.u), n);
@@ -134,11 +134,11 @@
 		return n
 	}
 
-	static MaterialAt(SELF, p:number /*Vector*/):number /*Material*/ {
+    @virtual MaterialAt(SELF, p:number /*Vector*/):number /*Material*/ {
 		return SELF.Material;
 	}
 
-	static NormalAt(SELF, p:number /*Vector*/):number /*Vector*/ {
+    @virtual NormalAt(SELF, p:number /*Vector*/):number /*Vector*/ {
 		let uvw = Triangle.Barycentric(p);
 		let n = @new Vector;
         n = Vector.Add_mem(n, Vector.MulScalar_mem(SELF.N1, uvw.u), n);

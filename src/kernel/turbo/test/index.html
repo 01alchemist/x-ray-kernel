@@ -26,54 +26,29 @@
 <script>
     let worker = new Worker("thread.js");
     worker.onmessage = function (msg) {
-        console.log(msg);
-        worker.postMessage(unsafe.RAW_MEMORY, [unsafe.RAW_MEMORY]);
 
-        var name = "cornellbox_suzanne_lucy";
-        var folder = "cornellbox_suzanne_lucy/";
+        switch (msg.data.event) {
+            case "BOOTED":
+                worker.postMessage({
+                            command: "INIT",
+                            isLeader: true,
+                            width: 2560 / 4,
+                            height: 1440 / 4,
+                            iterations: 1,
+                            hitSamples: 1,
+                            cameraSamples: 1,
+                            blockIterations: 1,
+                            bounces: 0,
+                            buffer: unsafe.RAW_MEMORY
+                        },
+                        [unsafe.RAW_MEMORY]
+                );
+                worker.postMessage({command: "LOAD_MODEL", file: "cornellbox_suzanne_lucy"});
+                break;
+            case "MODEL_LOADED":
 
-        // texture
-        var manager = new THREE.LoadingManager();
-        /*manager.onProgress = function (item, loaded, total) {
-         console.log(item, loaded, total);
-         };*/
-        manager.onLoad = function () {
-            console.log(arguments);
-        };
-
-        var onProgress = function (xhr) {
-            if (xhr.lengthComputable) {
-                var percentComplete = xhr.loaded / xhr.total * 100;
-                console.log(Math.round(percentComplete) + '% downloaded of '+ Math.round(xhr.total / (1024 * 1024)));
-            }
-        };
-
-        var onError = function (xhr) {
-        };
-
-        //THREE.Loader.Handlers.add( /\.dds$/i, new THREE["DDSLoader"]() );
-        var mtlLoader = new THREE["MTLLoader"](manager);
-        mtlLoader.setPath('./models/' + folder);
-        mtlLoader.load(name + '.mtl', function (materials) {
-            var objLoader = new THREE["OBJLoader"]();
-            objLoader.setMaterials(materials);
-            objLoader.setPath('./models/' + folder);
-            materials.preload();
-            objLoader.load(name + '.obj', function (object) {
-                // object.position.y = -95;
-                object.scale.set(0.3, 0.3, 0.3);
-                object.smooth = true;
-
-                console.time("BufferGeometry::Create");
-                xray.BufferGeometry.NewBufferGeometry(object);
-                console.timeEnd("BufferGeometry::Create");
-
-            }, onProgress, onError);
-        });
-
-//        xray.OBJLoader.Load("models/cornellbox_suzanne_lucy.obj", function (meshRef) {
-//            xray.Mesh.Compile(meshRef);
-//        });
+                break;
+        }
     };
 </script>
 </body>

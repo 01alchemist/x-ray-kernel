@@ -78,7 +78,7 @@
 
 	static Extend(SELF, b:number):number{
         //let ptr:number = @new Box;
-		return Box.Init_mem(SELF, Vector.Min(SELF.Min, Box.Min(b)), Vector.Max(SELF.Max, Box.Max(b)));
+		return Box.Init_mem(SELF, Vector.Min_mem(SELF.Min, Box.Min(b)), Vector.Max_mem(SELF.Max, Box.Max(b)));
 	}
 
 	static Contains(SELF , b:number):boolean{
