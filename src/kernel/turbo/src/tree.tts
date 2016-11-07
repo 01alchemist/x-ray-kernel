@@ -233,7 +233,8 @@
         return SELF;
     }
 
-    static NewTree(shapes:number, numShapes:number):number {
+    static NewTree(shapes:number):number {
+        let numShapes = Shape.Array.len(shapes);
         console.log(`Building k-d tree (${numShapes} shapes)... `);
         // console.time("Tree:BuildingBox");
         let box = Box.BoxForShapes(shapes, numShapes);

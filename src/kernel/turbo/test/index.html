@@ -24,32 +24,148 @@
 </script>
 <script src="../xray-kernel-turbo.js"></script>
 <script>
-    let worker = new Worker("thread.js");
-    worker.onmessage = function (msg) {
+    /* imports */
+    var Vector = xray.Vector;
+    var MasterScene = xray.MasterScene;
 
+    let worker = new Worker("thread.js");
+    let NUM_CPU = 8;
+    let CPU_available = 6;
+    let workerPool = [];
+    var numReady = 0;
+
+    let renderOptions = {
+        full_width: 2560 / 4,
+        full_height: 1440 / 4,
+        iterations: 1,
+        hitSamples: 1,
+        cameraSamples: 1,
+        blockIterations: 1,
+        bounces: 0
+    };
+
+    let flags = new Uint8Array(new SharedArrayBuffer(NUM_CPU));
+    let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width * renderOptions.full_height * 3));
+    let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
+
+    let masterScene = new MasterScene();
+    let camera = xray.Camera.LookAt(Vector.NewVector(0, 0, 0), Vector.NewVector(0, 0, 0), Vector.NewVector(0, 1, 0), 45);
+    let traceData = {
+        renderOptions: renderOptions,
+        scene: masterScene.scenePtr,
+        camera: camera
+    };
+
+    loadModel("box-slit");
+    initTracers();
+
+    function initTracers() {
+
+        /* spawn trace workers */
+        console.time("Tracers initialized");
+        for (let i = 0; i < CPU_available; i++) {
+
+            let tracer = new Worker('thread.js?id=' + i);
+            tracer.onmessage = onTracerMessage.bind(this);
+            workerPool.push(tracer);
+
+            if (navigator.userAgent.search("Firefox") > -1) {
+                tracer.postMessage({
+                    command: "INIT_MEMORY",
+                    buffer: unsafe.RAW_MEMORY,
+                    flagBuffer: flags.buffer,
+                    pixelBuffer: pixelMemory.buffer,
+                    sampleBuffer: sampleMemory.buffer
+                });
+            } else {
+                tracer.postMessage({
+                    command: "INIT_MEMORY",
+                    buffer: unsafe.RAW_MEMORY,
+                    flagBuffer: flags.buffer,
+                    pixelBuffer: pixelMemory.buffer,
+                    sampleBuffer: sampleMemory.buffer
+                }, [
+                    unsafe.RAW_MEMORY,
+                    flags.buffer,
+                    pixelMemory.buffer,
+                    sampleMemory.buffer
+                ]);
+            }
+        }
+    }
+
+    function trace() {
+        workerPool.forEach(function (tracer) {
+            tracer.postMessage({command: "TRACE", jobData: {width: 64, height: 64, xoffset: 0, yoffset: 0}});
+        });
+    }
+    function onTracerMessage(msg) {
         switch (msg.data.event) {
             case "BOOTED":
-                worker.postMessage({
-                            command: "INIT",
-                            isLeader: true,
-                            width: 2560 / 4,
-                            height: 1440 / 4,
-                            iterations: 1,
-                            hitSamples: 1,
-                            cameraSamples: 1,
-                            blockIterations: 1,
-                            bounces: 0,
-                            buffer: unsafe.RAW_MEMORY
-                        },
-                        [unsafe.RAW_MEMORY]
-                );
-                worker.postMessage({command: "LOAD_MODEL", file: "cornellbox_suzanne_lucy"});
+                //console.info(`Tracer ${msg.data.id} booted`);
                 break;
-            case "MODEL_LOADED":
-
+            case "MEMORY_INITIALIZED":
+                workerPool[msg.data.id].postMessage({command: "INIT", traceData: traceData});
+                break;
+            case "INITIALIZED":
+                workerPool[msg.data.id].ready = true;
+                numReady++;
+                if (numReady == 6) {
+                    console.timeEnd("Tracers initialized");
+                    trace();
+                }
+                break;
+            case "TRACE_COMPLETED":
+                break;
+            case "IDLE":
                 break;
         }
-    };
+    }
+
+    function loadModel(file) {
+        var name = file;
+        var folder = file + "/";
+
+        // texture
+        var manager = new THREE.LoadingManager();
+        /*manager.onProgress = function (item, loaded, total) {
+         console.log(item, loaded, total);
+         };*/
+        manager.onLoad = function () {
+            //console.log(arguments);
+        };
+
+        var onProgress = function (xhr) {
+            // if (xhr.lengthComputable) {
+            //     var percentComplete = xhr.loaded / xhr.total * 100;
+            //     console.log(Math.round(percentComplete) + '% downloaded of ' + Math.round(xhr.total / (1024 * 1024)));
+            // }
+        };
+
+        var onError = function (xhr) {
+        };
+
+        //THREE.Loader.Handlers.add( /\.dds$/i, new THREE["DDSLoader"]() );
+        var mtlLoader = new THREE["MTLLoader"](manager);
+        mtlLoader.setPath('./models/' + folder);
+        mtlLoader.load(name + '.mtl', function (materials) {
+            var objLoader = new THREE["OBJLoader"]();
+            objLoader.setMaterials(materials);
+            objLoader.setPath('./models/' + folder);
+            materials.preload();
+            objLoader.load(name + '.obj', function (object) {
+                // object.position.y = -95;
+                object.scale.set(0.3, 0.3, 0.3);
+                object.smooth = true;
+
+                console.time("BufferGeometry::Create");
+                xray.BufferGeometry.NewBufferGeometry(object, masterScene);
+                masterScene.Commit();
+                console.timeEnd("BufferGeometry::Create");
+
+            }, onProgress, onError);
+        });
+    }
 </script>
 </body>
 </html>

@@ -53,13 +53,15 @@ export class BufferGeometry {
             geometry = geometry["_bufferGeometry"];
         }
 
-        var triangles:number[] = [];
+        // var triangles:number[] = [];
+        var triangles;
 
         if (!geometry.attributes) {
 
             var vertices = geometry.vertices;
             var faces = geometry.faces;
             if (vertices && faces) {
+                triangles = @new Triangle.Array(faces.length);
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
                     var t:number = @new Triangle;
@@ -74,7 +76,8 @@ export class BufferGeometry {
 
                     // triangle.updateBox();
                     // triangle.fixNormals();
-                    triangles.push(t);
+                    //triangles.push(t);
+                    Triangle.Array.setAt(triangles, i, t);
                 }
             } else {
                 return null;
@@ -100,6 +103,8 @@ export class BufferGeometry {
 
                 var indices = indexAttribute.array;
                 var uvIndex:number = 0;
+                triangles = @new Triangle.Array(indices.length);
+
                 for (var i = 0; i < indices.length; i = i + 3) {
 
                     triCount++;
@@ -162,12 +167,14 @@ export class BufferGeometry {
 
                     // triangle.fixNormals();
                     // triangle.updateBox();
-                    triangles.push(t);
+                    // triangles.push(t);
+                    Triangle.Array.setAt(triangles, i, t);
                     uvIndex += 2;
                 }
 
             } else {
                 uvIndex = 0;
+                triangles = @new Triangle.Array(positions.length);
                 for (var i = 0; i < positions.length; i = i + 9) {
                     var t = @new Triangle;
                     Triangle.Material(t) = material;
@@ -186,14 +193,16 @@ export class BufferGeometry {
 
                     // triangle.fixNormals();
                     // triangle.updateBox();
-                    triangles.push(t);
+                    // triangles.push(t);
+                    Triangle.Array.setAt(triangles, i, t);
                     uvIndex += 6;
                 }
             }
         }
 
         // console.log(`Num triangles: ${triangles.length}`);
-        let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
+        // let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
+        let meshRef = Mesh.NewMesh(triangles);
         // console.log(turbo.getMemoryUsage());
         // Mesh.Compile(meshRef);
         return meshRef;

@@ -1,29 +1,27 @@
 @turbo class Mesh extends Shape{
-	NumTriangles:int32
-	Triangles:int32
+	Triangles:Triangle.Array
 	box:Box
 	tree:Tree
 
-	@method init(SELF, triangles:number, numTriangles:number){
-        // console.log(`numTriangles:${numTriangles}`);
+	@method init(SELF, triangles:number){
+        console.log(`numTriangles:${Triangle.Array.len(triangles)}`);
         SELF.Triangles = triangles;
-        SELF.NumTriangles = numTriangles;
         return SELF;
 	}
-	static NewMesh(triangles:number, numTriangles:number):number{
+	static NewMesh(triangles:number):number{
 		let ptr:number = @new Mesh;
-		return Mesh.init(ptr, triangles, numTriangles);
+		return Mesh.init(ptr, triangles);
 	}
 
 	static dirty(SELF) {
 		SELF.box = null;
 		SELF.tree = null;
 	}
-    
-	Copy(SELF):number {
 
-		let triangles = @new Triangle.Array(SELF.NumTriangles);
-		for (let i=0; i < SELF.NumTriangles;i++) {
+	Copy(SELF):number {
+		let numTriangles:number = Triangle.Array.len(SELF.Triangles);
+		let triangles = @new Triangle.Array(numTriangles);
+		for (let i=0; i < numTriangles;i++) {
 			let t = Triangle.Array.at(SELF.Triangles, i);
 			let a = @new Triangle;
 			Triangle.Copy(t, a);
@@ -34,16 +32,7 @@
 
     @virtual Compile(SELF) {
 		if (!SELF.tree) {
-            // console.time("Mesh:Compile");
-            // let numShapes:number = SELF.NumTriangles;
-            // console.log(`Num shapes:${numShapes}`);
-			// let shapes = @new int32.Array(numShapes);
-			// for (let i=0; i < numShapes; i++) {
-			// 	let t = Triangle.Array.at(SELF.Triangles, i);
-             //    int32.Array.setAt(shapes, i, t);
-			// }
-			SELF.tree = Tree.NewTree(SELF.Triangles, SELF.NumTriangles);
-            // console.timeEnd("Mesh:Compile");
+			SELF.tree = Tree.NewTree(SELF.Triangles);
 		}
         return SELF.tree;
 	}
