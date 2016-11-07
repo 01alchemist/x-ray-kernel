@@ -1286,7 +1286,11 @@ export class Box extends MemoryObject{
 
 	static Extend(SELF, b:number):number{
         //let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-		return Box.Init_mem(SELF, Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], turbo.Runtime._mem_int32[(b + 4) >> 2], SELF.), Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(b + 8) >> 2]));
+		let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
+		let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+		let bmin = turbo.Runtime._mem_int32[(b + 4) >> 2];
+		let bmax = turbo.Runtime._mem_int32[(b + 8) >> 2];
+		return Box.Init_mem(SELF, Vector.Min_mem(min, bmin, min), Vector.Max_mem(max, bmax, max));
 	}
 
 	static Contains(SELF , b:number):boolean{
@@ -2361,12 +2365,6 @@ export class Node extends MemoryObject{
         }
 
         let size:number = turbo.Runtime._mem_int32[(SELF + 20) >> 2] * 2;
-        // let xs = turbo.Runtime.allocOrThrow( 4 + ( 8 * size ), 8 ) /*Array*/;
-        turbo.Runtime._mem_int32[xs >> 2] = size;
-        // let ys = turbo.Runtime.allocOrThrow( 4 + ( 8 * size ), 8 ) /*Array*/;
-        turbo.Runtime._mem_int32[ys >> 2] = size;
-        // let zs = turbo.Runtime.allocOrThrow( 4 + ( 8 * size ), 8 ) /*Array*/;
-        turbo.Runtime._mem_int32[zs >> 2] = size;
 
         let _xs = new Float64Array(size);
         let _ys = new Float64Array(size);
@@ -2392,12 +2390,6 @@ export class Node extends MemoryObject{
         _xs.sort();
         _ys.sort();
         _zs.sort();
-
-        // for(let i=0;i < size;i++) {
-        //     turbo.Runtime._mem_float64[(  xs + 4 + (8 * i)  ) >> 3] = (_xs[i]);
-        //     turbo.Runtime._mem_float64[(  ys + 4 + (8 * i)  ) >> 3] = (_ys[i]);
-        //     turbo.Runtime._mem_float64[(  zs + 4 + (8 * i)  ) >> 3] = (_zs[i]);
-        // }
 
         let mx = Utils.Median(_xs);
         let my = Utils.Median(_ys);
@@ -3268,15 +3260,15 @@ export class BufferGeometry {
             geometry = geometry["_bufferGeometry"];
         }
 
-        // var triangles:number[] = [];
-        var triangles;
+        var triangles:number[] = [];
+        // var triangles;
 
         if (!geometry.attributes) {
 
             var vertices = geometry.vertices;
             var faces = geometry.faces;
             if (vertices && faces) {
-                triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (faces.length) ), 4 ) /*Array*/;
+                // triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (faces.length) ), 4 ) /*Array*/;
         turbo.Runtime._mem_int32[triangles >> 2] = (faces.length);
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
@@ -3292,8 +3284,8 @@ export class BufferGeometry {
 
                     // triangle.updateBox();
                     // triangle.fixNormals();
-                    //triangles.push(t);
-                    turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
+                    triangles.push(t);
+                    // turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
                 }
             } else {
                 return null;
@@ -3319,7 +3311,7 @@ export class BufferGeometry {
 
                 var indices = indexAttribute.array;
                 var uvIndex:number = 0;
-                triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (indices.length) ), 4 ) /*Array*/;
+                // triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (indices.length) ), 4 ) /*Array*/;
         turbo.Runtime._mem_int32[triangles >> 2] = (indices.length);
 
                 for (var i = 0; i < indices.length; i = i + 3) {
@@ -3384,14 +3376,14 @@ export class BufferGeometry {
 
                     // triangle.fixNormals();
                     // triangle.updateBox();
-                    // triangles.push(t);
-                    turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
+                    triangles.push(t);
+                    // turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
                     uvIndex += 2;
                 }
 
             } else {
                 uvIndex = 0;
-                triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (positions.length) ), 4 ) /*Array*/;
+                // triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * (positions.length) ), 4 ) /*Array*/;
         turbo.Runtime._mem_int32[triangles >> 2] = (positions.length);
                 for (var i = 0; i < positions.length; i = i + 9) {
                     var t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
@@ -3411,8 +3403,8 @@ export class BufferGeometry {
 
                     // triangle.fixNormals();
                     // triangle.updateBox();
-                    // triangles.push(t);
-                    turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
+                    triangles.push(t);
+                    // turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = t;
                     uvIndex += 6;
                 }
             }
@@ -3420,7 +3412,8 @@ export class BufferGeometry {
 
         // console.log(`Num triangles: ${triangles.length}`);
         // let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
-        let meshRef = Mesh.NewMesh(triangles);
+        let meshRef = Mesh.NewMesh(Triangle.Pack(triangles));
+        // let meshRef = Mesh.NewMesh(triangles);
         // console.log(turbo.getMemoryUsage());
         // Mesh.Compile(meshRef);
         return meshRef;

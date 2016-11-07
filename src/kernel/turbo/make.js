@@ -49,7 +49,7 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
 
 //Compile TypeScript
-/*const spawn = require('child_process').spawn;
+const spawn = require('child_process').spawn;
 const ls = spawn('tsc', [
     __dirname + '/xray-kernel-turbo.ts',
     '--target', 'es5',
@@ -67,4 +67,4 @@ ls.stderr.on('data', (data) => {
 
 ls.on('close', (code) => {
     console.log(`child process exited with code ${code}`);
-});*/
+});
