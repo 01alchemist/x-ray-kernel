@@ -1951,12 +1951,11 @@ export class Ray extends MemoryObject{
 		return SELF;
 	}
 
-    static _origin(SELF){
-        return Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
-    }
-
-    static _direction(SELF){
-        return Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+    static ToJSON(SELF){
+        return {
+            origin:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
+            direction:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 8) >> 2])
+        };
     }
 
 	static Position(r:number, t:number):number{
@@ -4118,7 +4117,6 @@ export class DefaultSampler {
     }
 
     sampleEnvironment(scene:number, ray:number):number{
-        //return  turbo.Runtime._mem_int32[(scene + 4) >> 2];
         if (turbo.Runtime._mem_int32[(scene + 8) >> 2]) {
             let d:number = turbo.Runtime._mem_int32[(ray + 8) >> 2];
             let u:number = Math.atan2(turbo.Runtime._mem_float64[(d + 24) >> 3], turbo.Runtime._mem_float64[(d + 8) >> 3]) + turbo.Runtime._mem_float64[(scene + 16) >> 3];

@@ -9,12 +9,11 @@
 		return SELF;
 	}
 
-    static _origin(SELF){
-        return Vector.XYZ(SELF.Origin);
-    }
-
-    static _direction(SELF){
-        return Vector.XYZ(SELF.Direction);
+    static ToJSON(SELF){
+        return {
+            origin:Vector.XYZ(SELF.Origin),
+            direction:Vector.XYZ(SELF.Direction)
+        };
     }
 
 	static Position(r:number, t:number):number{

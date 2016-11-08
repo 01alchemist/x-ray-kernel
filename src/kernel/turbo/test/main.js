@@ -79,8 +79,8 @@ function init() {
 
 init();
 // loadModel("box-slit");
-loadModel("cornellbox_suzanne_lucy");
-// loadModel("gopher");
+// loadModel("cornellbox_suzanne_lucy");
+loadModel("gopher");
 // debug_init();
 
 function debug_init(){
