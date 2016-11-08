@@ -371,6 +371,10 @@ type RGB = {
         return Color.Init_mem(ptr, Math.random(), Math.random(), Math.random());
     }
 
+    static random():RGB {
+        return rgb(Math.random(), Math.random(), Math.random());
+    }
+
     static RandomBrightColor():number {
         var i:number = Math.round(Math.random() * Color.BrightColors.length);
         return Color.BrightColors[i];

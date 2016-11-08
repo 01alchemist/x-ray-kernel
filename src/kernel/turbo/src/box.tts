@@ -31,20 +31,21 @@
 
 	static BoxForShapes(shapes:number, numShapes:number):number{
 		if(numShapes == 0) {
-			return @new Box;
+			return Box.NewBox();
 		}
-		let box = Shape.BoundingBox(Shape.Array.at(shapes, 0));
+		// let box = Shape.BoundingBox(Shape.Array.at(shapes, 0));
+		let box = Box.NewBox();
 
 		for(let i:number = 0; i < numShapes; i++){
 			let shape:number = Shape.Array.at(shapes, i);
 			box = Box.Extend(box, Shape.BoundingBox(shape));
 		}
-		return box
+		return box;
 	}
 
 	static BoxForTriangles(shapes:number, numShapes:number):number {
         if(numShapes == 0) {
-            return @new Box;
+            return Box.NewBox();
         }
         let box = Triangle.BoundingBox(Triangle.Array.at(shapes, 0));
 
@@ -119,6 +120,7 @@
         let y2 = (Vector.Y(max) - Vector.Y(origin)) / Vector.Y(dir);
         let z2 = (Vector.Z(max) - Vector.Z(origin)) / Vector.Z(dir);
         let tmp;
+
 		if (x1 > x2) {
             tmp = x1;
 			x1 = x2;

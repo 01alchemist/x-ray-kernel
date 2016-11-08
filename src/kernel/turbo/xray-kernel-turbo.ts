@@ -474,6 +474,10 @@ export class Color extends MemoryObject{
         return Color.Init_mem(ptr, Math.random(), Math.random(), Math.random());
     }
 
+    static random():RGB {
+        return rgb(Math.random(), Math.random(), Math.random());
+    }
+
     static RandomBrightColor():number {
         var i:number = Math.round(Math.random() * Color.BrightColors.length);
         return Color.BrightColors[i];
@@ -1239,20 +1243,21 @@ export class Box extends MemoryObject{
 
 	static BoxForShapes(shapes:number, numShapes:number):number{
 		if(numShapes == 0) {
-			return Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+			return Box.NewBox();
 		}
-		let box = Shape.BoundingBox(turbo.Runtime._mem_int32[(  shapes + 4 + (4 * 0)  ) >> 2]);
+		// let box = Shape.BoundingBox(turbo.Runtime._mem_int32[(  shapes + 4 + (4 * 0)  ) >> 2]);
+		let box = Box.NewBox();
 
 		for(let i:number = 0; i < numShapes; i++){
 			let shape:number = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * i)  ) >> 2];
 			box = Box.Extend(box, Shape.BoundingBox(shape));
 		}
-		return box
+		return box;
 	}
 
 	static BoxForTriangles(shapes:number, numShapes:number):number {
         if(numShapes == 0) {
-            return Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+            return Box.NewBox();
         }
         let box = Triangle.BoundingBox(turbo.Runtime._mem_int32[(  shapes + 4 + (4 * 0)  ) >> 2]);
 
@@ -1327,6 +1332,7 @@ export class Box extends MemoryObject{
         let y2 = (turbo.Runtime._mem_float64[(max + 16) >> 3] - turbo.Runtime._mem_float64[(origin + 16) >> 3]) / turbo.Runtime._mem_float64[(dir + 16) >> 3];
         let z2 = (turbo.Runtime._mem_float64[(max + 24) >> 3] - turbo.Runtime._mem_float64[(origin + 24) >> 3]) / turbo.Runtime._mem_float64[(dir + 24) >> 3];
         let tmp;
+
 		if (x1 > x2) {
             tmp = x1;
 			x1 = x2;
@@ -1945,6 +1951,14 @@ export class Ray extends MemoryObject{
 		return SELF;
 	}
 
+    static _origin(SELF){
+        return Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+    }
+
+    static _direction(SELF){
+        return Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+    }
+
 	static Position(r:number, t:number):number{
 		return Vector.Add_mem(turbo.Runtime._mem_int32[(r + 4) >> 2], Vector.MulScalar_mem(turbo.Runtime._mem_int32[(r + 8) >> 2], t));
 	}
@@ -2085,6 +2099,10 @@ export class Shape extends MemoryObject{
                 return Triangle.Compile_impl(SELF , c);
             case 48819938:
                 return Mesh.Compile_impl(SELF , c);
+            case 48824165:
+                return Cube.Compile_impl(SELF , c);
+            case 171432461:
+                return Sphere.Compile_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2097,6 +2115,10 @@ export class Shape extends MemoryObject{
                 return Triangle.BoundingBox_impl(SELF , c);
             case 48819938:
                 return Mesh.BoundingBox_impl(SELF , c);
+            case 48824165:
+                return Cube.BoundingBox_impl(SELF , c);
+            case 171432461:
+                return Sphere.BoundingBox_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2109,6 +2131,10 @@ export class Shape extends MemoryObject{
                 return Triangle.Intersect_impl(SELF , ray,c);
             case 48819938:
                 return Mesh.Intersect_impl(SELF , ray,c);
+            case 48824165:
+                return Cube.Intersect_impl(SELF , ray,c);
+            case 171432461:
+                return Sphere.Intersect_impl(SELF , ray,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2121,6 +2147,10 @@ export class Shape extends MemoryObject{
                 return Triangle.UV_impl(SELF , p,c);
             case 48819938:
                 return Mesh.UV_impl(SELF , p,c);
+            case 48824165:
+                return Cube.UV_impl(SELF , p,c);
+            case 171432461:
+                return Sphere.UV_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2133,6 +2163,10 @@ export class Shape extends MemoryObject{
                 return Triangle.NormalAt_impl(SELF , p,c);
             case 48819938:
                 return Mesh.NormalAt_impl(SELF , p,c);
+            case 48824165:
+                return Cube.NormalAt_impl(SELF , p,c);
+            case 171432461:
+                return Sphere.NormalAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2145,6 +2179,10 @@ export class Shape extends MemoryObject{
                 return Triangle.MaterialAt_impl(SELF , p,c);
             case 48819938:
                 return Mesh.MaterialAt_impl(SELF , p,c);
+            case 48824165:
+                return Cube.MaterialAt_impl(SELF , p,c);
+            case 171432461:
+                return Sphere.MaterialAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2814,7 +2852,8 @@ export class Mesh extends Shape{
             let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
 			let min = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
 			let max = Vector.Clone(min);
-			for (let i=1;i < Mesh.NumTriangles(SELF);i++) {
+            let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+			for (let i=1;i < NumTriangles;i++) {
 				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, t.V1, min), t.V2, min), t.V3, min);
 				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, t.V1, max), t.V2, max), t.V3, max);
 			}
@@ -2982,6 +3021,282 @@ export class Mesh extends Shape{
 }
 turbo.Runtime._idToType[48819938] = Mesh;
 
+export class Cube extends Shape{
+   static NAME:string = "Cube";
+   static SIZE:number = 24;
+   static ALIGN:number = 4;
+   static CLSID:number = 48824165;
+
+   static get BASE():string{
+       return Shape
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, min, max, material, box){
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = min; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = max; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = material; 
+         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = box; 
+        return SELF;
+    }
+    static NewCube(min, max, material):number {
+        let box = Box.Init_mem(Box.initInstance(turbo.Runtime.allocOrThrow(12,4)), min, max);
+        return Cube.init(Cube.initInstance(turbo.Runtime.allocOrThrow(24,4)), min, max, material, box);
+    }
+    static Compile_impl(SELF){
+        return null;
+    }
+    static BoundingBox_impl(SELF):number {
+        return turbo.Runtime._mem_int32[(SELF + 20) >> 2];
+    }
+    static Intersect_impl(SELF, r:number):Hit {
+        let n = Vector.Div_mem(Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(r + 4) >> 2]), turbo.Runtime._mem_int32[(r + 8) >> 2]);
+        let f = Vector.Div_mem(Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(r + 4) >> 2]), turbo.Runtime._mem_int32[(r + 8) >> 2]);
+        n = Vector.Min_mem(n, f, n);
+        f = Vector.Max_mem(n, f, n);
+        let t0 = Math.max(Math.max(turbo.Runtime._mem_float64[(n + 8) >> 3], turbo.Runtime._mem_float64[(n + 16) >> 3]), turbo.Runtime._mem_float64[(n + 24) >> 3]);
+        let t1 = Math.min(Math.min(turbo.Runtime._mem_float64[(f + 8) >> 3], turbo.Runtime._mem_float64[(f + 16) >> 3]), turbo.Runtime._mem_float64[(f + 24) >> 3]);
+        if (t0 > 0 && t0 < t1) {
+            return new Hit(this, t0, null)
+        }
+        return Hit.NoHit;
+    }
+    static UV_impl(SELF, p):number {
+        Vector.Div_mem(Vector.Sub_mem(p, turbo.Runtime._mem_int32[(SELF + 8) >> 2], p), Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]), p);
+        return Vector.NewVector(turbo.Runtime._mem_float64[(p + 8) >> 3], turbo.Runtime._mem_float64[(p + 24) >> 3], 0);
+    }
+    static MaterialAt_impl(SELF, p:number):number {
+        return turbo.Runtime._mem_int32[(SELF + 16) >> 2];
+    }
+    static NormalAt_impl(SELF, p):number {
+
+        let min = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let max = turbo.Runtime._mem_int32[(SELF + 12) >> 2];
+
+        if(turbo.Runtime._mem_float64[(p + 8) >> 3] < turbo.Runtime._mem_float64[(min + 8) >> 3]+EPS)
+            return Vector.NewVector(-1, 0, 0);
+        else if(turbo.Runtime._mem_float64[(p + 8) >> 3] > turbo.Runtime._mem_float64[(max + 8) >> 3]-EPS)
+            return Vector.NewVector(1, 0, 0);
+        else if (turbo.Runtime._mem_float64[(p + 16) >> 3] < turbo.Runtime._mem_float64[(min + 16) >> 3]+EPS)
+            return Vector.NewVector(0, -1, 0);
+        else if (turbo.Runtime._mem_float64[(p + 16) >> 3] > turbo.Runtime._mem_float64[(max + 16) >> 3]-EPS)
+            return Vector.NewVector(0, 1, 0);
+        else if (turbo.Runtime._mem_float64[(p + 24) >> 3] < turbo.Runtime._mem_float64[(min + 24) >> 3]+EPS)
+            return Vector.NewVector(0, 0, -1);
+        else if (turbo.Runtime._mem_float64[(p + 24) >> 3] > turbo.Runtime._mem_float64[(max + 24) >> 3]-EPS)
+            return Vector.NewVector(0, 0, 1);
+
+        return Vector.NewVector(0, 1, 0);
+    }
+
+    static Mesh(SELF):number {
+        let a = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let b = turbo.Runtime._mem_int32[(SELF + 12) >> 2];
+        let z = Vector.NewVector();
+        let m = turbo.Runtime._mem_int32[(SELF + 16) >> 2];
+        let v000 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        let v001 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        let v010 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        let v011 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        let v100 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        let v101 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        let v110 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        let v111 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        let triangles = [
+            Triangle.NewTriangle(v000, v100, v110, z, z, z, m),
+            Triangle.NewTriangle(v000, v110, v010, z, z, z, m),
+            Triangle.NewTriangle(v001, v101, v111, z, z, z, m),
+            Triangle.NewTriangle(v001, v111, v011, z, z, z, m),
+            Triangle.NewTriangle(v000, v100, v101, z, z, z, m),
+            Triangle.NewTriangle(v000, v101, v001, z, z, z, m),
+            Triangle.NewTriangle(v010, v110, v111, z, z, z, m),
+            Triangle.NewTriangle(v010, v111, v011, z, z, z, m),
+            Triangle.NewTriangle(v000, v010, v011, z, z, z, m),
+            Triangle.NewTriangle(v000, v011, v001, z, z, z, m),
+            Triangle.NewTriangle(v100, v110, v111, z, z, z, m),
+            Triangle.NewTriangle(v100, v111, v101, z, z, z, m)
+        ];
+        return Mesh.NewMesh(Triangle.Pack(triangles));
+    }
+    static Compile(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.Compile_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static BoundingBox(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.BoundingBox_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Intersect(SELF , r) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.Intersect_impl(SELF , r);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static UV(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.UV_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static MaterialAt(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.MaterialAt_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static NormalAt(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.NormalAt_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=48824165; return SELF; }
+}
+turbo.Runtime._idToType[48824165] = Cube;
+
+
+export class Sphere extends Shape{
+   static NAME:string = "Sphere";
+   static SIZE:number = 32;
+   static ALIGN:number = 8;
+   static CLSID:number = 171432461;
+
+   static get BASE():string{
+       return Shape
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, center:number, radius:number, material:number, box:number):number{
+		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = center; 
+		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = radius; 
+		 turbo.Runtime._mem_int32[(SELF + 24) >> 2] = material; 
+		 turbo.Runtime._mem_int32[(SELF + 28) >> 2] = box; 
+		return SELF;
+	}
+
+	static NewSphere(center:number, radius:number, material:number):number {
+		let min = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		let max = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		Vector.Init_mem(min, turbo.Runtime._mem_float64[(center + 8) >> 3] - radius, turbo.Runtime._mem_float64[(center + 16) >> 3] - radius, turbo.Runtime._mem_float64[(center + 24) >> 3] - radius);
+		Vector.Init_mem(max, turbo.Runtime._mem_float64[(center + 8) >> 3] + radius, turbo.Runtime._mem_float64[(center + 16) >> 3] + radius, turbo.Runtime._mem_float64[(center + 24) >> 3] + radius);
+		let box = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		Box.Init_mem(box , min, max);
+		let ptr:number = Sphere.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		return Sphere.init(ptr, center, radius, material, box);
+	}
+    static Compile_impl(SELF) {
+	}
+    static BoundingBox_impl(SELF):number {
+		return turbo.Runtime._mem_int32[(SELF + 28) >> 2];
+	}
+    static Intersect_impl(SELF, r:number):Hit {
+		let to = Vector.Sub_mem(turbo.Runtime._mem_int32[(r + 4) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+		let b = Vector.Dot_mem(to, turbo.Runtime._mem_int32[(r + 8) >> 2]);
+		let c = Vector.Dot_mem(to, to) - turbo.Runtime._mem_float64[(SELF + 16) >> 3] * turbo.Runtime._mem_float64[(SELF + 16) >> 3];
+		let d = b * b - c;
+		if (d > 0) {
+			d = Math.sqrt(d);
+			let t1 = -b - d;
+			if (t1 > EPS) {
+				return new Hit(SELF, t1, null)
+			}
+			let t2 = -b + d;
+			if (t2 > EPS) {
+				return new Hit(SELF, t2, null);
+			}
+		}
+		return Hit.NoHit;
+	}
+    static UV_impl(SELF, p:number):number {
+		p = Vector.Sub_mem(p, turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+		let u = Math.atan2(turbo.Runtime._mem_float64[(p + 24) >> 3], turbo.Runtime._mem_float64[(p + 8) >> 3]);
+		let ptr=Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		let l = Vector.Length_mem(Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(p + 8) >> 3], 0, turbo.Runtime._mem_float64[(p + 24) >> 3]));
+		let v = Math.atan2(turbo.Runtime._mem_float64[(p + 16) >> 3], l);
+		u = 1 - (u+Math.PI)/(2*Math.PI);
+		v = (v + Math.PI/2) / Math.PI;
+		return Vector.Init_mem(ptr, u, v, 0);
+	}
+    static MaterialAt_impl(SELF, p:number):number {
+		return turbo.Runtime._mem_int32[(SELF + 24) >> 2];
+	}
+    static NormalAt_impl(SELF, p:number):number {
+		return Vector.Normalize_mem(Vector.Sub_mem(p, turbo.Runtime._mem_int32[(SELF + 8) >> 2]));
+	}
+    static Compile(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.Compile_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static BoundingBox(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.BoundingBox_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Intersect(SELF , r) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.Intersect_impl(SELF , r);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static UV(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.UV_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static MaterialAt(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.MaterialAt_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static NormalAt(SELF , p) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.NormalAt_impl(SELF , p);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=171432461; return SELF; }
+}
+turbo.Runtime._idToType[171432461] = Sphere;
+
 export class Hit{
 
 	static NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
@@ -3071,10 +3386,10 @@ export class Camera extends MemoryObject{
 
     static ToJSON(SELF){
         return {
-            p:turbo.Runtime._mem_int32[(SELF + 4) >> 2],
-            u:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
-            v:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
-            w:turbo.Runtime._mem_int32[(SELF + 16) >> 2],
+            p:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
+            u:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
+            v:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
+            w:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 16) >> 2]),
             m:turbo.Runtime._mem_float64[(SELF + 24) >> 3],
             focalDistance:turbo.Runtime._mem_float64[(SELF + 32) >> 3],
             apertureRadius:turbo.Runtime._mem_float64[(SELF + 40) >> 3]
@@ -3107,7 +3422,7 @@ export class Camera extends MemoryObject{
         d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 8) >> 2], -px * aspect), d);
         d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 12) >> 2], -py), d);
         d = Vector.Add_mem(d, Vector.MulScalar_mem(turbo.Runtime._mem_int32[(c + 16) >> 2], turbo.Runtime._mem_float64[(c + 24) >> 3]), d);
-        d = Vector.Normalize_mem(d);
+        d = Vector.Normalize_mem(d, d);
         let p = turbo.Runtime._mem_int32[(c + 4) >> 2];
         if (turbo.Runtime._mem_float64[(c + 40) >> 3] > 0) {
             let focalPoint = Vector.Add_mem(turbo.Runtime._mem_int32[(c + 4) >> 2], Vector.MulScalar_mem(d, turbo.Runtime._mem_float64[(c + 32) >> 3]));
@@ -3138,27 +3453,38 @@ export class Scene extends MemoryObject{
        super(p);
    }
 
-    static init(SELF){
+    static init(SELF, color){
+         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = color; 
+         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = 0; 
+         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = 0; 
+         turbo.Runtime._mem_int32[(SELF + 44) >> 2] = 0; 
 		return SELF;
 	}
 
-	Compile(SELF) {
+    static NewScene(color:number){
+        let ptr = Scene.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        return Scene.init(ptr, Color.HexColor(color));
+    }
+
+	static Compile(SELF) {
 		for (let i=0; i < turbo.Runtime._mem_int32[(SELF + 28) >> 2];i++) {
 			let shape = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 24) >> 2]) + 4 + (4 * i)  ) >> 2];
 			Shape.Compile(shape);
 		}
-		if (turbo.Runtime._mem_int32[(SELF + 40) >> 2] == null) {
-			 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 24) >> 2], turbo.Runtime._mem_int32[(SELF + 28) >> 2])); 
+		if (!turbo.Runtime._mem_int32[(SELF + 40) >> 2]) {
+			 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 24) >> 2])); 
 		}
-		return SELF;
+		return turbo.Runtime._mem_int32[(SELF + 40) >> 2];
 	}
 
 	static RayCount(SELF):number {
-		return Atomics.load(turbo.Runtime._mem_int32[(SELF + 44) >> 2]);
+		// return Atomics.load(turbo.Runtime._mem_int32, turbo.Runtime._mem_int32[(SELF + 44) >> 2]);
+        return turbo.Runtime._mem_int32[(SELF + 44) >> 2];
 	}
 
 	static Intersect(SELF, r:number):Hit {
-		Atomic.add(turbo.Runtime._mem_int32[(SELF + 44) >> 2], 1);
+		// Atomics.add(turbo.Runtime._mem_int32, turbo.Runtime._mem_int32[(SELF + 44) >> 2], 1);
+         turbo.Runtime._mem_int32[(SELF + 44) >> 2] = (turbo.Runtime._mem_int32[(SELF + 44) >> 2] + 1); 
 		return Tree.Intersect(turbo.Runtime._mem_int32[(SELF + 40) >> 2], r);
 	}
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=237222; return SELF; }
@@ -3173,10 +3499,23 @@ export class MasterScene{
 	scenePtr:number;
 
 	constructor(){
-		this.scenePtr = Scene.initInstance(turbo.Runtime.allocOrThrow(48,8));
+		this.scenePtr = Scene.NewScene(0xffffff);
         this.shapes = [];
         this.lights = [];
+
+		// let gopher = Material.GlossyMaterial(Color.BLACK, 1.2, Utils.Radians(30));
+		let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
+		let light = Material.LightMaterial(Color.WHITE, 80);
+
+		// add walls and lights
+		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
+		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+
 	}
+    AddDebugScene(){
+
+    }
 	Add(shape) {
 		this.shapes.push(shape);
 		
@@ -3195,20 +3534,23 @@ export class MasterScene{
         turbo.Runtime._mem_int32[((this.scenePtr) + 32) >> 2] = lightList;
 
 		this.shapes.forEach((shape, index) => {
-            Mesh.Compile(shape);
             turbo.Runtime._mem_int32[(  shapeList + 4 + (4 * index)  ) >> 2] = shape;
 		});
 
 		this.lights.forEach((shape, index) => {
             turbo.Runtime._mem_int32[(  lightList + 4 + (4 * index)  ) >> 2] = shape;
-		})
+		});
+
+        Scene.Compile(this.scenePtr);
 	}
 }
 
 export class BufferGeometry {
 
-    constructor(){
+    static defaultMaterial;
 
+    constructor(){
+        BufferGeometry.defaultMaterial = Material.LightMaterial(Color.HexColor(0xFFFFFF), 1);
     }
 
     static NewBufferGeometry(obj, scene:MasterScene){
@@ -3251,7 +3593,7 @@ export class BufferGeometry {
 
         }*/
         // return null;
-        return this.buildGeometry(src.geometry, 0, src.smooth);
+        return this.buildGeometry(src.geometry, BufferGeometry.defaultMaterial, src.smooth);
     }
 
     static buildGeometry(geometry:THREE.BufferGeometry|any, material:number, smooth:boolean=false):number {
@@ -3667,6 +4009,235 @@ export class OBJLoader {
 
         return null;
     }
+}
+
+
+export enum LightMode{
+    LightModeRandom,
+    LightModeAll
+}
+export enum SpecularMode{
+    SpecularModeNaive,
+    SpecularModeFirst,
+    SpecularModeAll
+}
+
+export enum BounceType{
+    BounceTypeAny,
+    BounceTypeDiffuse,
+    BounceTypeSpecular
+}
+
+interface Sampler{
+	Sample(scene:number, ray:number):RGBA
+}
+
+export function NewSampler(firstHitSamples, maxBounces){
+	return new DefaultSampler(firstHitSamples, maxBounces, true, true, LightMode.LightModeRandom, SpecularMode.SpecularModeNaive);
+}
+
+export function NewDirectSampler():DefaultSampler {
+	return new DefaultSampler(1, 0, true, false, LightMode.LightModeAll, SpecularMode.SpecularModeAll);
+}
+
+export class Sampler {
+
+    static Sample(sampler:DefaultSampler, scene:number, ray:number):number {
+        return sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0)
+    }
+}
+export class DefaultSampler {
+
+    constructor(
+        public FirstHitSamples:number,
+        public MaxBounces:number,
+        public DirectLighting:boolean,
+        public SoftShadows:boolean,
+        public LightMode:LightMode,
+        public SpecularMode:SpecularMode) {
+
+    }
+
+    sample(scene:number, ray:number, emission:boolean, samples:number, depth:number):number {
+        if (depth > this.MaxBounces) {
+            return Color.BLACK;
+        }
+        let hit:Hit = Scene.Intersect(scene, ray);
+        if (!hit.Ok()) {
+            return this.sampleEnvironment(scene, ray);
+        }
+        let info = hit.Info(ray);
+        let material = info.Material;
+        let result:number = Color.BLACK;
+        if (turbo.Runtime._mem_float64[(material + 32) >> 3] > 0) {
+            if (this.DirectLighting && !emission) {
+                return Color.BLACK;
+            }
+            result = Color.Add_mem(result, Color.MulScalar_mem(turbo.Runtime._mem_int32[(material + 4) >> 2], turbo.Runtime._mem_float64[(material + 32) >> 3] * samples));
+        }
+        let n:number = Math.sqrt(samples);
+        let ma:BounceType;
+        let mb:BounceType;
+
+        if (this.SpecularMode == SpecularMode.SpecularModeAll || (depth == 0 && this.SpecularMode == SpecularMode.SpecularModeFirst)) {
+            ma = BounceType.BounceTypeDiffuse;
+            mb = BounceType.BounceTypeSpecular;
+        } else {
+            ma = BounceType.BounceTypeAny;
+            mb = BounceType.BounceTypeAny;
+        }
+
+        for (let u = 0; u < n; u++) {
+            for (let v = 0; v < n; v++) {
+                for (let mode = ma; mode <= mb; mode++) {
+                    let fu = (u + Math.random()) / n;
+                    let fv = (v + Math.random()) / n;
+                    let bounce = Ray.Bounce(ray, info, fu, fv, mode);
+                    if (mode == BounceType.BounceTypeAny) {
+                        bounce.coefficient = 1
+                    }
+                    if (bounce.coefficient > 0 && bounce.reflected) {
+                        // specular
+                        let indirect = this.sample(scene, bounce.ray, bounce.reflected, 1, depth+1);
+                        let tinted = Color.Mix_mem(indirect , Color.Mul_mem(turbo.Runtime._mem_int32[(material + 4) >> 2], indirect), turbo.Runtime._mem_float64[(material + 56) >> 3]);
+                        result = Color.Add_mem(result, Color.MulScalar_mem(tinted, bounce.coefficient));
+                    }
+                    if (bounce.coefficient > 0 && !bounce.reflected) {
+                        // diffuse
+                        let indirect = this.sample(scene, bounce.ray, bounce.reflected, 1, depth+1);
+                        let direct = Color.BLACK;
+                        if (this.DirectLighting) {
+                            direct = this.sampleLights(scene, info.Ray);
+                        }
+                        result = Color.Add_mem(result, Color.MulScalar_mem(Color.Mul_mem(turbo.Runtime._mem_int32[(material + 4) >> 2], Color.Add_mem(direct, indirect)), bounce.coefficient));
+                    }
+                }
+            }
+        }
+        return Color.DivScalar_mem(result, n * n, result);
+    }
+
+    sampleEnvironment(scene:number, ray:number):number{
+        //return  turbo.Runtime._mem_int32[(scene + 4) >> 2];
+        if (turbo.Runtime._mem_int32[(scene + 8) >> 2]) {
+            let d:number = turbo.Runtime._mem_int32[(ray + 8) >> 2];
+            let u:number = Math.atan2(turbo.Runtime._mem_float64[(d + 24) >> 3], turbo.Runtime._mem_float64[(d + 8) >> 3]) + turbo.Runtime._mem_float64[(scene + 16) >> 3];
+            let v:number = Math.atan2(turbo.Runtime._mem_float64[(d + 16) >> 3], Vector.Length_mem(Vector(turbo.Runtime._mem_float64[(d + 8) >> 3], 0, turbo.Runtime._mem_float64[(d + 24) >> 3])));
+            u = (u + Math.PI) / (2 * Math.PI);
+            v = (v + Math.PI/2) / Math.PI;
+            return Texture.Sample(turbo.Runtime._mem_int32[(scene + 8) >> 2], u, v);
+        }
+        return turbo.Runtime._mem_int32[(scene + 4) >> 2];
+    }
+
+    sampleLights(scene:number, n:number):number {
+        let nLights = turbo.Runtime._mem_int32[(scene + 36) >> 2];
+        if (nLights == 0) {
+            return Color.BLACK;
+        }
+
+        let shapes = turbo.Runtime._mem_int32[(scene + 24) >> 2];
+
+        if (this.LightMode == LightMode.LightModeAll) {
+            var result:number =  Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            for (let i=0; i < nLights;i++) {
+                let lightIndex = turbo.Runtime._mem_int32[(  (Scane.Lights(scene)) + 4 + (4 * i)  ) >> 2];
+                let light = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * lightIndex)  ) >> 2];
+                Color.Add(result, this.sampleLight(scene, n, light), result)
+            }
+            return result;
+        } else {
+            // pick a random light
+            let rndLight:number = Math.round(Math.random() * nLights);
+            let lightIndex = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(scene + 32) >> 2]) + 4 + (4 * rndLight)  ) >> 2];
+            let light = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * lightIndex)  ) >> 2];
+            return Color.MulScalar_mem(this.sampleLight(scene, n, light), nLights);
+        }
+    }
+
+    sampleLight(scene:number, n:number, light:number):number {
+        // get bounding sphere center and radius
+        var center:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        var radius:number;
+
+        switch(Shape.Type(light)){
+            case Shape.SPHERE:
+                radius = turbo.Runtime._mem_float64[(light + 16) >> 3];
+                center = turbo.Runtime._mem_int32[(light + 8) >> 2];
+                break;
+
+            default:
+                // get bounding sphere from bounding box
+                let box = Shape.BoundingBox(light);
+                radius = Box.OuterRadius(box);
+                center = Box.Center(box);
+                break;
+        }
+
+        // get random point in disk
+        let point = center;
+        if (this.SoftShadows) {
+
+            let x;
+            let y;
+
+            while(true){
+
+                x = Math.random() * 2 - 1;
+                y = Math.random() * 2 - 1;
+
+                if(x*x+y*y <= 1) {
+                    let l = Vector.Normalize_mem(Vector.Sub_mem(center, turbo.Runtime._mem_int32[(n + 4) >> 2]));
+                    let u = Vector.Normalize_mem(Vector.Cross_mem(l, Vector.RandomUnitVector()));
+                    let v = Vector.Cross_mem(l, u);
+                    point = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+                    Vector.Add_mem(point, Vector.MulScalar_mem(u, x * radius), point);
+                    Vector.Add_mem(point, Vector.MulScalar_mem(v, y * radius), point);
+                    Vector.Add_mem(point, center, point);
+                    break;
+                }
+
+            }
+        }
+
+        // construct ray toward light point
+        let ray = Ray.init(Ray.initInstance(turbo.Runtime.allocOrThrow(12,4)), turbo.Runtime._mem_int32[(n + 4) >> 2], Vector.Normalize_mem(Vector.Sub_mem(point, turbo.Runtime._mem_int32[(n + 4) >> 2])));
+
+        // get cosine term
+        let diffuse = Vector.Dot_mem(turbo.Runtime._mem_int32[(ray + 8) >> 2], turbo.Runtime._mem_int32[(n + 8) >> 2]);
+        if (diffuse <= 0) {
+            return Color.BLACK;
+        }
+
+        // check for light visibility
+        let hit = Scene.Intersect(scene, ray);
+        if (!hit.Ok() || hit.Shape != light) {
+            return Color.BLACK
+        }
+
+        // compute solid angle (hemisphere coverage)
+        let hyp = Vector.Length_mem(Vector.Sub_mem(center, turbo.Runtime._mem_int32[(n + 4) >> 2]));
+        let opp = radius;
+        let theta = Math.asin(opp / hyp);
+        let adj = opp / Math.tan(theta);
+        let d = Math.cos(theta) * adj;
+        let r = Math.sin(theta) * adj;
+        let coverage = (r * r) / (d * d);
+
+        // TODO: fix issue where hyp < opp (point inside sphere)
+        if (hyp < opp) {
+            coverage = 1
+        }
+        coverage = Math.min(coverage, 1);
+
+        // get material properties from light
+        let material = Material.MaterialAt(light, point);
+
+        // combine factors
+        let m = turbo.Runtime._mem_float64[(material + 32) >> 3] * diffuse * coverage;
+        return Color.MulScalar_mem(turbo.Runtime._mem_int32[(material + 4) >> 2], m);
+    }
+
 }
 
 

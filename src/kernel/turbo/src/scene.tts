@@ -1,6 +1,6 @@
 @turbo class Scene {
-	Color:int32
-	Texture:int32
+	Color:Color
+	Texture:Texture
 	TextureAngle:float64
 	Shapes:int32
 	NumShapes:int32
@@ -9,27 +9,38 @@
 	tree:int32
 	rays:int32
 
-	@method init(SELF){
+	@method init(SELF, color){
+        SELF.Color = color;
+        SELF.Texture = 0;
+        SELF.TextureAngle = 0;
+        SELF.rays = 0;
 		return SELF;
 	}
 
-	Compile(SELF) {
+    static NewScene(color:number){
+        let ptr = @new Scene;
+        return Scene.init(ptr, Color.HexColor(color));
+    }
+
+	static Compile(SELF) {
 		for (let i=0; i < SELF.NumShapes;i++) {
 			let shape = Shape.Array.at(SELF.Shapes, i);
 			Shape.Compile(shape);
 		}
-		if (SELF.tree == null) {
-			SELF.tree = Tree.NewTree(SELF.Shapes, SELF.NumShapes);
+		if (!SELF.tree) {
+			SELF.tree = Tree.NewTree(SELF.Shapes);
 		}
-		return SELF;
+		return SELF.tree;
 	}
 
 	static RayCount(SELF):number {
-		return Atomics.load(SELF.rays);
+		// return Atomics.load(turbo.Runtime._mem_int32, SELF.rays);
+        return SELF.rays;
 	}
 
 	static Intersect(SELF, r:number):Hit {
-		Atomic.add(SELF.rays, 1);
+		// Atomics.add(turbo.Runtime._mem_int32, SELF.rays, 1);
+        SELF.rays = SELF.rays + 1;
 		return Tree.Intersect(SELF.tree, r);
 	}
 
@@ -43,10 +54,23 @@ export class MasterScene{
 	scenePtr:number;
 
 	constructor(){
-		this.scenePtr = @new Scene;
+		this.scenePtr = Scene.NewScene(0xffffff);
         this.shapes = [];
         this.lights = [];
+
+		// let gopher = Material.GlossyMaterial(Color.BLACK, 1.2, Utils.Radians(30));
+		let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
+		let light = Material.LightMaterial(Color.WHITE, 80);
+
+		// add walls and lights
+		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
+		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+
 	}
+    AddDebugScene(){
+
+    }
 	Add(shape) {
 		this.shapes.push(shape);
 		
@@ -63,12 +87,13 @@ export class MasterScene{
         Scene.Lights(this.scenePtr) = lightList;
 
 		this.shapes.forEach((shape, index) => {
-            Mesh.Compile(shape);
             int32.Array.setAt(shapeList, index, shape);
 		});
 
 		this.lights.forEach((shape, index) => {
             int32.Array.setAt(lightList, index, shape);
-		})
+		});
+
+        Scene.Compile(this.scenePtr);
 	}
 }

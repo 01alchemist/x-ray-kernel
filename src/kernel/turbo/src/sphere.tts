@@ -1,13 +1,13 @@
-@turbo class Sphere {
-	Center:int32
+@turbo class Sphere extends Shape{
+	Center:Vector
 	Radius:float64
-	Material:int32
-	Box:int32
+	Material:Material
+	Box:Box
 
 	@method init(SELF, center:number, radius:number, material:number, box:number):number{
 		SELF.Center = center;
 		SELF.Radius = radius;
-		SELF.material = material;
+		SELF.Material = material;
 		SELF.Box = box;
 		return SELF;
 	}
@@ -23,14 +23,14 @@
 		return Sphere.init(ptr, center, radius, material, box);
 	}
 
-	Compile() {
+	@virtual Compile(SELF) {
 	}
 
-	static BoundingBox(SELF):number {
+	@virtual BoundingBox(SELF):number {
 		return SELF.Box;
 	}
 
-	static Intersect(SELF, r:number):Hit {
+	@virtual Intersect(SELF, r:number):Hit {
 		let to = Vector.Sub_mem(Ray.Origin(r), SELF.Center);
 		let b = Vector.Dot_mem(to, Ray.Direction(r));
 		let c = Vector.Dot_mem(to, to) - SELF.Radius * SELF.Radius;
@@ -49,7 +49,7 @@
 		return Hit.NoHit;
 	}
 
-	static UV(SELF, p:number):number {
+	@virtual UV(SELF, p:number):number {
 		p = Vector.Sub_mem(p, SELF.Center);
 		let u = Math.atan2(Vector.Z(p), Vector.X(p));
 		let ptr=@new Vector;
@@ -60,11 +60,11 @@
 		return Vector.Init_mem(ptr, u, v, 0);
 	}
 
-	static MaterialAt(SELF, p:number):number {
+	@virtual MaterialAt(SELF, p:number):number {
 		return SELF.Material;
 	}
 
-	static NormalAt(SELF, p:number):number {
+	@virtual NormalAt(SELF, p:number):number {
 		return Vector.Normalize_mem(Vector.Sub_mem(p, SELF.Center));
 	}
 

@@ -9,6 +9,14 @@
 		return SELF;
 	}
 
+    static _origin(SELF){
+        return Vector.XYZ(SELF.Origin);
+    }
+
+    static _direction(SELF){
+        return Vector.XYZ(SELF.Direction);
+    }
+
 	static Position(r:number, t:number):number{
 		return Vector.Add_mem(Ray.Origin(r), Vector.MulScalar_mem(Ray.Direction(r), t));
 	}

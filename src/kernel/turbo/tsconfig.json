@@ -12,7 +12,6 @@
   },
   "files": [
     "xray-kernel-turbo.spec.ts",
-    "turbo-runtime.ts",
     "./src/worker/xray-tracer.ts"
   ],
   "exclude": [

@@ -1,7 +1,9 @@
 export class BufferGeometry {
 
-    constructor(){
+    static defaultMaterial;
 
+    constructor(){
+        BufferGeometry.defaultMaterial = Material.LightMaterial(Color.HexColor(0xFFFFFF), 1);
     }
 
     static NewBufferGeometry(obj, scene:MasterScene){
@@ -44,7 +46,7 @@ export class BufferGeometry {
 
         }*/
         // return null;
-        return this.buildGeometry(src.geometry, 0, src.smooth);
+        return this.buildGeometry(src.geometry, BufferGeometry.defaultMaterial, src.smooth);
     }
 
     static buildGeometry(geometry:THREE.BufferGeometry|any, material:number, smooth:boolean=false):number {

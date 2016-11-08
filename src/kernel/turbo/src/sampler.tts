@@ -104,7 +104,7 @@ export class DefaultSampler {
     }
 
     sampleEnvironment(scene:number, ray:number):number{
-        if (Scene.Texture(scene) != null) {
+        if (Scene.Texture(scene)) {
             let d:number = Ray.Direction(ray);
             let u:number = Math.atan2(Vector.Z(d), Vector.X(d)) + Scene.TextureAngle(scene);
             let v:number = Math.atan2(Vector.Y(d), Vector.Length_mem(Vector(Vector.X(d), 0, Vector.Z(d))));

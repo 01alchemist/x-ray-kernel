@@ -19,11 +19,14 @@ let modules = [
     "./src/tree.tts",
     "./src/triangle.tts",
     "./src/mesh.tts",
+    "./src/cube.tts",
+    "./src/sphere.tts",
     "./src/hit.tts",
     "./src/camera.tts",
     "./src/scene.tts",
     "./src/three/buffer_geometry.tts",
     "./src/obj.tts",
+    "./src/sampler.tts",
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {
@@ -51,7 +54,8 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 //Compile TypeScript
 const spawn = require('child_process').spawn;
 const ls = spawn('tsc', [
-    __dirname + '/xray-kernel-turbo.ts',
+    // __dirname + '/xray-kernel-turbo.ts',
+    '-p', __dirname,
     '--target', 'es5',
     '--module', 'commonjs',
     '--sourceMap'

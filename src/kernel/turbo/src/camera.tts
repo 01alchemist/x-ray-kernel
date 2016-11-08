@@ -30,10 +30,10 @@
 
     static ToJSON(SELF){
         return {
-            p:SELF.p,
-            u:SELF.u,
-            v:SELF.v,
-            w:SELF.w,
+            p:Vector.XYZ(SELF.p),
+            u:Vector.XYZ(SELF.u),
+            v:Vector.XYZ(SELF.v),
+            w:Vector.XYZ(SELF.w),
             m:SELF.m,
             focalDistance:SELF.focalDistance,
             apertureRadius:SELF.apertureRadius
@@ -66,7 +66,7 @@
         d = Vector.Add_mem(d, Vector.MulScalar_mem(Camera.u(c), -px * aspect), d);
         d = Vector.Add_mem(d, Vector.MulScalar_mem(Camera.v(c), -py), d);
         d = Vector.Add_mem(d, Vector.MulScalar_mem(Camera.w(c), Camera.m(c)), d);
-        d = Vector.Normalize_mem(d);
+        d = Vector.Normalize_mem(d, d);
         let p = Camera.p(c);
         if (Camera.apertureRadius(c) > 0) {
             let focalPoint = Vector.Add_mem(Camera.p(c), Vector.MulScalar_mem(d, Camera.focalDistance(c)));
