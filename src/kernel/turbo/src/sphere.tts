@@ -23,6 +23,19 @@
 		return Sphere.init(ptr, center, radius, material, box);
 	}
 
+	@virtual Type(SELF){
+		return ShapeType.SPHERE;
+	}
+
+	@virtual ToJSON(SELF){
+		return {
+			center:Vector.ToJSON(SELF.Center),
+			radius:SELF.Radius,
+			material:Material.ToJSON(SELF.Material),
+			box:Box.ToJSON(SELF.Box),
+		}
+	}
+
 	@virtual Compile(SELF) {
 	}
 

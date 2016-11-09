@@ -1325,6 +1325,13 @@ export class Box extends MemoryObject{
         let origin = turbo.Runtime._mem_int32[(r + 4) >> 2];
         let dir = turbo.Runtime._mem_int32[(r + 8) >> 2];
 
+        // x1 := (b.Min.X - r.Origin.X) / r.Direction.X
+        // y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
+        // z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
+        // x2 := (b.Max.X - r.Origin.X) / r.Direction.X
+        // y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
+        // z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+
 		let x1 = (turbo.Runtime._mem_float64[(min + 8) >> 3] - turbo.Runtime._mem_float64[(origin + 8) >> 3]) / turbo.Runtime._mem_float64[(dir + 8) >> 3];
         let y1 = (turbo.Runtime._mem_float64[(min + 16) >> 3] - turbo.Runtime._mem_float64[(origin + 16) >> 3]) / turbo.Runtime._mem_float64[(dir + 16) >> 3];
         let z1 = (turbo.Runtime._mem_float64[(min + 24) >> 3] - turbo.Runtime._mem_float64[(origin + 24) >> 3]) / turbo.Runtime._mem_float64[(dir + 24) >> 3];
@@ -1349,9 +1356,33 @@ export class Box extends MemoryObject{
             z2 = tmp
 		}
 		return {
-            tmax: Math.max(Math.max(x1, y1), z1),
-		    tmin: Math.min(Math.min(x2, y2), z2)
-        }
+            tmin: Math.max(Math.max(x1, y1), z1),
+		    tmax: Math.min(Math.min(x2, y2), z2)
+        };
+
+        /*
+        * 	 x1 := (b.Min.X - r.Origin.X) / r.Direction.X
+             y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
+             z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
+             x2 := (b.Max.X - r.Origin.X) / r.Direction.X
+             y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
+             z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+
+             if x1 > x2 {
+             x1, x2 = x2, x1
+             }
+             if y1 > y2 {
+             y1, y2 = y2, y1
+             }
+             if z1 > z2 {
+             z1, z2 = z2, z1
+             }
+             t1 := math.Max(math.Max(x1, y1), z1)
+             t2 := math.Min(math.Min(x2, y2), z2)
+             return t1, t2
+        *
+        **/
+
 	}
 
 	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
@@ -1602,7 +1633,7 @@ export class Matrix extends MemoryObject{
         let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
         let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
         let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
-        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8))();
+        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
@@ -1860,6 +1891,7 @@ export class Material extends MemoryObject{
          turbo.Runtime._mem_float64[(SELF + 56) >> 3] = Tint; 
          turbo.Runtime._mem_float64[(SELF + 64) >> 3] = Reflectivity; 
          turbo.Runtime._mem_uint8[(SELF + 72) >> 0] = Transparent; 
+        return SELF;
     }
 
     static Clone(SELF, c?:number):number {
@@ -1879,7 +1911,23 @@ export class Material extends MemoryObject{
             turbo.Runtime._mem_uint8[(SELF + 72) >> 0]
         );
     }
-
+    static ToJSON(SELF){
+        return {
+            ptr:SELF,
+            color:Color.RGBA(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
+            texture:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
+            normalTexture:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
+            bumpTexture:turbo.Runtime._mem_int32[(SELF + 16) >> 2],
+            glossTexture:turbo.Runtime._mem_int32[(SELF + 20) >> 2],
+            bumpMultiplier:turbo.Runtime._mem_float64[(SELF + 24) >> 3],
+            emittance:turbo.Runtime._mem_float64[(SELF + 32) >> 3],
+            index:turbo.Runtime._mem_float64[(SELF + 40) >> 3],
+            gloss:turbo.Runtime._mem_float64[(SELF + 48) >> 3],
+            tint:turbo.Runtime._mem_float64[(SELF + 56) >> 3],
+            reflectivity:turbo.Runtime._mem_float64[(SELF + 64) >> 3],
+            transparent:turbo.Runtime._mem_uint8[(SELF + 72) >> 0]
+        }
+    }
     static DiffuseMaterial(color:number):number{
         let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
         return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);
@@ -2050,6 +2098,12 @@ interface Ray{
 }
 
 export enum ShapeType{
+	UNKNOWN,
+	PLANE,
+	CUBE,
+	SPHERE,
+	TRIANGLE,
+	MESH,
     Volume,
     SDFShape
 }
@@ -2072,6 +2126,12 @@ export class Shape extends MemoryObject{
          turbo.Runtime._mem_uint32[(SELF + 4) >> 2] = id; 
 		return SELF;
 	}
+    static Type_impl(SELF:number){
+		throw ShapeType.UNKNOWN;
+	}
+    static ToJSON_impl(SELF:number){
+		throw "Pure: Shape.ToJSON()";
+	}
     static Compile_impl(SELF:number, c?:number){
 		throw "Pure: Shape.Compile()";
 	}
@@ -2090,6 +2150,38 @@ export class Shape extends MemoryObject{
     static MaterialAt_impl(SELF:number, p:number, c?:number):number{
 		throw "Pure: Shape.MaterialAt()";
 	}
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 255446:
+                return Shape.Type_impl(SELF );
+            case 232773086:
+                return Triangle.Type_impl(SELF );
+            case 48819938:
+                return Mesh.Type_impl(SELF );
+            case 48824165:
+                return Cube.Type_impl(SELF );
+            case 171432461:
+                return Sphere.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 255446:
+                return Shape.ToJSON_impl(SELF );
+            case 232773086:
+                return Triangle.ToJSON_impl(SELF );
+            case 48819938:
+                return Mesh.ToJSON_impl(SELF );
+            case 48824165:
+                return Cube.ToJSON_impl(SELF );
+            case 171432461:
+                return Sphere.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
     static Compile(SELF , c) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
@@ -2274,6 +2366,16 @@ export class Node extends MemoryObject{
         return Node.init(ptr, Axis.AxisNone, 0, shapes, numShapes, null, null);
     }
 
+    static ToJSON(SELF){
+        return{
+            axis:Axis[turbo.Runtime._mem_uint8[(SELF + 4) >> 0]],
+            point:turbo.Runtime._mem_float64[(SELF + 8) >> 3],
+            numShapes:turbo.Runtime._mem_int32[(SELF + 20) >> 2],
+            left:turbo.Runtime._mem_int32[(SELF + 24) >> 2],
+            right:turbo.Runtime._mem_int32[(SELF + 28) >> 2]
+        }
+    }
+
     static Intersect(SELF, r:number, tmin:number, tmax:number):Hit {
         let tsplit:number;
         let leftFirst:boolean;
@@ -2286,15 +2388,15 @@ export class Node extends MemoryObject{
                 return Node.IntersectShapes(SELF, r);
             case Axis.AxisX:
                 tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - turbo.Runtime._mem_float64[(ori + 8) >> 3]) / turbo.Runtime._mem_float64[(dir + 8) >> 3];
-                leftFirst = (turbo.Runtime._mem_float64[(ori + 8) >> 3] < node.Point) || (turbo.Runtime._mem_float64[(ori + 8) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 8) >> 3] <= 0);
+                leftFirst = (turbo.Runtime._mem_float64[(ori + 8) >> 3] < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (turbo.Runtime._mem_float64[(ori + 8) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 8) >> 3] <= 0);
                 break;
             case Axis.AxisY:
                 tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - turbo.Runtime._mem_float64[(ori + 16) >> 3]) / turbo.Runtime._mem_float64[(dir + 16) >> 3];
-                leftFirst = (turbo.Runtime._mem_float64[(ori + 16) >> 3] < node.Point) || (turbo.Runtime._mem_float64[(ori + 16) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 16) >> 3] <= 0);
+                leftFirst = (turbo.Runtime._mem_float64[(ori + 16) >> 3] < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (turbo.Runtime._mem_float64[(ori + 16) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 16) >> 3] <= 0);
                 break;
             case Axis.AxisZ:
                 tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - turbo.Runtime._mem_float64[(ori + 24) >> 3]) / turbo.Runtime._mem_float64[(dir + 24) >> 3];
-                leftFirst = (turbo.Runtime._mem_float64[(ori + 24) >> 3] < node.Point) || (turbo.Runtime._mem_float64[(ori + 24) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 24) >> 3] <= 0);
+                leftFirst = (turbo.Runtime._mem_float64[(ori + 24) >> 3] < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (turbo.Runtime._mem_float64[(ori + 24) >> 3] == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && turbo.Runtime._mem_float64[(dir + 24) >> 3] <= 0);
                 break;
         }
 
@@ -2410,8 +2512,8 @@ export class Node extends MemoryObject{
         let count = 0;
         for(let i=0;i < turbo.Runtime._mem_int32[(SELF + 20) >> 2];i++) {
             let shape:number  = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
-            // let box = Shape.BoundingBox(shape);
-            let box = turbo.Runtime._mem_int32[(shape + 48) >> 2];
+            let box = Shape.BoundingBox(shape);
+            // let box = turbo.Runtime._mem_int32[(shape + 48) >> 2];
 
             _xs[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 4) >> 2]) + 8) >> 3];
             _ys[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 4) >> 2]) + 16) >> 3];
@@ -2465,7 +2567,7 @@ export class Node extends MemoryObject{
          turbo.Runtime._mem_int32[(SELF + 28) >> 2] = (Node.NewNode(lr.right, lr.numRight)); 
         Node.Split(turbo.Runtime._mem_int32[(SELF + 24) >> 2], depth + 1);
         Node.Split(turbo.Runtime._mem_int32[(SELF + 28) >> 2], depth + 1);
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = null;  // only needed at leaf nodes
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = 0;  // only needed at leaf nodes
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=20726; return SELF; }
 }
@@ -2588,6 +2690,30 @@ export class Triangle extends Shape{
             V2:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
             V3:turbo.Runtime._mem_int32[(SELF + 16) >> 2]
         }
+	}
+    static Type_impl(SELF:number){
+        throw ShapeType.TRIANGLE;
+    }
+    static ToJSON_impl(SELF){
+		return {
+			vertex:{
+				v1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
+				v2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
+				v3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2])
+			},
+			normal:{
+				n1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 20) >> 2]),
+				n2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 24) >> 2]),
+				n3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 28) >> 2])
+			},
+			uv:{
+				t1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 32) >> 2]),
+				t2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 36) >> 2]),
+				t3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 40) >> 2])
+			},
+			material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 44) >> 2]),
+			box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 48) >> 2]),
+		}
 	}
     static Compile_impl(SELF) {
 	}
@@ -2740,6 +2866,22 @@ export class Triangle extends Shape{
              turbo.Runtime._mem_int32[(SELF + 28) >> 2] = n; 
         }
 	}
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 232773086:
+                return Triangle.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 232773086:
+                return Triangle.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
     static Compile(SELF ) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 232773086:
@@ -2810,6 +2952,8 @@ export class Mesh extends Shape{
     static init(SELF, triangles:number){
         console.log(`numTriangles:${turbo.Runtime._mem_int32[triangles >> 2]}`);
          turbo.Runtime._mem_int32[(SELF + 8) >> 2] = triangles; 
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = 0; 
+         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = 0; 
         return SELF;
 	}
 	static NewMesh(triangles:number):number{
@@ -2834,6 +2978,16 @@ export class Mesh extends Shape{
 		}
 		return Mesh.NewMesh(triangles);
 	}
+    static Type_impl(SELF:number){
+        throw ShapeType.MESH;
+    }
+    static ToJSON_impl(SELF){
+        return {
+            numTriangles:turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2],
+            box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
+            tree:turbo.Runtime._mem_int32[(SELF + 16) >> 2]
+        }
+    }
     static Compile_impl(SELF) {
 		if (!turbo.Runtime._mem_int32[(SELF + 16) >> 2]) {
 			 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 8) >> 2])); 
@@ -2968,6 +3122,22 @@ export class Mesh extends Shape{
 		//return STL.SaveSTL(path, SELF)
         //TODO: Implement
 	}
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48819938:
+                return Mesh.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48819938:
+                return Mesh.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
     static Compile(SELF ) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 48819938:
@@ -3045,8 +3215,18 @@ export class Cube extends Shape{
         let box = Box.Init_mem(Box.initInstance(turbo.Runtime.allocOrThrow(12,4)), min, max);
         return Cube.init(Cube.initInstance(turbo.Runtime.allocOrThrow(24,4)), min, max, material, box);
     }
+    static Type_impl(SELF:number){
+        throw ShapeType.CUBE;
+    }
+    static ToJSON_impl(SELF){
+        return {
+            min:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
+            max:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
+            material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2]),
+            box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 20) >> 2]),
+        }
+    }
     static Compile_impl(SELF){
-        return null;
     }
     static BoundingBox_impl(SELF):number {
         return turbo.Runtime._mem_int32[(SELF + 20) >> 2];
@@ -3054,12 +3234,12 @@ export class Cube extends Shape{
     static Intersect_impl(SELF, r:number):Hit {
         let n = Vector.Div_mem(Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(r + 4) >> 2]), turbo.Runtime._mem_int32[(r + 8) >> 2]);
         let f = Vector.Div_mem(Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(r + 4) >> 2]), turbo.Runtime._mem_int32[(r + 8) >> 2]);
-        n = Vector.Min_mem(n, f, n);
-        f = Vector.Max_mem(n, f, n);
-        let t0 = Math.max(Math.max(turbo.Runtime._mem_float64[(n + 8) >> 3], turbo.Runtime._mem_float64[(n + 16) >> 3]), turbo.Runtime._mem_float64[(n + 24) >> 3]);
-        let t1 = Math.min(Math.min(turbo.Runtime._mem_float64[(f + 8) >> 3], turbo.Runtime._mem_float64[(f + 16) >> 3]), turbo.Runtime._mem_float64[(f + 24) >> 3]);
+        let _n = Vector.Min_mem(n, f);
+        let _f = Vector.Max_mem(n, f);
+        let t0 = Math.max(Math.max(turbo.Runtime._mem_float64[((_n) + 8) >> 3], turbo.Runtime._mem_float64[((_n) + 16) >> 3]), turbo.Runtime._mem_float64[((_n) + 24) >> 3]);
+        let t1 = Math.min(Math.min(turbo.Runtime._mem_float64[((_f) + 8) >> 3], turbo.Runtime._mem_float64[((_f) + 16) >> 3]), turbo.Runtime._mem_float64[((_f) + 24) >> 3]);
         if (t0 > 0 && t0 < t1) {
-            return new Hit(this, t0, null)
+            return new Hit(SELF, t0, null)
         }
         return Hit.NoHit;
     }
@@ -3119,6 +3299,22 @@ export class Cube extends Shape{
             Triangle.NewTriangle(v100, v111, v101, z, z, z, m)
         ];
         return Mesh.NewMesh(Triangle.Pack(triangles));
+    }
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 48824165:
+                return Cube.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
     }
     static Compile(SELF ) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
@@ -3205,6 +3401,17 @@ export class Sphere extends Shape{
 		let ptr:number = Sphere.initInstance(turbo.Runtime.allocOrThrow(32,8));
 		return Sphere.init(ptr, center, radius, material, box);
 	}
+    static Type_impl(SELF){
+		return ShapeType.SPHERE;
+	}
+    static ToJSON_impl(SELF){
+		return {
+			center:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
+			radius:turbo.Runtime._mem_float64[(SELF + 16) >> 3],
+			material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 24) >> 2]),
+			box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 28) >> 2]),
+		}
+	}
     static Compile_impl(SELF) {
 	}
     static BoundingBox_impl(SELF):number {
@@ -3244,6 +3451,22 @@ export class Sphere extends Shape{
     static NormalAt_impl(SELF, p:number):number {
 		return Vector.Normalize_mem(Vector.Sub_mem(p, turbo.Runtime._mem_int32[(SELF + 8) >> 2]));
 	}
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 171432461:
+                return Sphere.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
     static Compile(SELF ) {
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 171432461:
@@ -3498,7 +3721,7 @@ export class MasterScene{
 	scenePtr:number;
 
 	constructor(){
-		this.scenePtr = Scene.NewScene(0xffffff);
+		this.scenePtr = Scene.NewScene(0x000000);
         this.shapes = [];
         this.lights = [];
 
@@ -3509,7 +3732,7 @@ export class MasterScene{
 		// add walls and lights
 		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
 		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
-		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 10, light));
 
 	}
     AddDebugScene(){
@@ -4137,11 +4360,11 @@ export class DefaultSampler {
         let shapes = turbo.Runtime._mem_int32[(scene + 24) >> 2];
 
         if (this.LightMode == LightMode.LightModeAll) {
-            var result:number =  Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            var result:number =  Color.NewColor();
             for (let i=0; i < nLights;i++) {
-                let lightIndex = turbo.Runtime._mem_int32[(  (Scane.Lights(scene)) + 4 + (4 * i)  ) >> 2];
-                let light = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * lightIndex)  ) >> 2];
-                Color.Add(result, this.sampleLight(scene, n, light), result)
+                let light = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(scene + 32) >> 2]) + 4 + (4 * i)  ) >> 2];
+                //let light = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * lightIndex)  ) >> 2];
+                Color.Add_mem(result, this.sampleLight(scene, n, light), result)
             }
             return result;
         } else {
@@ -4159,7 +4382,7 @@ export class DefaultSampler {
         var radius:number;
 
         switch(Shape.Type(light)){
-            case Shape.SPHERE:
+            case ShapeType.SPHERE:
                 radius = turbo.Runtime._mem_float64[(light + 16) >> 3];
                 center = turbo.Runtime._mem_int32[(light + 8) >> 2];
                 break;

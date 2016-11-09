@@ -54,7 +54,7 @@ export class MasterScene{
 	scenePtr:number;
 
 	constructor(){
-		this.scenePtr = Scene.NewScene(0xffffff);
+		this.scenePtr = Scene.NewScene(0x000000);
         this.shapes = [];
         this.lights = [];
 
@@ -65,7 +65,7 @@ export class MasterScene{
 		// add walls and lights
 		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
 		this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
-		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 10, light));
 
 	}
     AddDebugScene(){

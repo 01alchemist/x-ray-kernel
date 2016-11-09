@@ -16,8 +16,20 @@
         return Cube.init(@new Cube, min, max, material, box);
     }
 
+    @virtual Type(SELF:number){
+        throw ShapeType.CUBE;
+    }
+
+    @virtual ToJSON(SELF){
+        return {
+            min:Vector.ToJSON(SELF.Min),
+            max:Vector.ToJSON(SELF.Max),
+            material:Material.ToJSON(SELF.Material),
+            box:Box.ToJSON(SELF.Box),
+        }
+    }
+
     @virtual Compile(SELF){
-        return null;
     }
 
     @virtual BoundingBox(SELF):number {
@@ -27,12 +39,12 @@
     @virtual Intersect(SELF, r:number):Hit {
         let n = Vector.Div_mem(Vector.Sub_mem(SELF.Min, Ray.Origin(r)), Ray.Direction(r));
         let f = Vector.Div_mem(Vector.Sub_mem(SELF.Max, Ray.Origin(r)), Ray.Direction(r));
-        n = Vector.Min_mem(n, f, n);
-        f = Vector.Max_mem(n, f, n);
-        let t0 = Math.max(Math.max(Vector.X(n), Vector.Y(n)), Vector.Z(n));
-        let t1 = Math.min(Math.min(Vector.X(f), Vector.Y(f)), Vector.Z(f));
+        let _n = Vector.Min_mem(n, f);
+        let _f = Vector.Max_mem(n, f);
+        let t0 = Math.max(Math.max(Vector.X(_n), Vector.Y(_n)), Vector.Z(_n));
+        let t1 = Math.min(Math.min(Vector.X(_f), Vector.Y(_f)), Vector.Z(_f));
         if (t0 > 0 && t0 < t1) {
-            return new Hit(this, t0, null)
+            return new Hit(SELF, t0, null)
         }
         return Hit.NoHit;
     }

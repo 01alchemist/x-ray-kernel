@@ -69,6 +69,32 @@
         }
 	}
 
+    @virtual Type(SELF:number){
+        throw ShapeType.TRIANGLE;
+    }
+
+	@virtual ToJSON(SELF){
+		return {
+			vertex:{
+				v1:Vector.ToJSON(SELF.V1),
+				v2:Vector.ToJSON(SELF.V2),
+				v3:Vector.ToJSON(SELF.V3)
+			},
+			normal:{
+				n1:Vector.ToJSON(SELF.N1),
+				n2:Vector.ToJSON(SELF.N2),
+				n3:Vector.ToJSON(SELF.N3)
+			},
+			uv:{
+				t1:Vector.ToJSON(SELF.T1),
+				t2:Vector.ToJSON(SELF.T2),
+				t3:Vector.ToJSON(SELF.T3)
+			},
+			material:Material.ToJSON(SELF.Material),
+			box:Box.ToJSON(SELF.Box),
+		}
+	}
+
     @virtual Compile(SELF) {
 	}
 

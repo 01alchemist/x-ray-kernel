@@ -26,6 +26,7 @@
         SELF.Tint = Tint;
         SELF.Reflectivity = Reflectivity;
         SELF.Transparent = Transparent;
+        return SELF;
     }
 
     static Clone(SELF, c?:number):number {
@@ -45,7 +46,23 @@
             SELF.Transparent
         );
     }
-
+    static ToJSON(SELF){
+        return {
+            ptr:SELF,
+            color:Color.RGBA(SELF.Color),
+            texture:SELF.Texture,
+            normalTexture:SELF.NormalTexture,
+            bumpTexture:SELF.BumpTexture,
+            glossTexture:SELF.GlossTexture,
+            bumpMultiplier:SELF.BumpMultiplier,
+            emittance:SELF.Emittance,
+            index:SELF.Index,
+            gloss:SELF.Gloss,
+            tint:SELF.Tint,
+            reflectivity:SELF.Reflectivity,
+            transparent:SELF.Transparent
+        }
+    }
     static DiffuseMaterial(color:number):number{
         let ptr:number = @new Material;
         return Material.init(ptr, color, null, null, null, null, 1, 0, 1, 0, 0, -1, false);

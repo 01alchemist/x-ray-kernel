@@ -80,8 +80,8 @@ function init() {
 init();
 // loadModel("box-slit");
 // loadModel("cornellbox_suzanne_lucy");
-loadModel("gopher");
-// debug_init();
+// loadModel("gopher");
+debug_init();
 
 function debug_init(){
     masterScene.AddDebugScene();

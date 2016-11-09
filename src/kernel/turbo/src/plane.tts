@@ -2,8 +2,15 @@
 	Point:Vector
 	Normal:Vector
 	Material:Material
+    Box:Box
+    HasBox:uint8
 
-	@method init(SELF){
+	@method init(SELF, point, normal, material){
+        SELF.Point = point;
+        SELF.Normal = normal;
+        SELF.Material = material;
+        SELF.Box = 0;
+        SELF.HasBox = 0;
         return SELF;
     }
 
@@ -13,12 +20,28 @@
         return Plane.init(ptr, point, normal, material);
     }
 
-    static Compile() {
+    @virtual Type(SELF:number){
+        throw ShapeType.PLANE;
     }
 
-    static BoundingBox():number {
+    @virtual ToJSON(SELF){
+        return {
+            point:Vector.ToJSON(SELF.Point),
+            normal:Vector.ToJSON(SELF.Normal),
+            material:Material.ToJSON(SELF.Material),
+            box:Box.ToJSON(SELF.Box),
+        }
+    }
+
+    @virtual Compile(SELF) {
+    }
+
+    @virtual BoundingBox(SELF):number {
+        if(SELF.HasBox){
+            return SELF.Box;
+        }
         let ptr:number = @new Box;
-        return Box.init(ptr, Vector.NewVector({
+        SELF.Box = Box.init(ptr, Vector.NewVector({
             X:Number.NEGATIVE_INFINITY,
             Y:Number.NEGATIVE_INFINITY,
             Z:Number.NEGATIVE_INFINITY
@@ -29,9 +52,11 @@
                 Z:Number.POSITIVE_INFINITY
             })
         );
+        SELF.HasBox = 1;
+        return ptr;
     }
 
-    static Intersect(SELF, ray:number):Hit {
+    @virtual Intersect(SELF, ray:number):Hit {
         let d = Vector.Dot_mem(SELF.Normal, Ray.Direction(ray));
         if (Math.abs(d) < EPS) {
             return Hit.NoHit
@@ -44,15 +69,15 @@
         return new Hit(SELF, t, null);
     }
 
-    static UV(SELF, a:number):number {
+    @virtual UV(SELF, a:number):number {
         return Vector.NewVector();
     }
 
-    static MaterialAt(SELF, a:number):number {
+    @virtual MaterialAt(SELF, a:number):number {
         return SELF.Material;
     }
 
-    static NormalAt(SELF, a:number):number {
+    @virtual NormalAt(SELF, a:number):number {
         return SELF.Normal;
     }
 

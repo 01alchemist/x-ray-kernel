@@ -21,6 +21,16 @@
         return Node.init(ptr, Axis.AxisNone, 0, shapes, numShapes, null, null);
     }
 
+    static ToJSON(SELF){
+        return{
+            axis:Axis[SELF.Axis],
+            point:SELF.Point,
+            numShapes:SELF.NumShapes,
+            left:SELF.Left,
+            right:SELF.Right
+        }
+    }
+
     static Intersect(SELF, r:number, tmin:number, tmax:number):Hit {
         let tsplit:number;
         let leftFirst:boolean;
@@ -33,15 +43,15 @@
                 return Node.IntersectShapes(SELF, r);
             case Axis.AxisX:
                 tsplit = (SELF.Point - Vector.X(ori)) / Vector.X(dir);
-                leftFirst = (Vector.X(ori) < node.Point) || (Vector.X(ori) == SELF.Point && Vector.X(dir) <= 0);
+                leftFirst = (Vector.X(ori) < SELF.Point) || (Vector.X(ori) == SELF.Point && Vector.X(dir) <= 0);
                 break;
             case Axis.AxisY:
                 tsplit = (SELF.Point - Vector.Y(ori)) / Vector.Y(dir);
-                leftFirst = (Vector.Y(ori) < node.Point) || (Vector.Y(ori) == SELF.Point && Vector.Y(dir) <= 0);
+                leftFirst = (Vector.Y(ori) < SELF.Point) || (Vector.Y(ori) == SELF.Point && Vector.Y(dir) <= 0);
                 break;
             case Axis.AxisZ:
                 tsplit = (SELF.Point - Vector.Z(ori)) / Vector.Z(dir);
-                leftFirst = (Vector.Z(ori) < node.Point) || (Vector.Z(ori) == SELF.Point && Vector.Z(dir) <= 0);
+                leftFirst = (Vector.Z(ori) < SELF.Point) || (Vector.Z(ori) == SELF.Point && Vector.Z(dir) <= 0);
                 break;
         }
 
@@ -155,8 +165,8 @@
         let count = 0;
         for(let i=0;i < SELF.NumShapes;i++) {
             let shape:number  = Shape.Array.at(SELF.Shapes, i);
-            // let box = Shape.BoundingBox(shape);
-            let box = Triangle.Box(shape);
+            let box = Shape.BoundingBox(shape);
+            // let box = Triangle.Box(shape);
 
             _xs[count] = Vector.X(Box.Min(box));
             _ys[count] = Vector.Y(Box.Min(box));
@@ -210,7 +220,7 @@
         SELF.Right = Node.NewNode(lr.right, lr.numRight);
         Node.Split(SELF.Left, depth + 1);
         Node.Split(SELF.Right, depth + 1);
-        SELF.Shapes = null; // only needed at leaf nodes
+        SELF.Shapes = 0; // only needed at leaf nodes
     }
 } @end
 

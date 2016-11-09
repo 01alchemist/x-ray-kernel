@@ -144,8 +144,8 @@
             z2 = tmp
 		}
 		return {
-            tmax: Math.max(Math.max(x1, y1), z1),
-		    tmin: Math.min(Math.min(x2, y2), z2)
+            tmin: Math.max(Math.max(x1, y1), z1),
+		    tmax: Math.min(Math.min(x2, y2), z2)
         };
 
         /*

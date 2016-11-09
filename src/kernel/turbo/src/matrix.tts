@@ -224,7 +224,7 @@ interface Ray{
         let x:number = Matrix.x00(a) * Vector.X(b) + Matrix.x01(a) * Vector.Y(b) + Matrix.x02(a) * Vector.Z(b);
         let y:number = Matrix.x10(a) * Vector.X(b) + Matrix.x11(a) * Vector.Y(b) + Matrix.x12(a) * Vector.Z(b);
         let z:number = Matrix.x20(a) * Vector.X(b) + Matrix.x21(a) * Vector.Y(b) + Matrix.x22(a) * Vector.Z(b);
-        let ptr:number = c?c:@new Vector();
+        let ptr:number = c?c:@new Vector;
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 

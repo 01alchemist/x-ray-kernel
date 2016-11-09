@@ -6,6 +6,12 @@ interface Ray{
 }
 
 export enum ShapeType{
+	UNKNOWN,
+	PLANE,
+	CUBE,
+	SPHERE,
+	TRIANGLE,
+	MESH,
     Volume,
     SDFShape
 }
@@ -17,6 +23,14 @@ export enum ShapeType{
 	@method init(SELF:number, id):number{
         SELF.shapeId = id;
 		return SELF;
+	}
+
+	@virtual Type(SELF:number){
+		throw ShapeType.UNKNOWN;
+	}
+
+	@virtual ToJSON(SELF:number){
+		throw "Pure: Shape.ToJSON()";
 	}
 
 	@virtual Compile(SELF:number, c?:number){

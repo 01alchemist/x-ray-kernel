@@ -57,9 +57,9 @@ export class DefaultSampler {
         let result:number = Color.BLACK;
         if (Material.Emittance(material) > 0) {
             if (this.DirectLighting && !emission) {
-                return Color.BLACK;
+                return result;
             }
-            result = Color.Add_mem(result, Color.MulScalar_mem(Material.Color(material), Material.Emittance(material) * samples));
+            result = Color.Add_mem(result, Color.MulScalar_mem(Material.Color(material), Material.Emittance(material) * samples), result);
         }
         let n:number = Math.sqrt(samples);
         let ma:BounceType;
@@ -124,11 +124,11 @@ export class DefaultSampler {
         let shapes = Scene.Shapes(scene);
 
         if (this.LightMode == LightMode.LightModeAll) {
-            var result:number =  @new Color;
+            var result:number =  Color.NewColor();
             for (let i=0; i < nLights;i++) {
-                let lightIndex = int32.Array.at(Scane.Lights(scene), i);
-                let light = Shape.Array.at(shapes, lightIndex);
-                Color.Add(result, this.sampleLight(scene, n, light), result)
+                let light = int32.Array.at(Scene.Lights(scene), i);
+                //let light = Shape.Array.at(shapes, lightIndex);
+                Color.Add_mem(result, this.sampleLight(scene, n, light), result)
             }
             return result;
         } else {
@@ -146,7 +146,7 @@ export class DefaultSampler {
         var radius:number;
 
         switch(Shape.Type(light)){
-            case Shape.SPHERE:
+            case ShapeType.SPHERE:
                 radius = Sphere.Radius(light);
                 center = Sphere.Center(light);
                 break;

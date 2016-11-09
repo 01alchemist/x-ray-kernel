@@ -6,6 +6,8 @@
 	@method init(SELF, triangles:number){
         console.log(`numTriangles:${Triangle.Array.len(triangles)}`);
         SELF.Triangles = triangles;
+        SELF.box = 0;
+        SELF.tree = 0;
         return SELF;
 	}
 	static NewMesh(triangles:number):number{
@@ -30,6 +32,17 @@
 		return Mesh.NewMesh(triangles);
 	}
 
+    @virtual Type(SELF:number){
+        throw ShapeType.MESH;
+    }
+
+    @virtual ToJSON(SELF){
+        return {
+            numTriangles:Triangle.Array.len(SELF.Triangles),
+            box:Box.ToJSON(SELF.box),
+            tree:SELF.tree
+        }
+    }
     @virtual Compile(SELF) {
 		if (!SELF.tree) {
 			SELF.tree = Tree.NewTree(SELF.Triangles);
