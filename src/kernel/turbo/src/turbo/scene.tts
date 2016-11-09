@@ -56,7 +56,7 @@ export class MasterScene{
 	static defaultMaterial;
 
 	constructor(){
-		this.scenePtr = Scene.NewScene(0x767777);
+		this.scenePtr = Scene.NewScene(0xffffff);
         this.shapes = [];
         this.lights = [];
 
@@ -71,7 +71,14 @@ export class MasterScene{
 
 	}
     AddDebugScene(){
-
+        let v1 = Vector.NewVector(0,0,0);
+        let v2 = Vector.NewVector(0,1,0);
+        let v3 = Vector.NewVector(1,1,0);
+        let t1 = Vector.NewVector(1,1,0);
+        let t2 = Vector.NewVector(1,1,0);
+        let t3 = Vector.NewVector(1,1,0);
+        let t = Triangle.NewTriangle(v1,v2,v3,t1,t2,t3, MasterScene.defaultMaterial);
+        this.Add(t);
     }
 	Add(shape) {
 		this.shapes.push(shape);

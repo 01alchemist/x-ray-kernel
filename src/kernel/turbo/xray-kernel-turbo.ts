@@ -2820,6 +2820,55 @@ export class Triangle extends Shape{
         }
 		return Box.Init_mem(turbo.Runtime._mem_int32[(SELF + 48) >> 2], min, max);
 	}
+    /*Intersect(SELF, r:Ray):Hit {
+        //Möller–Trumbore intersection algorithm
+        let V1 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+        let V2 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        let V3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+
+        //Edge1
+        var e1:Vector3 = V2.sub(V1);
+
+        //Edge2
+        var e2:Vector3 = V3.sub(V1);
+
+        //Begin calculating determinant - also used to calculate u parameter
+        var p:Vector3 = r.direction.cross(e2);
+        var det:number = e1.dot(p);
+        //NOT CULLING
+        if (det > -EPS && det < EPS) {
+            return Hit.NoHit;
+        }
+        var inv:number = 1 / det;
+
+        //calculate distance from V1 to ray origin
+        var t:Vector3 = r.origin.sub(V1);
+
+        //Calculate u parameter and test bound
+        var u:number = t.dot(p) * inv;
+        //The intersection lies outside of the triangle
+        if (u < 0 || u > 1) {
+            return Hit.NoHit;
+        }
+
+        //Prepare to test v parameter
+        var q:Vector3 = t.cross(e1);
+
+        //Calculate V parameter and test bound
+        var v:number = r.direction.dot(q) * inv;
+        //The intersection lies outside of the triangle
+        if (v < 0 || u + v > 1) {
+            return Hit.NoHit;
+        }
+
+        var d:number = e2.dot(q) * inv;
+        if (d < EPS) {
+            return Hit.NoHit
+        }
+
+        //ray intersection
+        return new Hit(SELF, d);
+    }*/
     static Intersect_impl(SELF, r:Ray):Hit {
 
 		let e1x = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 8) >> 3];
@@ -3584,7 +3633,7 @@ export class Hit{
 
 	static NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
 
-	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
+	constructor(public Shape:number, public T:number, public HitInfo:HitInfo=null){
 
 	}
 
@@ -3831,7 +3880,7 @@ export class MasterScene{
 	static defaultMaterial;
 
 	constructor(){
-		this.scenePtr = Scene.NewScene(0x767777);
+		this.scenePtr = Scene.NewScene(0xffffff);
         this.shapes = [];
         this.lights = [];
 
@@ -3846,7 +3895,14 @@ export class MasterScene{
 
 	}
     AddDebugScene(){
-
+        let v1 = Vector.NewVector(0,0,0);
+        let v2 = Vector.NewVector(0,1,0);
+        let v3 = Vector.NewVector(1,1,0);
+        let t1 = Vector.NewVector(1,1,0);
+        let t2 = Vector.NewVector(1,1,0);
+        let t3 = Vector.NewVector(1,1,0);
+        let t = Triangle.NewTriangle(v1,v2,v3,t1,t2,t3, MasterScene.defaultMaterial);
+        this.Add(t);
     }
 	Add(shape) {
 		this.shapes.push(shape);

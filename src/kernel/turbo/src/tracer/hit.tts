@@ -2,7 +2,7 @@ export class Hit{
 
 	static NoHit:Hit = new Hit(null, Number.POSITIVE_INFINITY, null);
 
-	constructor(public Shape:number, public T:number, public HitInfo:HitInfo){
+	constructor(public Shape:number, public T:number, public HitInfo:HitInfo=null){
 
 	}
 

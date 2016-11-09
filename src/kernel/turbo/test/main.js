@@ -16,8 +16,8 @@ let imageData;
 let pixelData;
 let bucketSize = 32;
 let renderOptions = {
-    full_width: 2560 / 4,
-    full_height: 1440 / 4,
+    full_width: 2560 / 8,
+    full_height: 1440 / 8,
     iterations: 1,
     hitSamples: 1,
     cameraSamples: 1,
@@ -30,7 +30,7 @@ let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width 
 let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
 
 let masterScene = new MasterScene();
-let camera = Camera.LookAt(Vector.NewVector(20, 10, 0), Vector.NewVector(0, 0.9, 0), Vector.NewVector(0, 1, 0), 45);
+let camera = Camera.LookAt(Vector.NewVector(5, 0, 2), Vector.NewVector(0, 0, 0), Vector.NewVector(0, 1, 0), 45);
 let traceData = {
     renderOptions: renderOptions,
     scene: masterScene.scenePtr,
