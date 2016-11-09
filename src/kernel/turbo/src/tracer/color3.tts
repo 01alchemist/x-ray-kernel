@@ -1,0 +1,143 @@
+/**
+ * Created by Nidin Vinayakan on 10-01-2016.
+ */
+
+export interface RGBA {
+    R:number,
+    G:number,
+    B:number,
+    a:number
+}
+export class Color3 {
+
+    constructor(public R:number = 0,
+                public G:number = 0,
+                public B:number = 0) {
+    }
+
+    read(memory:number):Color3 {
+        this.R = Color.R(memory);
+        this.G = Color.G(memory);
+        this.B = Color.B(memory);
+        return this;
+    }
+
+    write(memory:number):number {
+        Color.R(memory) = this.R;
+        Color.G(memory) = this.G;
+        Color.B(memory) = this.B;
+        return memory;
+    }
+
+    static fromJson(color:Color3):Color3 {
+        if (color) {
+            return new Color3(
+                color.R,
+                color.G,
+                color.B
+            );
+        } else {
+            return null;
+        }
+    }
+
+    static hexColor(hex:number):Color3 {
+        var red = ((hex >> 16) & 255 ) / 255;
+        var green = ((hex >> 8) & 255) / 255;
+        var blue = (hex & 255) / 255;
+        return new Color3(red, green, blue).pow(2.2);
+    }
+
+    static newColor(c:RGBA):Color3 {
+        return new Color3(c.R / 65535, c.G / 65535, c.B / 65535);
+    }
+
+    RGBA():RGBA {
+        let a:Color3 = this;
+        let _c:Uint8Array = new Uint8Array(3);
+        _c[0] = Math.max(0, Math.min(255, a.R * 255));
+        _c[1] = Math.max(0, Math.min(255, a.G * 255));
+        _c[2] = Math.max(0, Math.min(255, a.B * 255));
+        return {R: _c[0], G: _c[1], B: _c[2], a: 255};
+    }
+
+    isBlack():boolean {
+        return this.R === 0 && this.G === 0 && this.B === 0;
+    }
+
+    isWhite():boolean {
+        return this.R === 1 && this.G === 1 && this.B === 1;
+    }
+
+    add(B:Color3):Color3 {
+        return new Color3(this.R + B.R, this.G + B.G, this.B + B.B);
+    }
+
+    sub(B:Color3):Color3 {
+        return new Color3(this.R - B.R, this.G - B.G, this.B - B.B);
+    }
+
+    mul(B:Color3):Color3 {
+        return new Color3(this.R * B.R, this.G * B.G, this.B * B.B);
+    }
+
+    mulScalar(B:number):Color3 {
+        return new Color3(this.R * B, this.G * B, this.B * B)
+    }
+
+    divScalar(B:number):Color3 {
+        return new Color3(this.R / B, this.G / B, this.B / B);
+    }
+
+    min(B:Color3):Color3 {
+        return new Color3(Math.min(this.R, B.R), Math.min(this.G, B.G), Math.min(this.B, B.B));
+    }
+
+    max(B:Color3):Color3 {
+        return new Color3(Math.max(this.R, B.R), Math.max(this.G, B.G), Math.max(this.B, B.B));
+    }
+
+    pow(B:number):Color3 {
+        return new Color3(Math.pow(this.R, B), Math.pow(this.G, B), Math.pow(this.B, B));
+    }
+
+    mix(B:Color3, pct:number):Color3 {
+        let a = this.mulScalar(1 - pct);
+        B = B.mulScalar(pct);
+        return a.add(B);
+    }
+
+    set(R:number, G:number, B:number):Color3 {
+        this.R = R;
+        this.G = G;
+        this.B = B;
+        return this;
+    }
+
+    clone():Color3 {
+        return new Color3(
+            this.R,
+            this.G,
+            this.B
+        );
+    }
+
+    static brightColors = [
+        Color3.hexColor(0xFF00FF),
+        Color3.hexColor(0x84FF00),
+        Color3.hexColor(0xFF0084),
+        Color3.hexColor(0x00FFFF),
+        Color3.hexColor(0x00FF84),
+        Color3.hexColor(0xDD40FF),
+        Color3.hexColor(0xFFFF00)
+    ];
+
+    static random():Color3 {
+        return new Color3(Math.random(), Math.random(), Math.random());
+    }
+
+    static randomBrightColor():Color3 {
+        var i:number = Math.round(Math.random() * Color3.brightColors.length);
+        return Color3.brightColors[i];
+    }
+}

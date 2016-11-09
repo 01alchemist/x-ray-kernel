@@ -3,6 +3,7 @@
  */
 
 var Color = xray.Color;
+var Color3 = xray.Color3;
 var Camera = xray.Camera;
 var Sampler = xray.Sampler;
 // var Vector = xray.Vector;
@@ -60,7 +61,7 @@ export class xRayTracer {
         this.hitSamples = data.traceData.renderOptions.hitSamples;
         this.bounces = data.traceData.renderOptions.bounces;
 
-        this.sampler = xray.NewDirectSampler();
+        this.sampler = xray.NewSampler(1, 1);
     }
 
     updateRenderRegion(width:number, height:number, xoffset:number, yoffset:number):void {
@@ -157,7 +158,7 @@ export class xRayTracer {
                     return;
                 }
 
-                let c = Color.HexColor(0x000000);
+                let c = new Color3();
 
                 if (this.stratifiedSampling) {
                     // stratified subsampling
@@ -180,8 +181,9 @@ export class xRayTracer {
                         let fv = Math.random();
                         let ray = Camera.CastRay(camera, x, y, this.full_width, this.full_height, fu, fv);
                         // let sample = Sampler.Sample(sampler, scene, ray);
-                        let sample = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0);
-                        Color.Add_mem(c, sample, c);
+                        let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0);
+                        c = c.add(sample);
+                        //Color.Add_mem(c, sample, c);
                         //Buffer.AddSample(buf, x, y, sample);
                     }
                 }
@@ -215,9 +217,7 @@ export class xRayTracer {
                 }*/
 
                 var screen_index:number = (y * (this.full_width * 3)) + (x * 3);
-                this.updatePixel(Color.RGB(c), screen_index);
-
-                turbo.Runtime.free(c);
+                this.updatePixel(c, screen_index);
             }
         }
 

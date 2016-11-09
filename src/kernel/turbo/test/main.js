@@ -5,7 +5,7 @@ var MasterScene = xray.MasterScene;
 var Camera = xray.Camera;
 
 let NUM_CPU = 8;
-let CPU_available = 6;
+let CPU_available = 7;
 let workerPool = [];
 var numReady = 0;
 var numBusy = 0;
@@ -14,7 +14,7 @@ let container;
 let ctx;
 let imageData;
 let pixelData;
-let bucketSize = 64;
+let bucketSize = 32;
 let renderOptions = {
     full_width: 2560 / 4,
     full_height: 1440 / 4,
@@ -25,12 +25,12 @@ let renderOptions = {
     bounces: 0
 };
 
-let flags = new Uint8Array(new SharedArrayBuffer(NUM_CPU));
+let flags = new Uint8Array(new SharedArrayBuffer(CPU_available));
 let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width * renderOptions.full_height * 3));
 let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
 
 let masterScene = new MasterScene();
-let camera = Camera.LookAt(Vector.NewVector(4, 1, 0), Vector.NewVector(0, 0.9, 0), Vector.NewVector(0, 1, 0), 45);
+let camera = Camera.LookAt(Vector.NewVector(20, 10, 0), Vector.NewVector(0, 0.9, 0), Vector.NewVector(0, 1, 0), 45);
 let traceData = {
     renderOptions: renderOptions,
     scene: masterScene.scenePtr,
@@ -38,6 +38,7 @@ let traceData = {
 };
 
 let traceJobs = [];
+let refJobs = [];
 let deferredQueue = [];
 
 function init() {
@@ -63,15 +64,19 @@ function init() {
 
     for (var j = 0; j < row; j++) {
         for (var i = 0; i < col; i++) {
-            traceJobs.push({
-                    id: j + "_" + i,
-                    rect: {
-                        width: bucketSize,
-                        height: bucketSize,
-                        xoffset: i * bucketSize,
-                        yoffset: j * bucketSize
-                    }
-                });
+            let job = {
+                id: j + "_" + i,
+                index:traceJobs.length,
+                init_iterations:0,
+                rect: {
+                    width: bucketSize,
+                    height: bucketSize,
+                    xoffset: i * bucketSize,
+                    yoffset: j * bucketSize
+                }
+            };
+            traceJobs.push(job);
+            refJobs.push(job);
         }
     }
 
@@ -81,7 +86,8 @@ init();
 // loadModel("box-slit");
 // loadModel("cornellbox_suzanne_lucy");
 // loadModel("gopher");
-debug_init();
+loadModel("sphere");
+// debug_init();
 
 function debug_init(){
     masterScene.AddDebugScene();
@@ -92,7 +98,7 @@ function debug_init(){
 function initTracers() {
 
     /* spawn trace workers */
-    CPU_available = 1;
+    // CPU_available = 1;
     console.time("Tracers initialized");
     for (let i = 0; i < CPU_available; i++) {
 
@@ -138,10 +144,11 @@ function onTracerMessage(msg) {
             numReady++;
             if (numReady == CPU_available) {
                 console.timeEnd("Tracers initialized");
-                start_trace(10);
+                //start_trace(10);
             }
             break;
         case "TRACE_COMPLETED":
+            refJobs[msg.data.jobIndex].init_iterations++;
             updatePixelsRect(msg.data.rect);
             if (--numBusy == 0) {
                 // trace_completed();
@@ -197,6 +204,8 @@ function trace_completed() {
     if (interruptTracing) {
         return;
     }
+    traceJobs = deferredQueue;
+    deferredQueue = [];
     if (iterations_target == 0 && maximum_time == 0) {
         //trace until interrupt
         trace();

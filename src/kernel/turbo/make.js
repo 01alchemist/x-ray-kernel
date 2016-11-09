@@ -5,28 +5,33 @@ let path = require("path");
 let turbo = require("../../../../turbo.js/lib/compiler.js");
 let compiler = new turbo.Compiler();
 let modules = [
-    "./src/common.tts",
-    "./src/axis.tts",
-    "./src/color.tts",
-    "./src/vector.tts",
-    "./src/util.tts",
-    "./src/box.tts",
-    "./src/matrix.tts",
-    "./src/texture.tts",
-    "./src/material.tts",
-    "./src/ray.tts",
-    "./src/shape.tts",
-    "./src/tree.tts",
-    "./src/triangle.tts",
-    "./src/mesh.tts",
-    "./src/cube.tts",
-    "./src/sphere.tts",
-    "./src/hit.tts",
-    "./src/camera.tts",
-    "./src/scene.tts",
+    "./src/turbo/common.tts",
+    "./src/tracer/axis.tts",
+    "./src/turbo/color.tts",
+    "./src/turbo/vector.tts",
+    "./src/utils/util.tts",
+    "./src/turbo/box.tts",
+    "./src/turbo/matrix.tts",
+    "./src/turbo/texture.tts",
+    "./src/turbo/material.tts",
+    "./src/tracer/ray.tts",
+
+    "./src/turbo/shapes/shape.tts",
+    "./src/turbo/shapes/cube.tts",
+    "./src/turbo/shapes/sphere.tts",
+    "./src/turbo/shapes/triangle.tts",
+    "./src/turbo/shapes/mesh.tts",
+
+    "./src/turbo/tree.tts",
+    "./src/tracer/hit.tts",
+    "./src/turbo/camera.tts",
+    "./src/turbo/scene.tts",
     "./src/three/buffer_geometry.tts",
-    "./src/obj.tts",
-    "./src/sampler.tts",
+    "./src/tracer/sampler.tts",
+
+    "./src/tracer/vector3.tts",
+    "./src/tracer/color3.tts",
+
 ];
 var source = "//Turbo module\n";
 modules.forEach((file) => {

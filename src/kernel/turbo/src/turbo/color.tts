@@ -1,0 +1,398 @@
+type RGBA  = {
+    R:number,
+    G:number,
+    B:number,
+    A:number
+};
+type RGB = {
+    R:number,
+    G:number,
+    B:number
+};
+
+@turbo class Color{
+
+	R:float64
+	G:float64
+	B:float64
+
+	@method init(SELF:number, color = {R:0,G:0,B:0}):number {
+		SELF.R = color.R;
+		SELF.G = color.G;
+		SELF.B = color.B;
+		return SELF;
+	}
+
+    static Init_mem(SELF:number, R:number = 0,G:number = 0,B:number = 0):number {
+		SELF.R = R;
+		SELF.G = G;
+		SELF.B = B;
+		return SELF;
+	}
+
+    static NewColor(color?,G:number = 0,B:number = 0):number {
+        let ptr:number = @new Color;
+        if(typeof color === "object"){
+            return Color.init(ptr, color);
+        }else{
+            return Color.Init_mem(ptr, color, G, B);
+        }
+    }
+    
+	static HexColor(hex:number):number {
+		let R = ((hex >> 16) & 255 ) / 255;
+		let G = ((hex >> 8) & 255) / 255;
+		let B = (hex & 255) / 255;
+        let ptr:number = @new Color;
+		return Color.Pow_mem(Color.Init_mem(ptr, R, G, B), 2.2);
+	}
+
+    static Kelvin(K:number):number {
+        var red:number;
+        var green:number;
+        var blue:number;
+        // red
+        if(K >= 6600){
+            var A = 351.97690566805693;
+            var B = 0.114206453784165;
+            var c = -40.25366309332127;
+            var x = K/100 - 55;
+            red = A + B*x + c*Math.log(x)
+        } else {
+            red = 255;
+        }
+        // green
+        if(K >= 6600){
+            A = 325.4494125711974;
+            B = 0.07943456536662342;
+            c = -28.0852963507957;
+            x = K/100 - 50;
+            green = A + B*x + c*Math.log(x)
+        } else if (K >= 1000) {
+            A = -155.25485562709179;
+            B = -0.44596950469579133;
+            c = 104.49216199393888;
+            x = K/100 - 2;
+            green = A + B*x + c*Math.log(x)
+        } else {
+            green = 0
+        }
+        // blue
+        if (K >= 6600) {
+            blue = 255
+        } else if (K >= 2000) {
+            A = -254.76935184120902;
+            B = 0.8274096064007395;
+            c = 115.67994401066147;
+            x = K/100 - 10;
+            blue = A + B*x + c*Math.log(x)
+        } else {
+            blue = 0
+        }
+        red = Math.min(1, red/255);
+        green = Math.min(1, green/255);
+        blue = Math.min(1, blue/255);
+        let ptr:number = @new Color;
+        return Color.Init_mem(ptr, red, green, blue);
+    }
+
+    static FloatRGBA(SELF:number):RGBA {
+        return {
+            R: Color.R(SELF),
+            G: Color.G(SELF),
+            B: Color.B(SELF),
+            A: 1.0
+        };
+    }
+
+    static RGB(SELF:number):RGB {
+        let _d:Uint8ClampedArray = new Uint8ClampedArray([
+            Color.R(SELF) * 255,
+            Color.G(SELF) * 255,
+            Color.B(SELF) * 255
+        ]);
+        return rgb(_d[0], _d[1], _d[2]);
+    }
+
+    static RGBA(SELF:number):RGBA {
+        let _d:Uint8ClampedArray = new Uint8ClampedArray([
+            Color.R(SELF) * 255,
+            Color.G(SELF) * 255,
+            Color.B(SELF) * 255
+        ]);
+        return {
+            R: _d[0],
+            G: _d[1],
+            B: _d[2],
+            A: 255
+        };
+    }
+
+    static RGBA64(SELF:number):RGBA {
+        return {
+            R: Math.round(Math.max(0, Math.min(65535, Color.R(SELF) * 65535))),
+            G: Math.round(Math.max(0, Math.min(65535, Color.G(SELF) * 65535))),
+            B: Math.round(Math.max(0, Math.min(65535, Color.B(SELF) * 65535))),
+            A: 65535
+        };
+    }
+    
+    static Add(A:RGBA, B:RGBA):RGB { return rgb(A.R + B.R, A.G + B.G, A.B + B.B); }
+
+    /**
+     *
+     * @param A Color 1
+     * @param B Color 2
+     * @param C result Color
+     * @returns {number}
+     * @constructor
+     */
+    static Add_mem(A:number, B:number, C?:number):number {
+        if(C){
+            Color.R(C) = Color.R(A) + Color.R(B);
+            Color.G(C) = Color.G(A) + Color.G(B);
+            Color.B(C) = Color.B(A) + Color.B(B);
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(A) + Color.R(B),
+                Color.G(A) + Color.G(B),
+                Color.B(A) + Color.B(B)
+            );
+        }
+    }
+
+    static Sub(A:RGBA, B:RGBA):RGB { return rgb(A.R - B.R, A.G - B.G, A.B - B.B); }
+    static Sub_mem(A:number, B:number, C?:number):number {
+        if(C){
+            Color.R(C) = Color.R(A) - Color.R(B);
+            Color.G(C) = Color.G(A) - Color.G(B);
+            Color.B(C) = Color.B(A) - Color.B(B);
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(A) - Color.R(B),
+                Color.G(A) - Color.G(B),
+                Color.B(A) - Color.B(B)
+            );
+        }
+    }
+    
+    static Mul(A:RGBA, B:Color3):RGB { return rgb(A.R * B.R, A.G * B.G, A.B * B.B); }
+    static Mul2(A:number, B:Color3):Color3 {
+        return new Color3(
+            Color.R(A) * B.R,
+            Color.G(A) * B.G,
+            Color.B(A) * B.B
+        );
+    }
+    static Mul_mem(A:number, B:number, C?:number):number {
+        if(C){
+            Color.R(C) = Color.R(A) * Color.R(B);
+            Color.G(C) = Color.G(A) * Color.G(B);
+            Color.B(C) = Color.B(A) * Color.B(B);
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(A) * Color.R(B),
+                Color.G(A) * Color.G(B),
+                Color.B(A) * Color.B(B)
+            );
+        }
+    }
+
+    static MulScalar(A:RGBA, f:number):RGB { return rgb(A.R * f, A.G * f, A.B * f); }
+    static MulScalar2(A:number, f:number):Color3 {
+        return new Color3(
+            Color.R(A) * f,
+            Color.G(A) * f,
+            Color.B(A) * f
+        );
+    }
+    static MulScalar_mem(A:number, f:number, C?:number):number {
+        if(C){
+            Color.R(C) = Color.R(A) * f;
+            Color.G(C) = Color.G(A) * f;
+            Color.B(C) = Color.B(A) * f;
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(A) * f,
+                Color.G(A) * f,
+                Color.B(A) * f
+            );
+        }
+    }
+
+    static DivScalar(A:RGBA, f:number):RGB { return rgb(A.R / f, A.G / f, A.B / f); }
+    static DivScalar_mem(A:number, f:number, C?:number):number {
+        if(C){
+            Color.R(C) = Color.R(A) / f;
+            Color.G(C) = Color.G(A) / f;
+            Color.B(C) = Color.B(A) / f;
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(A) / f,
+                Color.G(A) / f,
+                Color.B(A) / f
+            );
+        }
+    }
+
+    static Min(A:RGBA, B:RGBA):RGB { return rgb( Math.min(A.R , B.R), Math.min(A.G , B.G), Math.min(A.B , B.B) ); }
+    static Min_mem(A:number, B:number, C?:number):number {
+        if(C){
+            Color.R(C) = Math.min(Color.R(A) , Color.R(B));
+            Color.G(C) = Math.min(Color.G(A) , Color.G(B));
+            Color.B(C) = Math.min(Color.B(A) , Color.B(B));
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Math.min(Color.R(A) , Color.R(B)),
+                Math.min(Color.G(A) , Color.G(B)),
+                Math.min(Color.B(A) , Color.B(B))
+            );
+        }
+    }
+
+    static Max(A:RGBA, B:RGBA):RGB {return rgb( Math.max(A.R , B.R), Math.max(A.G , B.G), Math.max(A.B , B.B) );}
+    static Max_mem(A:number, B:number, C?:number):number {
+        if(C){
+            Color.R(C) = Math.max(Color.R(A) , Color.R(B));
+            Color.G(C) = Math.max(Color.G(A) , Color.G(B));
+            Color.B(C) = Math.max(Color.B(A) , Color.B(B));
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Math.max(Color.R(A) , Color.R(B)),
+                Math.max(Color.G(A) , Color.G(B)),
+                Math.max(Color.B(A) , Color.B(B))
+            );
+        }
+    }
+
+    static MinComponent(A:RGBA):number {return Math.min(Math.min(A.R, A.G), A.B)}
+    static MinComponent_mem(A:number) {
+        return Math.min( Math.min(Color.R(A), Color.G(A)), Color.B(A) );
+    }
+
+    static MaxComponent(A:RGBA):number { return Math.max(Math.max(A.R, A.G), A.B) }
+    static MaxComponent_mem(A:number):number {
+        return Math.max( Math.max(Color.R(A), Color.G(A)), Color.B(A) );
+    }
+
+    static Pow(A:RGBA, f:number):RGB {return rgb( Math.pow(A.R, f), Math.pow(A.G, f), Math.pow(A.B, f) );}
+    static Pow_mem(A:number, f:number, C?:number):number {
+        if(C){
+            Color.R(C) = Math.pow(Color.R(A) , f);
+            Color.G(C) = Math.pow(Color.G(A) , f);
+            Color.B(C) = Math.pow(Color.B(A) , f);
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Math.pow(Color.R(A) , f),
+                Math.pow(Color.G(A) , f),
+                Math.pow(Color.B(A) , f)
+            );
+        }
+    }
+
+    static Mix(A:RGBA, B:RGBA, pct:number):RGB {
+        let _a = Color.MulScalar(A, 1 - pct);
+        let _b = Color.MulScalar(B, pct);
+        return rgb(_a.R + _b.R, _a.G + _b.G, _a.B + _b.B);
+    }
+    static Mix_mem(A:number, B:number, pct:number, C?:number):number {
+
+        let _a:number = Color.MulScalar_mem(A, 1 - pct);
+        let _b:number = Color.MulScalar_mem(B, pct);
+
+        if(C){
+            Color.R(C) = Color.R(_a) + Color.R(_b);
+            Color.G(C) = Color.G(_a) + Color.G(_b);
+            Color.B(C) = Color.B(_a) + Color.B(_b);
+            return C;
+        }else{
+            let ptr:number = @new Color;
+            return Color.Init_mem(
+                ptr,
+                Color.R(_a) + Color.R(_b),
+                Color.G(_a) + Color.G(_b),
+                Color.B(_a) + Color.B(_b)
+            );
+        }
+    }
+
+    static IsEqual(A:number, B:number):boolean{
+        return Color.R(A) === Color.R(B) && Color.G(A) === Color.G(B) && Color.B(A) === Color.B(B);
+    }
+
+    static IsBlack(A:number):boolean{
+        return Color.IsEqual(A, Color.BLACK);
+    }
+
+    static IsWhite(A:number):boolean{
+        return Color.IsEqual(A, Color.WHITE);
+    }
+    static Set(SELF:number, R:number, G:number, B:number) {
+        SELF.R = R;
+        SELF.G = G;
+        SELF.B = B;
+        return SELF;
+    }
+
+    static Clone(SELF:number, c?:number):number {
+        let ptr:number = c?c:@new Color;
+        return Color.Init_mem(ptr, SELF.R, SELF.G, SELF.B);
+    }
+
+    static get BLACK():number{
+        return Color.HexColor(0x000000);
+    }
+    static get WHITE():number {
+        return Color.HexColor(0xFFFFFF);
+    }
+
+    static BrightColors = [
+        Color.HexColor(0xFF00FF),
+        Color.HexColor(0x84FF00),
+        Color.HexColor(0xFF0084),
+        Color.HexColor(0x00FFFF),
+        Color.HexColor(0x00FF84),
+        Color.HexColor(0xDD40FF),
+        Color.HexColor(0xFFFF00)
+    ];
+
+    static Random():number {
+        let ptr:number = @new Color;
+        return Color.Init_mem(ptr, Math.random(), Math.random(), Math.random());
+    }
+
+    static random():RGB {
+        return rgb(Math.random(), Math.random(), Math.random());
+    }
+
+    static RandomBrightColor():number {
+        var i:number = Math.round(Math.random() * Color.BrightColors.length);
+        return Color.BrightColors[i];
+    }
+
+} @end
+

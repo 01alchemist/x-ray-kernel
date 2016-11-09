@@ -45,7 +45,7 @@ onmessage = (msg) => {
         case "TRACE":
 
             xTracer.trace(msg.data.jobData);
-            postMessage({event:"TRACE_COMPLETED", id:WORKER_ID, rect:msg.data.jobData.rect});
+            postMessage({event:"TRACE_COMPLETED", id:WORKER_ID, jobIndex:msg.data.jobData.index, rect:msg.data.jobData.rect});
 
             break;
 

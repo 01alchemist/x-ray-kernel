@@ -1,0 +1,114 @@
+
+@turbo class Material {
+	Color:Color
+	Texture:Texture
+	NormalTexture:Texture
+	BumpTexture:Texture
+	GlossTexture:Texture
+	BumpMultiplier:float64
+	Emittance:float64
+	Index:float64 // refractive index
+	Gloss:float64 // reflection cone angle in radians
+	Tint:float64 // specular and refractive tinting
+	Reflectivity:float64 // metallic reflection
+	Transparent:uint8
+
+    @method init(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
+        SELF.Color = Color;
+        SELF.Texture = Texture;
+        SELF.NormalTexture = NormalTexture;
+        SELF.BumpTexture = BumpTexture;
+        SELF.GlossTexture = GlossTexture;
+        SELF.BumpMultiplier = BumpMultiplier;
+        SELF.Emittance = Emittance;
+        SELF.Index = Index;
+        SELF.Gloss = Gloss;
+        SELF.Tint = Tint;
+        SELF.Reflectivity = Reflectivity;
+        SELF.Transparent = Transparent;
+        return SELF;
+    }
+
+    static Clone(SELF, c?:number):number {
+        let ptr:number = c?c:@new Material;
+        return Material.init(ptr,
+            Color.Clone(SELF.Color),
+            SELF.Texture,
+            SELF.NormalTexture,
+            SELF.BumpTexture,
+            SELF.GlossTexture,
+            SELF.BumpMultiplier,
+            SELF.Emittance,
+            SELF.Index,
+            SELF.Gloss,
+            SELF.Tint,
+            SELF.Reflectivity,
+            SELF.Transparent
+        );
+    }
+    static ToJSON(SELF){
+        return {
+            ptr:SELF,
+            color:Color.RGBA(SELF.Color),
+            texture:SELF.Texture,
+            normalTexture:SELF.NormalTexture,
+            bumpTexture:SELF.BumpTexture,
+            glossTexture:SELF.GlossTexture,
+            bumpMultiplier:SELF.BumpMultiplier,
+            emittance:SELF.Emittance,
+            index:SELF.Index,
+            gloss:SELF.Gloss,
+            tint:SELF.Tint,
+            reflectivity:SELF.Reflectivity,
+            transparent:SELF.Transparent
+        }
+    }
+    static DiffuseMaterial(color:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
+    }
+
+    static SpecularMaterial(color:number, index:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, 0, 0, -1, false);
+    }
+
+    static GlossyMaterial(color:number, index:number, gloss:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, gloss, 0, -1, false);
+    }
+
+    static ClearMaterial(index:number, gloss:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, Color.BLACK, 0, 0, 0, 0, 1, 0, index, gloss, 0, -1, true);
+    }
+
+    static TransparentMaterial(color:number, index:number, gloss:number, tint:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, gloss, tint, -1, true);
+    }
+
+    static MetallicMaterial(color:number, gloss:number, tint:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, gloss, tint, -1, false);
+    }
+
+    static LightMaterial(color:number, emittance:number):number{
+        let ptr:number = @new Material;
+        return Material.init(ptr, color, 0, 0, 0, 0, 1, emittance, 1, 0, 0, -1, false);
+    }
+
+    static MaterialAt(shape:number, point:Vector3):number{
+        let material:number = Shape.MaterialAt(shape, point);
+        let uv:Vector3 = Shape.UV(shape, point);
+        if (Material.Texture(material)) {
+            Material.Color(material) = Texture.Sample(Material.Texture(material), uv.x, uv.y);
+        }
+        if (Material.GlossTexture(material)) {
+            let c:number = Texture.Sample(Material.GlossTexture(material), uv.x, uv.y);
+            Material.Gloss(material) = (Color.R(c) + Color.G(c) + Color.B(c)) / 3;
+        }
+        return material;
+    }
+
+} @end

@@ -1,0 +1,101 @@
+@turbo class Scene {
+	Color:Color
+	Texture:Texture
+	TextureAngle:float64
+	Shapes:int32
+	NumShapes:int32
+	Lights:int32
+	NumLights:int32
+	tree:int32
+	rays:int32
+
+	@method init(SELF, color){
+        SELF.Color = color;
+        SELF.Texture = 0;
+        SELF.TextureAngle = 0;
+        SELF.rays = 0;
+		return SELF;
+	}
+
+    static NewScene(color:number){
+        let ptr = @new Scene;
+        return Scene.init(ptr, Color.HexColor(color));
+    }
+
+	static Compile(SELF) {
+		for (let i=0; i < SELF.NumShapes;i++) {
+			let shape = Shape.Array.at(SELF.Shapes, i);
+			Shape.Compile(shape);
+		}
+		if (!SELF.tree) {
+			SELF.tree = Tree.NewTree(SELF.Shapes);
+		}
+		return SELF.tree;
+	}
+
+	static RayCount(SELF):number {
+		// return Atomics.load(turbo.Runtime._mem_int32, SELF.rays);
+        return SELF.rays;
+	}
+
+	static Intersect(SELF, r:number):Hit {
+		// Atomics.add(turbo.Runtime._mem_int32, SELF.rays, 1);
+        SELF.rays = SELF.rays + 1;
+		return Tree.Intersect(SELF.tree, r);
+	}
+
+} @end
+
+
+export class MasterScene{
+
+	shapes:IShape[];
+	lights:IShape[];
+	scenePtr:number;
+
+	static defaultMaterial;
+
+	constructor(){
+		this.scenePtr = Scene.NewScene(0x767777);
+        this.shapes = [];
+        this.lights = [];
+
+		MasterScene.defaultMaterial = Material.GlossyMaterial(Color.HexColor(0x0000FF), 1.5, Utils.Radians(10));
+		let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
+		let light = Material.LightMaterial(Color.WHITE, 1);
+
+		// add walls and lights
+		// this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
+		// this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+
+	}
+    AddDebugScene(){
+
+    }
+	Add(shape) {
+		this.shapes.push(shape);
+		
+		if (Material.Emittance(Shape.MaterialAt(shape, Vector.ZERO)) > 0) {
+			this.lights.push(shape);
+		}
+	}
+	Commit(){
+		Scene.NumShapes(this.scenePtr) = this.shapes.length;
+		let shapeList = @new int32.Array(this.shapes.length);
+        Scene.Shapes(this.scenePtr) = shapeList;
+		Scene.NumLights(this.scenePtr) = this.lights.length;
+		let lightList = @new int32.Array(this.lights.length);
+        Scene.Lights(this.scenePtr) = lightList;
+
+		this.shapes.forEach((shape, index) => {
+            int32.Array.setAt(shapeList, index, shape);
+		});
+
+		this.lights.forEach((shape, index) => {
+            int32.Array.setAt(lightList, index, shape);
+		});
+
+        Scene.Compile(this.scenePtr);
+	}
+}

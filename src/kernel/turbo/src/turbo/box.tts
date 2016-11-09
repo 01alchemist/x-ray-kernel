@@ -1,0 +1,217 @@
+@turbo class Box{
+
+	Min:Vector
+	Max:Vector
+
+	@method init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
+        SELF.Min = Vector.NewVector(min);
+        SELF.Max = Vector.NewVector(max);
+        return SELF;
+	}
+
+    static Init_mem(SELF, min:number, max:number){
+        SELF.Min = min;
+        SELF.Max = max;
+        return SELF;
+	}
+
+    static NewBox(min?:number, max?:number){
+        let SELF = @new Box;
+        SELF.Min = min?min:Vector.NewVector();
+        SELF.Max = max?max:Vector.NewVector();
+        return SELF;
+	}
+
+    static ToJSON(SELF){
+        return {
+            min:Vector.ToJSON(SELF.Min),
+            max:Vector.ToJSON(SELF.Max)
+        };
+	}
+
+	static BoxForShapes(shapes:number, numShapes:number):number{
+		if(numShapes == 0) {
+			return Box.NewBox();
+		}
+		// let box = Shape.BoundingBox(Shape.Array.at(shapes, 0));
+		let box = Box.NewBox();
+
+		for(let i:number = 0; i < numShapes; i++){
+			let shape:number = Shape.Array.at(shapes, i);
+			box = Box.Extend(box, Shape.BoundingBox(shape));
+		}
+		return box;
+	}
+
+	static BoxForTriangles(shapes:number, numShapes:number):number {
+        if(numShapes == 0) {
+            return Box.NewBox();
+        }
+        let box = Triangle.BoundingBox(Triangle.Array.at(shapes, 0));
+
+        for(let i:number = 0; i < numShapes; i++){
+            let shape:number = Triangle.Array.at(shapes, i);
+            box = Box.Extend(box, Triangle.BoundingBox(shape));
+        }
+        return box
+	}
+
+	static Anchor(SELF, anchor:number, c?:number):number {
+        let size = Box.Size(SELF);
+        let tmp = Vector.Mul_mem(size, anchor);
+        free(size);
+        if(c){
+            free(tmp);
+        }else{
+            c = tmp;
+        }
+		return Vector.Add_mem(SELF.Min, c, c);
+    }
+
+	static Center(SELF):number {
+        let anchor = Vector.NewVector(0.5, 0.5, 0.5);
+		return Box.Anchor(SELF, anchor, anchor);
+	}
+
+	static OuterRadius(SELF):number {
+        let center = Box.Center(SELF);
+        let tmp = Vector.Sub_mem(SELF.Min, center);
+		let len = Vector.Length_mem(tmp);
+        free(center);
+        free(tmp);
+        return len;
+	}
+
+	static InnerRadius(SELF):number {
+        let center = Box.Center(SELF);
+        let tmp = Vector.Sub_mem(center, SELF.Min);
+		let result = Vector.MaxComponent_mem(tmp);
+        free(tmp);
+        return result;
+    }
+
+	static Size(SELF):number {
+		return Vector.Sub_mem(SELF.Max, SELF.Min);
+	}
+
+	static Extend(SELF, b:number):number{
+        //let ptr:number = @new Box;
+		let min = SELF.Min;
+		let max = SELF.Max;
+		let bmin = Box.Min(b);
+		let bmax = Box.Max(b);
+		return Box.Init_mem(SELF, Vector.Min_mem(min, bmin, min), Vector.Max_mem(max, bmax, max));
+	}
+
+	static Contains(SELF , b:number):boolean{
+
+        let a_min = SELF.Min;
+        let a_max = SELF.Max;
+
+		return Vector.X(a_min) <= Vector.X(b) && Vector.X(a_max) >= Vector.X(b) &&
+			Vector.Y(a_min) <= Vector.Y(b) && Vector.Y(a_max) >= Vector.Y(b) &&
+			Vector.Z(a_min) <= Vector.Z(b) && Vector.Z(a_max) >= Vector.Z(b);
+	}
+
+	static Intersects(a:number, b:number):boolean {
+        let a_min = Box.Min(a);
+        let a_max = Box.Max(a);
+        let b_min = Box.Min(b);
+        let b_max = Box.Max(b);
+
+		return !(Vector.X(a_min) > Vector.X(b_max) || Vector.X(a_max) < Vector.X(b_min) || Vector.Y(a_min) > Vector.Y(b_max) ||
+		Vector.Y(a_max) < Vector.Y(b_min) || Vector.Z(a_min) > Vector.Z(b_max) || Vector.Z(a_max) < Vector.Z(b_min));
+	}
+
+	static Intersect(SELF, r:Ray):{tmax:number, tmin:number} {
+
+        let min = SELF.Min;
+        let max = SELF.Max;
+
+        // x1 := (b.Min.X - r.Origin.X) / r.Direction.X
+        // y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
+        // z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
+        // x2 := (b.Max.X - r.Origin.X) / r.Direction.X
+        // y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
+        // z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+
+		let x1 = (Vector.X(min) - r.origin.x) / r.direction.x;
+        let y1 = (Vector.Y(min) - r.origin.y) / r.direction.y;
+        let z1 = (Vector.Z(min) - r.origin.z) / r.direction.z;
+        let x2 = (Vector.X(max) - r.origin.x) / r.direction.x;
+        let y2 = (Vector.Y(max) - r.origin.y) / r.direction.y;
+        let z2 = (Vector.Z(max) - r.origin.z) / r.direction.z;
+        let tmp;
+
+		if (x1 > x2) {
+            tmp = x1;
+			x1 = x2;
+            x2 = tmp;
+		}
+		if (y1 > y2) {
+			tmp = y1;
+			y1 = y2;
+            y2 = tmp
+		}
+		if (z1 > z2) {
+            tmp = z1;
+            z1 = z2;
+            z2 = tmp
+		}
+		return {
+            tmin: Math.max(Math.max(x1, y1), z1),
+		    tmax: Math.min(Math.min(x2, y2), z2)
+        };
+
+        /*
+        * 	 x1 := (b.Min.X - r.Origin.X) / r.Direction.X
+             y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
+             z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
+             x2 := (b.Max.X - r.Origin.X) / r.Direction.X
+             y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
+             z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+
+             if x1 > x2 {
+             x1, x2 = x2, x1
+             }
+             if y1 > y2 {
+             y1, y2 = y2, y1
+             }
+             if z1 > z2 {
+             z1, z2 = z2, z1
+             }
+             t1 := math.Max(math.Max(x1, y1), z1)
+             t2 := math.Min(math.Min(x2, y2), z2)
+             return t1, t2
+        *
+        **/
+
+	}
+
+	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
+        let min = SELF.Min;
+        let max = SELF.Max;
+        let left;
+        let right;
+		switch (axis) {
+			case Axis.AxisX:
+				left = Vector.X(min) <= point;
+				right = Vector.X(max) >= point;
+                break;
+			case Axis.AxisY:
+				left = Vector.Y(min) <= point;
+				right = Vector.Y(max) >= point;
+                break;
+			case Axis.AxisZ:
+				left = Vector.Z(min) <= point;
+				right = Vector.Z(min) >= point;
+                break;
+		}
+		return {
+            left :left,
+            right:right
+        };
+	}
+
+} @end
+
