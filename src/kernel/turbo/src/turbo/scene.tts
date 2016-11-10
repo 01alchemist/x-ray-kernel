@@ -56,18 +56,13 @@ export class MasterScene{
 	static defaultMaterial;
 
 	constructor(){
-		this.scenePtr = Scene.NewScene(0xffffff);
+		this.scenePtr = Scene.NewScene(0x000000);
         this.shapes = [];
         this.lights = [];
 
-		MasterScene.defaultMaterial = Material.GlossyMaterial(Color.HexColor(0x0000FF), 1.5, Utils.Radians(10));
-		let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
-		let light = Material.LightMaterial(Color.WHITE, 1);
-
-		// add walls and lights
-		// this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
-		// this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
-		this.Add(Sphere.NewSphere(Vector.NewVector(4, 10, 1), 1, light));
+		// MasterScene.defaultMaterial = Material.GlossyMaterial(Color.HexColor(0xFF0000), 1.5, Utils.Radians(30));
+        // MasterScene.defaultMaterial = Material.LightMaterial(Color.HexColor(0x00FF00), 5);
+		MasterScene.defaultMaterial = Material.DiffuseMaterial(Color.HexColor(0xFF0000));
 
 	}
     AddDebugScene(){

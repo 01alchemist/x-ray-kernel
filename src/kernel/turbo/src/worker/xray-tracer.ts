@@ -35,7 +35,7 @@ export class xRayTracer {
     public sampler;
     public buffer:number;
     public samplesPerPixel:number = 1;
-    public stratifiedSampling:boolean = false;
+    public stratifiedSampling:boolean = true;
     public AdaptiveSamples:number;
     public FireflySamples:number;
     public FireflyThreshold:number;
@@ -61,7 +61,9 @@ export class xRayTracer {
         this.hitSamples = data.traceData.renderOptions.hitSamples;
         this.bounces = data.traceData.renderOptions.bounces;
 
-        this.sampler = xray.NewSampler(1, 1);
+        if(!this.sampler){
+            this.sampler = xray.NewSampler(4, 4);
+        }
     }
 
     updateRenderRegion(width:number, height:number, xoffset:number, yoffset:number):void {
@@ -167,11 +169,8 @@ export class xRayTracer {
                             let fu = (u + 0.5) / sppRoot;
                             let fv = (v + 0.5) / sppRoot;
                             let ray = Camera.CastRay(camera, x, y, this.full_width, this.full_height, fu, fv);
-                            // let sample = Sampler.Sample(sampler, scene, ray);
-                            //let sample = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0);
-                            //TODO: Complete
-                            //Buffer.AddSample(buf, x, y, sample);
-                            // Color.Add_mem(c, sample, c);
+                            let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
+                            c = c.add(sample);
                         }
                     }
                 } else {
@@ -181,7 +180,7 @@ export class xRayTracer {
                         let fv = Math.random();
                         let ray = Camera.CastRay(camera, x, y, this.full_width, this.full_height, fu, fv);
                         // let sample = Sampler.Sample(sampler, scene, ray);
-                        let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 0);
+                        let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
                         c = c.add(sample);
                         //Color.Add_mem(c, sample, c);
                         //Buffer.AddSample(buf, x, y, sample);

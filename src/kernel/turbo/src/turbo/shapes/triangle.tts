@@ -35,7 +35,7 @@
 		SELF.T2 = t2;
 		SELF.T3 = t3;
 		SELF.Material = material;
-		SELF.FixNormals();
+		//SELF.FixNormals();
 		return SELF;
 	}
 
@@ -61,13 +61,13 @@
         return b;
     }
 
-    static Vertices(SELF){
-		return {
-            V1:SELF.V1,
-            V2:SELF.V2,
-            V3:SELF.V3
-        }
-	}
+    // static Vertices(SELF){
+	// 	return {
+     //        V1:SELF.V1,
+     //        V2:SELF.V2,
+     //        V3:SELF.V3
+     //    }
+	// }
 
     @virtual Type(SELF:number){
         return ShapeType.TRIANGLE;
@@ -216,26 +216,25 @@
 
     @virtual NormalAt(SELF, p:Vector3):Vector3 {
 
-        let V1:Vector3 = new Vector3().read(SELF.V1);
-        let V2:Vector3 = new Vector3().read(SELF.V2);
-        let V3:Vector3 = new Vector3().read(SELF.V3);
+        // let V1:Vector3 = new Vector3().read(SELF.V1);
+        // let V2:Vector3 = new Vector3().read(SELF.V2);
+        // let V3:Vector3 = new Vector3().read(SELF.V3);
 
         let n1:Vector3 = new Vector3().read(SELF.N1);
         let n2:Vector3 = new Vector3().read(SELF.N2);
         let n3:Vector3 = new Vector3().read(SELF.N3);
 
-        let T1:Vector3 = new Vector3().read(SELF.T1);
-        let T2:Vector3 = new Vector3().read(SELF.T2);
-        let T3:Vector3 = new Vector3().read(SELF.T3);
+        // let T1:Vector3 = new Vector3().read(SELF.T1);
+        // let T2:Vector3 = new Vector3().read(SELF.T2);
+        // let T3:Vector3 = new Vector3().read(SELF.T3);
 
 		let uvw = Triangle.Barycentric(SELF, p);
 		let n = new Vector3();
         n = n.add(n1.mulScalar(uvw.u));
         n = n.add(n2.mulScalar(uvw.v));
         n = n.add(n3.mulScalar(uvw.w));
-        n = n.normalize();
 
-		if (Material.NormalTexture(SELF.Material)) {
+		/*if (Material.NormalTexture(SELF.Material)) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
@@ -271,7 +270,7 @@
 			let bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
 			n = n.add(tangent.mulScalar(bump.x * Material.BumpMultiplier(SELF.Material)));
 			n = n.add(bitangent.mulScalar(bump.y * Material.BumpMultiplier(SELF.Material)));
-		}
+		}*/
 		n = n.normalize();
 		return n;
 	}
@@ -302,20 +301,31 @@
 		return {u:u,v:v,w:w};
 	}
 
+    static UpdateBox(SELF) {
+        var min = Vector.Min_mem(Vector.Min_mem(SELF.V1, SELF.V2), SELF.V3);
+        var max = Vector.Max_mem(Vector.Max_mem(SELF.V1, SELF.V2), SELF.V3);
+        SELF.Box = @new Box;
+        SELF.HasBox = 1;
+        return Box.Init_mem(SELF.Box, min, max);
+    }
+
 	static FixNormals(SELF) {
 		let e1 = Vector.Sub_mem(SELF.V2, SELF.V1);
 		let e2 = Vector.Sub_mem(SELF.V3, SELF.V1);
 		let n = Vector.Normalize_mem(Vector.Cross_mem(e1, e2));
 
         if(Vector.IsZero(SELF.N1)) {
-            SELF.N1 = n;
+            Vector.Copy(SELF.N1, n);
         }
         if(Vector.IsZero(SELF.N2)) {
-            SELF.N2 = n;
+            Vector.Copy(SELF.N2, n);
         }
         if(Vector.IsZero(SELF.N3)) {
-            SELF.N3 = n;
+            Vector.Copy(SELF.N3, n);
         }
+        free(e1);
+        free(e2);
+        free(n);
 	}
 
 } @end

@@ -45,7 +45,9 @@ export class BufferGeometry {
 
         }*/
         // return null;
-        return this.buildGeometry(src.geometry, MasterScene.defaultMaterial, src.smooth);
+        let color = src.material.color || {r:0,g:0,b:0};
+        let mat = Material.DiffuseMaterial(Color.NewColor(color.r, color.g, color.b));
+        return this.buildGeometry(src.geometry, mat, src.smooth);
     }
 
     static buildGeometry(geometry:THREE.BufferGeometry|any, material:number, smooth:boolean=false):number {
@@ -110,9 +112,9 @@ export class BufferGeometry {
 
                     triCount++;
 
-                    var a;
-                    var b;
-                    var c;
+                    let a;
+                    let b;
+                    let c;
 
                     a = indices[i];
                     b = indices[i + 1];
@@ -129,28 +131,28 @@ export class BufferGeometry {
                     }
 
                     //[....,ax,ay,az, bx,by,bz, cx,xy,xz,....]
-                    var ax = a * 3;
-                    var ay = (a * 3) + 1;
-                    var az = (a * 3) + 2;
+                    let ax = a * 3;
+                    let ay = (a * 3) + 1;
+                    let az = (a * 3) + 2;
 
-                    var bx = b * 3;
-                    var by = (b * 3) + 1;
-                    var bz = (b * 3) + 2;
+                    let bx = b * 3;
+                    let by = (b * 3) + 1;
+                    let bz = (b * 3) + 2;
 
-                    var cx = c * 3;
-                    var cy = (c * 3) + 1;
-                    var cz = (c * 3) + 2;
+                    let cx = c * 3;
+                    let cy = (c * 3) + 1;
+                    let cz = (c * 3) + 2;
 
-                    var au = a * 2;
-                    var av = (a * 2) + 1;
+                    let au = a * 2;
+                    let av = (a * 2) + 1;
 
-                    var bu = b * 2;
-                    var bv = (b * 2) + 1;
+                    let bu = b * 2;
+                    let bv = (b * 2) + 1;
 
-                    var cu = c * 2;
-                    var cv = (c * 2) + 1;
+                    let cu = c * 2;
+                    let cv = (c * 2) + 1;
 
-                    var t = @new Triangle;
+                    let t = @new Triangle;
                     Triangle.Material(t) = material;
                     Triangle.V1(t) = Vector.NewVector(positions[ax], positions[ay], positions[az]);
                     Triangle.V2(t) = Vector.NewVector(positions[bx], positions[by], positions[bz]);
@@ -176,12 +178,88 @@ export class BufferGeometry {
             } else {
                 uvIndex = 0;
                 // triangles = @new Triangle.Array(positions.length);
-                for (var i = 0; i < positions.length; i = i + 9) {
-                    var t = @new Triangle;
+                for (let i = 0; i < positions.length; i = i + 9) {
+
+                    // triCount++;
+                    //
+                    // let ax,ay,az;
+                    // let bx,by,bz;
+                    // let cx,cy,cz;
+                    //
+                    // let au,av;
+                    // let bu,bv;
+                    // let cu,cv;
+                    //
+                    // if (triCount % 2 !== 0) {
+                    //     ax = i;
+                    //     ay = i + 1;
+                    //     az = i + 2;
+                    //
+                    //     bx = i + 3;
+                    //     by = i + 4;
+                    //     bz = i + 5;
+                    //
+                    //     cx = i + 6;
+                    //     cy = i + 7;
+                    //     cz = i + 8;
+                    //
+                    //     au = uvIndex;
+                    //     av = uvIndex + 1;
+                    //
+                    //     bu = uvIndex + 2;
+                    //     bv = uvIndex + 3;
+                    //
+                    //     cu = uvIndex + 4;
+                    //     cv = uvIndex + 5;
+                    // } else {
+                    //     ax = i + 8;
+                    //     ay = i + 7;
+                    //     az = i + 6;
+                    //
+                    //     bx = i + 5;
+                    //     by = i + 4;
+                    //     bz = i + 3;
+                    //
+                    //     cx = i + 2;
+                    //     cy = i + 1;
+                    //     cz = i;
+                    //
+                    //     au = uvIndex + 5;
+                    //     av = uvIndex + 4;
+                    //
+                    //     bu = uvIndex + 3;
+                    //     bv = uvIndex + 2;
+                    //
+                    //     cu = uvIndex + 1;
+                    //     cv = uvIndex;
+                    // }
+                    //
+                    // //[....,ax,ay,az, bx,by,bz, cx,xy,xz,....]
+                    //
+                    //
+                    // let t = @new Triangle;
+                    // Triangle.Material(t) = material;
+                    // Triangle.V1(t) = Vector.NewVector(positions[ax], positions[ay], positions[az]);
+                    // Triangle.V2(t) = Vector.NewVector(positions[bx], positions[by], positions[bz]);
+                    // Triangle.V3(t) = Vector.NewVector(positions[cx], positions[cy], positions[cz]);
+                    //
+                    // Triangle.N1(t) = Vector.NewVector(normals[ax], normals[ay], normals[az]);
+                    // Triangle.N2(t) = Vector.NewVector(normals[bx], normals[by], normals[bz]);
+                    // Triangle.N3(t) = Vector.NewVector(normals[cx], normals[cy], normals[cz]);
+                    //
+                    // if(uv){
+                    //     Triangle.T1(t) = Vector.NewVector(uv[au], uv[av], 0);
+                    //     Triangle.T2(t) = Vector.NewVector(uv[bu], uv[bv], 0);
+                    //     Triangle.T3(t) = Vector.NewVector(uv[cu], uv[cv], 0);
+                    // }
+
+                    let t = @new Triangle;
                     Triangle.Material(t) = material;
+
                     Triangle.V1(t) = Vector.NewVector(positions[i], positions[i + 1], positions[i + 2]);
                     Triangle.V2(t) = Vector.NewVector(positions[i + 3], positions[i + 4], positions[i + 5]);
                     Triangle.V3(t) = Vector.NewVector(positions[i + 6], positions[i + 7], positions[i + 8]);
+
                     Triangle.N1(t) = Vector.NewVector(normals[i], normals[i + 1], normals[i + 2]);
                     Triangle.N2(t) = Vector.NewVector(normals[i + 3], normals[i + 4], normals[i + 5]);
                     Triangle.N3(t) = Vector.NewVector(normals[i + 6], normals[i + 7], normals[i + 8]);
@@ -192,6 +270,8 @@ export class BufferGeometry {
                         Triangle.T3(t) = Vector.NewVector(uv[uvIndex + 4], uv[uvIndex + 5], 0);
                     }
 
+                    //Triangle.UpdateBox(t);
+                    Triangle.FixNormals(t);
                     // triangle.fixNormals();
                     // triangle.updateBox();
                     triangles.push(t);
@@ -204,6 +284,7 @@ export class BufferGeometry {
         // console.log(`Num triangles: ${triangles.length}`);
         // let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles));
+        // Mesh.SmoothNormals(meshRef);
         // let meshRef = Mesh.NewMesh(triangles);
         // console.log(turbo.getMemoryUsage());
         // Mesh.Compile(meshRef);

@@ -380,6 +380,13 @@ type RGB = {
         Color.HexColor(0xFFFF00)
     ];
 
+    static RGBAColors = [
+        Color.HexColor(0xFF0000),
+        Color.HexColor(0x00FF00),
+        Color.HexColor(0x0000FF),
+        Color.HexColor(0xFFFFFF)
+    ];
+
     static Random():number {
         let ptr:number = @new Color;
         return Color.Init_mem(ptr, Math.random(), Math.random(), Math.random());
@@ -392,6 +399,11 @@ type RGB = {
     static RandomBrightColor():number {
         var i:number = Math.round(Math.random() * Color.BrightColors.length);
         return Color.BrightColors[i];
+    }
+
+    static RandomRGBAColor():number {
+        var i:number = Math.round(Math.random() * Color.RGBAColors.length);
+        return Color.RGBAColors[i];
     }
 
 } @end

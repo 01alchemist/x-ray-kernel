@@ -102,13 +102,14 @@
 	static SmoothNormalsThreshold(SELF, radians:number) {
 		let threshold:number = Math.cos(radians);
 		let lookup:number[] = [];
-		for (let i=0; i < SELF.NumTriangles; i++) {
+		let NumTriangles = Triangle.Array.len(SELF.Triangles);
+		for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
 			lookup[Triangle.V1(t)] = Utils.append(lookup[Triangle.V1(t)], Triangle.N1(t));
 			lookup[Triangle.V2(t)] = Utils.append(lookup[Triangle.V2(t)], Triangle.N2(t));
 			lookup[Triangle.V3(t)] = Utils.append(lookup[Triangle.V3(t)], Triangle.N3(t));
 		}
-        for (let i=0; i < SELF.NumTriangles; i++) {
+        for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
 			Triangle.N1(t) = Mesh._SmoothNormalsThreshold(SELF, Triangle.N1(t), lookup[Triangle.V1(t)], threshold);
 			Triangle.N2(t) = Mesh._SmoothNormalsThreshold(SELF, Triangle.N2(t), lookup[Triangle.V2(t)], threshold);
@@ -118,16 +119,17 @@
 
 	static SmoothNormals(SELF) {
 		let lookup:number[] = [];
-        for (let i=0; i < SELF.NumTriangles; i++) {
+		let NumTriangles = Triangle.Array.len(SELF.Triangles);
+        for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
-			lookup[Triangle.V1(t)] = lookup[Triangle.V1(t)].Add(Triangle.N1(t));
-			lookup[Triangle.V2(t)] = lookup[Triangle.V2(t)].Add(Triangle.N2(t));
-			lookup[Triangle.V3(t)] = lookup[Triangle.V3(t)].Add(Triangle.N3(t));
+			Vector.Add_mem(lookup[Triangle.V1(t)], Triangle.N1(t), lookup[Triangle.V1(t)]);
+			Vector.Add_mem(lookup[Triangle.V2(t)], Triangle.N2(t), lookup[Triangle.V2(t)]);
+			Vector.Add_mem(lookup[Triangle.V3(t)], Triangle.N3(t), lookup[Triangle.V3(t)]);
 		}
 		for (let i=0;i < lookup.length;i++) {
 			 Vector.Normalize_mem(lookup[i], lookup[i]);
 		}
-        for (let i=0; i < SELF.NumTriangles; i++) {
+        for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
             Triangle.N1(t) = lookup[Triangle.V1(t)];
 			Triangle.N2(t) = lookup[Triangle.V2(t)];
@@ -142,7 +144,7 @@
 
 	static MoveTo(SELF, position:number, anchor:number):number {
 		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
-		Matrix.Transform(SELF, matrix);
+		return Matrix.Transform(SELF, matrix);
 	}
 
 	static FitInside(SELF, box:number, anchor:number) {
@@ -159,7 +161,8 @@
 	}
 
 	static Transform(SELF, matrix:number) {
-        for (let i=0; i < SELF.NumTriangles; i++) {
+		let NumTriangles = Triangle.Array.len(SELF.Triangles);
+        for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
 			Triangle.V1(t) = Matrix.MulPosition(matrix, Triangle.V1(t));
 			Triangle.V2(t) = Matrix.MulPosition(matrix, Triangle.V2(t));
@@ -172,7 +175,8 @@
 	}
 
 	static SetMaterial(material:number) {
-        for (let i=0; i < SELF.NumTriangles; i++) {
+		let NumTriangles = Triangle.Array.len(SELF.Triangles);
+        for (let i=0; i < NumTriangles; i++) {
             let t:number = int32.Array.at(SELF.Triangles, i);
 			Triangle.Material(t) = material;
 		}

@@ -89,6 +89,7 @@ func (t *Triangle) NormalAt(p Vector) Vector {
 	n = n.Add(t.N2.MulScalar(v))
 	n = n.Add(t.N3.MulScalar(w))
 	n = n.Normalize()
+
 	if t.Material.NormalTexture != nil {
 		b := Vector{}
 		b = b.Add(t.T1.MulScalar(u))

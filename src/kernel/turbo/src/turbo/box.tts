@@ -202,9 +202,9 @@
 				left = Vector.Y(min) <= point;
 				right = Vector.Y(max) >= point;
                 break;
-			case Axis.AxisZ:
+            case Axis.AxisZ:
 				left = Vector.Z(min) <= point;
-				right = Vector.Z(min) >= point;
+				right = Vector.Z(max) >= point;// EPIC Bug :D it was min and got weird triangle intersection
                 break;
 		}
 		return {

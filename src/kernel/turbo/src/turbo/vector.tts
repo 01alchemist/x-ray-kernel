@@ -554,6 +554,10 @@ type XYZ = {
         return SELF;
     }
 
+    static Copy(SELF:number, a:number):number {
+        return Vector.Set(SELF, Vector.X(a), Vector.Y(a), Vector.Z(a));
+    }
+
     static Clone(SELF:number, c?:number):number {
         let ptr:number = c?c:@new Vector;
         return Vector.Init_mem(ptr, SELF.X, SELF.Y, SELF.Z);

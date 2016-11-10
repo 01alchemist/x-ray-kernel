@@ -41,13 +41,13 @@ export class Utils {
     static Median(items:number[]):number {
         let n = items.length;
         if (n == 0) {
-            return 0
+            return 0;
         } else if (n % 2 == 1) {
-            return items[n / 2]
+            return items[n / 2];
         } else {
             let a = items[n / 2 - 1];
             let b = items[n / 2];
-            return (a + b) / 2
+            return (a + b) / 2;
         }
     }
 

@@ -3,6 +3,10 @@ var Color = xray.Color;
 var Vector = xray.Vector;
 var MasterScene = xray.MasterScene;
 var Camera = xray.Camera;
+var Material = xray.Material;
+var Cube = xray.Cube;
+var Sphere = xray.Sphere;
+var Utils = xray.Utils;
 
 let NUM_CPU = 8;
 let CPU_available = 7;
@@ -16,8 +20,10 @@ let imageData;
 let pixelData;
 let bucketSize = 32;
 let renderOptions = {
-    full_width: 2560 / 8,
-    full_height: 1440 / 8,
+    // full_width: 2560 / 4,
+    // full_height: 1440 / 4,
+    full_width: 448,
+    full_height: 640,
     iterations: 1,
     hitSamples: 1,
     cameraSamples: 1,
@@ -30,7 +36,7 @@ let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width 
 let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
 
 let masterScene = new MasterScene();
-let camera = Camera.LookAt(Vector.NewVector(5, 0, 2), Vector.NewVector(0, 0, 0), Vector.NewVector(0, 1, 0), 45);
+let camera = Camera.LookAt(Vector.NewVector(0, 5, 15), Vector.NewVector(0, 5, 0), Vector.NewVector(0, 1, 0), 45);
 let traceData = {
     renderOptions: renderOptions,
     scene: masterScene.scenePtr,
@@ -40,6 +46,18 @@ let traceData = {
 let traceJobs = [];
 let refJobs = [];
 let deferredQueue = [];
+
+function add_debug_scene(){
+    let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
+    let light = Material.LightMaterial(Color.WHITE, 50);
+    let green_light = Material.LightMaterial(Color.HexColor(0x00FF00), 80);
+
+    // add walls and lights
+    // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
+    // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+    masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
+    // masterScene.Add(Sphere.NewSphere(Vector.NewVector(20, 20, 0), 1, green_light));
+}
 
 function init() {
     container = document.getElementById("output");
@@ -83,10 +101,13 @@ function init() {
 }
 
 init();
+add_debug_scene();
 // loadModel("box-slit");
-// loadModel("cornellbox_suzanne_lucy");
+loadModel("cornellbox_suzanne_lucy");
 // loadModel("gopher");
-loadModel("sphere");
+// loadModel("sphere");
+// loadModel("teapot");
+// loadModel("uvplane");
 // debug_init();
 
 function debug_init(){
@@ -144,15 +165,13 @@ function onTracerMessage(msg) {
             numReady++;
             if (numReady == CPU_available) {
                 console.timeEnd("Tracers initialized");
-                //start_trace(10);
+                start_trace(1);
             }
             break;
         case "TRACE_COMPLETED":
             refJobs[msg.data.jobIndex].init_iterations++;
             updatePixelsRect(msg.data.rect);
-            if (--numBusy == 0) {
-                // trace_completed();
-            }
+            --numBusy
             process_queue(msg.data.id);
             break;
         case "IDLE":
@@ -168,17 +187,26 @@ let elapsed_time = 0;
 let isTracing = false;
 let interruptTracing = false;
 
-function start_trace(iterations, time) {
-    iterations_target = iterations || 0;
-    maximum_time = time || 0;
+function reset_trace(){
+    iterations_target = 0;
     iterations_completed = 0;
-    start_time = Date.now();
     elapsed_time = 0;
+}
+
+function start_trace(iterations, time) {
+    console.log("Trace started!");
+    iterations_target += iterations || 1;
+    maximum_time = time || 0;
+    start_time = Date.now();
     interruptTracing = false;
-    trace();
+    if(iterations_completed > 0){
+        next_iteration();
+    }else{
+        trace();
+    }
 }
 function trace() {
-    console.log(`Iteration:${iterations_completed + 1}`);
+    console.time(`Iteration:${iterations_completed + 1}`);
     workerPool.forEach(function (tracer) {
         if(traceJobs && traceJobs.length > 0) {
             let job = traceJobs.shift();
@@ -195,29 +223,35 @@ function process_queue(id){
         workerPool[id].postMessage({command: "TRACE", jobData: job});
         numBusy++;
     }else{
-        trace_completed();
+        if (numBusy == 0) {
+            iteration_completed();
+        }
     }
 }
-function trace_completed() {
+function iteration_completed() {
     iterations_completed++;
-    elapsed_time = Date.now() - start_time;
+    console.timeEnd(`Iteration:${iterations_completed}`);
     if (interruptTracing) {
         return;
     }
-    traceJobs = deferredQueue;
-    deferredQueue = [];
     if (iterations_target == 0 && maximum_time == 0) {
         //trace until interrupt
-        trace();
+        next_iteration();
     } else {
         if (maximum_time > 0 && elapsed_time < maximum_time) {
-            trace();
+            next_iteration();
         } else if (iterations_target > iterations_completed) {
-            trace();
+            next_iteration();
         } else {
-            console.log("Trace completed");
+            elapsed_time = Date.now() - start_time;
+            console.log(`Trace completed, time:${elapsed_time/1000} sec`);
         }
     }
+}
+function next_iteration(){
+    traceJobs = deferredQueue;
+    deferredQueue = [];
+    trace();
 }
 function stop_trace() {
     interruptTracing = true;
@@ -320,7 +354,7 @@ function loadModel(file) {
     var onError = function (xhr) {
     };
 
-    //THREE.Loader.Handlers.add( /\.dds$/i, new THREE["DDSLoader"]() );
+    THREE.Loader.Handlers.add( /\.dds$/i, new THREE["DDSLoader"]() );
     var mtlLoader = new THREE["MTLLoader"](manager);
     mtlLoader.setPath('./models/' + folder);
     mtlLoader.load(name + '.mtl', function (materials) {
