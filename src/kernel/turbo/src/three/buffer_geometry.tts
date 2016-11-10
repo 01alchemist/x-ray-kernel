@@ -46,7 +46,8 @@ export class BufferGeometry {
         }*/
         // return null;
         let color = src.material.color || {r:0,g:0,b:0};
-        let mat = Material.DiffuseMaterial(Color.NewColor(color.r, color.g, color.b));
+        // let mat = Material.DiffuseMaterial(Color.NewColor(color.r, color.g, color.b));
+        let mat  = Material.GlossyMaterial(Color.NewColor(color.r, color.g, color.b), 1.5, Utils.Radians(10));
         return this.buildGeometry(src.geometry, mat, src.smooth);
     }
 

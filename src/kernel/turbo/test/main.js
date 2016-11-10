@@ -49,14 +49,14 @@ let deferredQueue = [];
 
 function add_debug_scene(){
     let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
-    let light = Material.LightMaterial(Color.WHITE, 50);
-    let green_light = Material.LightMaterial(Color.HexColor(0x00FF00), 80);
+    let light = Material.LightMaterial(Color.WHITE, 10);
+    let bright_light = Material.LightMaterial(Color.HexColor(0xffffff), 20);
 
     // add walls and lights
     // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
     // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
     masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
-    // masterScene.Add(Sphere.NewSphere(Vector.NewVector(20, 20, 0), 1, green_light));
+    masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 5, 20), 0.5, bright_light));
 }
 
 function init() {
