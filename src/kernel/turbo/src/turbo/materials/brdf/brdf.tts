@@ -1,0 +1,14 @@
+@turbo class BRDF{
+    Ns:float32               /*< specular exponent */
+    Ni:float32               /*< optical density for the surface (index of refraction) */
+    Ka:Color              /*< ambient reflectivity */
+    Kd:Color              /*< diffuse reflectivity */
+    Ks:Color              /*< specular reflectivity */
+    Kt:Color              /*< transmission filter */
+    dummy:float32.Array;
+
+    @method init(SELF){
+        SELF.dummy = new float32.Array(30)
+        return SELF;
+    }
+}
