@@ -107,6 +107,11 @@ export class xRayTracer {
         }
 
         if (this.iterations > 0 && data.blockIterations) {
+
+            if(data.blockIterations > 1){
+                this.iterations = ((this.iterations - 1) * data.blockIterations) + 1;
+            }
+
             for (var i = 0; i < data.blockIterations; i++) {
                 if (this.flags[this.id] === 2) {//thread locked
                     this.lock();
