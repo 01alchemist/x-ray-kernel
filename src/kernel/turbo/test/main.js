@@ -21,8 +21,8 @@ let imageData;
 let pixelData;
 let bucketSize = 32;
 let renderOptions = {
-    full_width: 2560 / 4,
-    full_height: 1440 / 4,
+    full_width: 2560 / 2,
+    full_height: 1440 / 2,
     // full_width: 448 * 2,
     // full_height: 640 * 2,
     iterations: 1,
@@ -37,7 +37,7 @@ let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width 
 let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
 
 let masterScene = new MasterScene();
-let camera = Camera.LookAt(Vector.NewVector(-20, 20, 10), Vector.NewVector(0, 2, 0), Vector.NewVector(0, 1, 0), 45);
+let camera = Camera.LookAt(Vector.NewVector(-20, 20, 20), Vector.NewVector(0, 2, 0), Vector.NewVector(0, 1, 0), 45);
 let traceData = {
     renderOptions: renderOptions,
     scene: masterScene.scenePtr,
@@ -51,15 +51,15 @@ let deferredQueue = [];
 function add_debug_scene(){
     let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
     let light = Material.LightMaterial(Color.WHITE, 50);
-    let red_light = Material.LightMaterial(Color.HexColor(0xff0000), 10);
+    let low_light = Material.LightMaterial(Color.HexColor(0xffffff), 1);
 
     // add walls and lights
     // masterScene.Add(Cube.NewCube(Vector.NewVector(-20, -1, -20), Vector.NewVector(-2, 20, 20), wall));
-    masterScene.Add(Cube.NewCube(Vector.NewVector(-100, -1, -100), Vector.NewVector(100, 0, 100), wall));
+    masterScene.Add(Cube.NewCube(Vector.NewVector(-20, -1, -20), Vector.NewVector(20, 0, 20), wall));
 
     masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 20, 0), 0.5, light));
-    // masterScene.Add(Sphere.NewSphere(Vector.NewVector(-10, 1, 0), 0.15, red_light));
-    masterScene.Add(Cube.NewCube(Vector.NewVector(-10, 9, 0), Vector.NewVector(-9, 10, 1), red_light));
+    // masterScene.Add(Sphere.NewSphere(Vector.NewVector(-10, 9, 10), 1, low_light));
+    // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, 9, 0), Vector.NewVector(-9, 10, 1), red_light));
 }
 
 function init() {
@@ -88,6 +88,7 @@ function init() {
             let job = {
                 id: j + "_" + i,
                 index:traceJobs.length,
+                blockIterations: 4,
                 init_iterations:0,
                 rect: {
                     width: bucketSize,
