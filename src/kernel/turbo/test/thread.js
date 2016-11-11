@@ -37,7 +37,7 @@ onmessage = (msg) => {
                 sampleBuffer:sampleBuffer
             };
             xTracer = new xRayTracer(renderData);
-            xTracer.sampler = xray.NewSampler(4, 5);
+            xTracer.sampler = xray.NewSampler(4, 8);
 
             postMessage({event: "INITIALIZED", id: WORKER_ID});
 

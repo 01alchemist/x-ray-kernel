@@ -1,5 +1,5 @@
-@turbo class Plane {
-	Point:Vector
+@turbo class Plane extends Shape{
+    Point:Vector
 	Normal:Vector
 	Material:Material
     Box:Box
@@ -14,14 +14,14 @@
         return SELF;
     }
 
-    static NewPlane(point:number, normal:number, material:Material):number {
+    static NewPlane(point:number, normal:number, material:number):number {
         Vector.Normalize_mem(normal, normal);
         let ptr:number = @new Plane;
         return Plane.init(ptr, point, normal, material);
     }
 
     @virtual Type(SELF:number){
-        throw ShapeType.PLANE;
+        return ShapeType.PLANE;
     }
 
     @virtual ToJSON(SELF){
@@ -29,7 +29,7 @@
             point:Vector.ToJSON(SELF.Point),
             normal:Vector.ToJSON(SELF.Normal),
             material:Material.ToJSON(SELF.Material),
-            box:Box.ToJSON(SELF.Box),
+            box:Box.ToJSON(SELF.Box)
         }
     }
 
@@ -41,32 +41,23 @@
             return SELF.Box;
         }
         let ptr:number = @new Box;
-        SELF.Box = Box.init(ptr, Vector.NewVector({
-            X:Number.NEGATIVE_INFINITY,
-            Y:Number.NEGATIVE_INFINITY,
-            Z:Number.NEGATIVE_INFINITY
-        }),
-            Vector.NewVector({
-                X:Number.POSITIVE_INFINITY,
-                Y:Number.POSITIVE_INFINITY,
-                Z:Number.POSITIVE_INFINITY
-            })
-        );
+        let inf = Number.POSITIVE_INFINITY;
+        SELF.Box = Box.init(ptr, Vector.NewVector(-inf,-inf,-inf), Vector.NewVector(inf,inf,inf));
         SELF.HasBox = 1;
         return ptr;
     }
 
-    @virtual Intersect(SELF, ray:number):Hit {
-        let d = Vector.Dot_mem(SELF.Normal, Ray.Direction(ray));
+    @virtual Intersect(SELF, ray:Ray):Hit {
+        let d = Vector.Dot_12(SELF.Normal, ray.direction);
         if (Math.abs(d) < EPS) {
-            return Hit.NoHit
+            return Hit.NoHit;
         }
-        let a:number = Vector.Sub_mem(SELF.Point, Ray.Origin(ray));
-        let t:number = Vector.Dot_mem(a, SELF.Normal) / d;
+        let a:Vector3 = Vector.Sub_12(SELF.Point, ray.origin);
+        let t:number = Vector.Dot_12(SELF.Normal, a) / d;
         if (t < EPS) {
-            return Hit.NoHit
+            return Hit.NoHit;
         }
-        return new Hit(SELF, t, null);
+        return new Hit(SELF, t);
     }
 
     @virtual UV(SELF, a:Vector3):Vector3 {
@@ -78,7 +69,7 @@
     }
 
     @virtual NormalAt(SELF, a:Vector3):number {
-        return SELF.Normal;
+        return new Vector3().read(SELF.Normal);
     }
 
 } @end

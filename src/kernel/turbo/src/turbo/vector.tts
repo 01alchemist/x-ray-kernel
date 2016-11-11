@@ -94,6 +94,10 @@ type XYZ = {
         return (a.X * B.X) + (a.Y * B.Y) + (a.Z * B.Z);
     }
 
+    static Dot_12(a:number, B:Vector3):number {
+        return (Vector.X(a) * B.x) + (Vector.Y(a) * B.y) + (Vector.Z(a) * B.z);
+    }
+
     static Dot_mem(a:number, B:number):number {
         return (Vector.X(a) * Vector.X(B)) + (Vector.Y(a) * Vector.Y(B)) + (Vector.Z(a) * Vector.Z(B));
     }
@@ -203,7 +207,7 @@ type XYZ = {
         return new Vector3(Vector.X(a) - b.x, Vector.Y(a) - b.y, Vector.Z(a) - b.z);
     }
 
-    static Sub_21(a:number, b:Vector3):Vector3 {
+    static Sub_21(a:Vector3, b:number):Vector3 {
         return new Vector3(a.x - Vector.X(b), a.y - Vector.Y(b), a.z - Vector.Z(b));
     }
     static Sub_mem(a:number, b:number, c?:number):number {

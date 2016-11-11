@@ -4,6 +4,7 @@ var Vector = xray.Vector;
 var MasterScene = xray.MasterScene;
 var Camera = xray.Camera;
 var Material = xray.Material;
+var Plane = xray.Plane;
 var Cube = xray.Cube;
 var Sphere = xray.Sphere;
 var Utils = xray.Utils;
@@ -20,10 +21,10 @@ let imageData;
 let pixelData;
 let bucketSize = 32;
 let renderOptions = {
-    // full_width: 2560 / 4,
-    // full_height: 1440 / 4,
-    full_width: 448,
-    full_height: 640,
+    full_width: 2560 / 4,
+    full_height: 1440 / 4,
+    // full_width: 448 * 2,
+    // full_height: 640 * 2,
     iterations: 1,
     hitSamples: 1,
     cameraSamples: 1,
@@ -36,7 +37,7 @@ let pixelMemory = new Uint8Array(new SharedArrayBuffer(renderOptions.full_width 
 let sampleMemory = new Float32Array(new SharedArrayBuffer(4 * renderOptions.full_width * renderOptions.full_height * 3));
 
 let masterScene = new MasterScene();
-let camera = Camera.LookAt(Vector.NewVector(0, 5, 15), Vector.NewVector(0, 5, 0), Vector.NewVector(0, 1, 0), 45);
+let camera = Camera.LookAt(Vector.NewVector(-20, 20, 10), Vector.NewVector(0, 2, 0), Vector.NewVector(0, 1, 0), 45);
 let traceData = {
     renderOptions: renderOptions,
     scene: masterScene.scenePtr,
@@ -49,14 +50,16 @@ let deferredQueue = [];
 
 function add_debug_scene(){
     let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
-    let light = Material.LightMaterial(Color.WHITE, 10);
-    let bright_light = Material.LightMaterial(Color.HexColor(0xffffff), 20);
+    let light = Material.LightMaterial(Color.WHITE, 50);
+    let red_light = Material.LightMaterial(Color.HexColor(0xff0000), 10);
 
     // add walls and lights
-    // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
-    // masterScene.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
-    masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
-    masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 5, 20), 0.5, bright_light));
+    // masterScene.Add(Cube.NewCube(Vector.NewVector(-20, -1, -20), Vector.NewVector(-2, 20, 20), wall));
+    masterScene.Add(Cube.NewCube(Vector.NewVector(-100, -1, -100), Vector.NewVector(100, 0, 100), wall));
+
+    masterScene.Add(Sphere.NewSphere(Vector.NewVector(0, 20, 0), 0.5, light));
+    // masterScene.Add(Sphere.NewSphere(Vector.NewVector(-10, 1, 0), 0.15, red_light));
+    masterScene.Add(Cube.NewCube(Vector.NewVector(-10, 9, 0), Vector.NewVector(-9, 10, 1), red_light));
 }
 
 function init() {
@@ -91,7 +94,9 @@ function init() {
                     height: bucketSize,
                     xoffset: i * bucketSize,
                     yoffset: j * bucketSize
-                }
+                },
+                start_time:0,
+                duration:0
             };
             traceJobs.push(job);
             refJobs.push(job);
@@ -103,11 +108,13 @@ function init() {
 init();
 add_debug_scene();
 // loadModel("box-slit");
-loadModel("cornellbox_suzanne_lucy");
+// loadModel("cornellbox_suzanne_lucy");
 // loadModel("gopher");
 // loadModel("sphere");
 // loadModel("teapot");
 // loadModel("uvplane");
+// loadModel("bunny");
+loadModel("stanford-dragon");
 // debug_init();
 
 function debug_init(){
@@ -120,7 +127,7 @@ function initTracers() {
 
     /* spawn trace workers */
     // CPU_available = 1;
-    console.time("Tracers initialized");
+    console.time(`${CPU_available} Tracers initialized`);
     for (let i = 0; i < CPU_available; i++) {
 
         let tracer = new Worker('thread.js?id=' + i);
@@ -164,14 +171,16 @@ function onTracerMessage(msg) {
             workerPool[msg.data.id].ready = true;
             numReady++;
             if (numReady == CPU_available) {
-                console.timeEnd("Tracers initialized");
-                start_trace(1);
+                console.timeEnd(`${CPU_available} Tracers initialized`);
+                start_trace(100);
             }
             break;
         case "TRACE_COMPLETED":
-            refJobs[msg.data.jobIndex].init_iterations++;
+            let job = refJobs[msg.data.jobIndex];
+            job.init_iterations++;
+            job.duration = Date.now() - job.start_time;
             updatePixelsRect(msg.data.rect);
-            --numBusy
+            --numBusy;
             process_queue(msg.data.id);
             break;
         case "IDLE":
@@ -211,7 +220,9 @@ function trace() {
         if(traceJobs && traceJobs.length > 0) {
             let job = traceJobs.shift();
             deferredQueue.push(job);
+            job.start_time = Date.now();
             tracer.postMessage({command: "TRACE", jobData: job});
+            updateIndicator(job.rect);
             numBusy++;
         }
     });
@@ -220,7 +231,9 @@ function process_queue(id){
     if(traceJobs && traceJobs.length > 0) {
         let job = traceJobs.shift();
         deferredQueue.push(job);
+        job.start_time = Date.now();
         workerPool[id].postMessage({command: "TRACE", jobData: job});
+        updateIndicator(job.rect);
         numBusy++;
     }else{
         if (numBusy == 0) {
@@ -249,9 +262,13 @@ function iteration_completed() {
     }
 }
 function next_iteration(){
+    deferredQueue.sort(jobSort);
     traceJobs = deferredQueue;
     deferredQueue = [];
     trace();
+}
+function jobSort(a,b) {
+    return a.duration < b.duration;
 }
 function stop_trace() {
     interruptTracing = true;

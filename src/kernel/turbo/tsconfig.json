@@ -12,7 +12,8 @@
   },
   "files": [
     "xray-kernel-turbo.spec.ts",
-    "./src/worker/xray-tracer.ts"
+    "./src/worker/xray-tracer.ts",
+    "./xray-kernel-turbo.ts"
   ],
   "exclude": [
     "node_modules",

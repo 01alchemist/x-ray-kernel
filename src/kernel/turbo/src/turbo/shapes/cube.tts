@@ -17,7 +17,7 @@
     }
 
     @virtual Type(SELF:number){
-        throw ShapeType.CUBE;
+        return ShapeType.CUBE;
     }
 
     @virtual ToJSON(SELF){

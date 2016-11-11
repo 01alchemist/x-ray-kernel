@@ -75,7 +75,7 @@
 
 	static OuterRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(SELF.Min, center);
+        let tmp = Vector.Sub_mem(SELF.Min, center, center);
 		let len = Vector.Length_mem(tmp);
         free(center);
         free(tmp);
@@ -84,7 +84,7 @@
 
 	static InnerRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(center, SELF.Min);
+        let tmp = Vector.Sub_mem(center, SELF.Min, center);
 		let result = Vector.MaxComponent_mem(tmp);
         free(tmp);
         return result;

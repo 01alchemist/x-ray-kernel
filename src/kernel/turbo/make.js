@@ -21,6 +21,7 @@ let modules = [
     "./src/turbo/shapes/sphere.tts",
     "./src/turbo/shapes/triangle.tts",
     "./src/turbo/shapes/mesh.tts",
+    "./src/turbo/shapes/plane.tts",
 
     "./src/turbo/tree.tts",
     "./src/tracer/hit.tts",
@@ -57,23 +58,23 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
 
 //Compile TypeScript
-const spawn = require('child_process').spawn;
-const ls = spawn('tsc', [
-    // __dirname + '/xray-kernel-turbo.ts',
-    '-p', __dirname,
-    '--target', 'es5',
-    '--module', 'commonjs',
-    '--sourceMap'
-]);
-
-ls.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
-});
-
-ls.stderr.on('data', (data) => {
-    console.log(`stderr: ${data}`);
-});
-
-ls.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-});
+// const spawn = require('child_process').spawn;
+// const ls = spawn('tsc', [
+//     // __dirname + '/xray-kernel-turbo.ts',
+//     '-p', __dirname,
+//     '--target', 'es5',
+//     '--module', 'commonjs',
+//     '--sourceMap'
+// ]);
+//
+// ls.stdout.on('data', (data) => {
+//     console.log(`stdout: ${data}`);
+// });
+//
+// ls.stderr.on('data', (data) => {
+//     console.log(`stderr: ${data}`);
+// });
+//
+// ls.on('close', (code) => {
+//     console.log(`child process exited with code ${code}`);
+// });
