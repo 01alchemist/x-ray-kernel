@@ -7,8 +7,14 @@
     Kt:Color              /*< transmission filter */
     dummy:float32.Array;
 
-    @method init(SELF){
-        SELF.dummy = new float32.Array(30)
+    @method init(SELF, Ns:number=0, Ni:number=0, Ka:number=0, Kd:number=0, Ks:number=0, Kt:number=0){
+        SELF.Ns = Ns;
+        SELF.Ni = Ni;
+        SELF.Ka = Ka;
+        SELF.Kd = Kd;
+        SELF.Ks = Ks;
+        SELF.Kt = Kt;
+        SELF.dummy = new float32.Array(30);
         return SELF;
     }
-}
+} @end

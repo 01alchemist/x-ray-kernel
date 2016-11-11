@@ -1,0 +1,21 @@
+/*! Computes fresnel coefficient for media interface with relative
+ *  refraction index eta. Eta is the outside refraction index
+ *  divided by the inside refraction index. Both cosines have to be
+ *  positive. */
+export function fresnelDielectric3(cosi:number, cost:number, eta:number):number
+{
+    let Rper:number = ( eta * cosi - cost) * rcp( eta * cosi + cost );
+    let Rpar:number = ( cosi - eta * cost ) * rcp( cosi + eta * cost );
+    return 0.5 * ( Rpar * Rpar + Rper * Rper );
+}
+
+/*! Computes fresnel coefficient for media interface with relative
+ *  refraction index eta. Eta is the outside refraction index
+ *  divided by the inside refraction index. The cosine has to be
+ *  positive. */
+export function fresnelDielectric2(cosi:number, eta:number):number {
+    let k:number = 1.0 - eta * eta * (1.0 - cosi * cosi);
+    if (k < 0.0) return 1.0;
+    let cost = Math.sqrt(k);
+    return fresnelDielectric3(cosi, cost, eta);
+}

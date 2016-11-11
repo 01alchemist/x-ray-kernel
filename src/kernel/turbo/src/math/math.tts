@@ -1,0 +1,25 @@
+export const M_PI:number     = 3.14159265358979323846;
+export const pi:number       = 3.14159265358979323846;
+export const two_pi:number   = 6.283185307179586232;
+export const four_pi:number  = 12.566370614359172464;
+
+export const one_over_pi:number         = 0.31830988618379069122;
+export const one_over_two_pi:number     = 0.15915494309189534561;
+export const one_over_four_pi:number    = 0.079577471545947672804;
+export const one_over_two_pi_sqr:number = 0.050660591821168885722;
+
+export function sqr(x) { return  x * x; }
+export function clamp(x, lower = 0, upper = 1) { return Math.max(Math.min(x,upper),lower); }
+export function clampz(x, upper) { return Math.max(0, Math.min(x,upper)); }
+
+export function  deg2rad ( x )  { return x * 1.74532925199432957692e-2; }
+export function  rad2deg ( x )  { return x * 5.72957795130823208768e1; }
+export function  sin2cos ( x )  { return Math.sqrt(Math.max(0,1-x*x)); }
+export function  cos2sin ( x )  { return sin2cos(x); }
+
+export function  select<T>(s:boolean, t:T, f:T):T { return s ? t : f; }
+export function  select_vec3(s:boolean, t:Vector3, f:Vector3) {
+    return new Vector3(select(s,t.x,f.x),select(s,t.y,f.y),select(s,t.z,f.z));
+}
+
+export function rcp(x:number):number { return 1/x;}

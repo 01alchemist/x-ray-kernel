@@ -1,0 +1,29 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                Lambertian BRDF                             //
+////////////////////////////////////////////////////////////////////////////////
+
+@turbo class Lambertian {
+
+    R:Vector
+
+    @method init(SELF, R){
+        SELF.R = R;
+        return SELF;
+    }
+
+    static New(R){
+        let ptr = @new Lambertian;
+        Lambertian.init(ptr, R);
+    }
+
+    static eval(SELF, wo, dg/*DifferentialGeometry*/, wi):Vector3 {
+        let R = newvector3().read(SELF.R);
+        return  R.mulScalar(1.0/pi * clamp(wi.dot(dg.Ns)));
+    }
+
+    static sample(SELF, wo, dg/*DifferentialGeometry*/, wi, s:{x:number,y:number}):Vector3 {
+        wi = cosineSampleHemisphere(s.x,s.y,dg.Ns);//FIXME: wi should return
+        return Lambertian.eval(SELF, wo, dg, wi.v);
+    }
+
+} @end

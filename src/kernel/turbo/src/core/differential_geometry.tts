@@ -1,0 +1,13 @@
+@turbo struct DifferentialGeometry
+{
+    geomID:int32
+    primID:int32
+    u:float32
+    v:float32
+    P:Vector
+    Ng:Vector
+    Ns:Vector
+    Tx:Vector //direction along hair
+    Ty:Vector
+    tnear_eps:float32
+} @end

@@ -1,0 +1,25 @@
+@turbo class Medium {
+
+    transmission:Vector //!< Transmissivity of medium.
+    eta:float32             //!< Refraction index of medium.
+
+    @method init(SELF, transmission:number=0, eta:number=0){
+        SELF.transmission = transmission;
+        SELF.eta = eta;
+        return SELF;
+    }
+
+    static NewMedium(t:number, eta:number):number {
+        return Medium.init(@new Medium, t, eta);
+    }
+
+    static MakeVacuum():number {
+        let t = Vector.NewVector(1,1,1);
+        return Medium.NewMedium(t, 1);
+    }
+
+    static IsEqual(a:number, b:number):boolean {
+        return Medium.eta(a) == Medium.eta(b) && Vector.IsEqual(Medium.transmission(a), Medium.transmission(b));
+    }
+
+} @end

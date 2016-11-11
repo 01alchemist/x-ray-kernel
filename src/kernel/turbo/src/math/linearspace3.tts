@@ -1,0 +1,21 @@
+/* constructs a coordinate frame form a normalized normal */
+namespace linearspace3{
+    
+    export function frame<T>(N:T)
+    {
+        let dx0:T = new T(0,N.z,-N.y);
+        let dx1:T = new T(-N.z,0,N.x);
+        let dx:T = select_vec3(dx0.dot(dx0) > dx1.dot(dx1), dx0, dx1).normalize();
+        let dy:T = N.cross(dx).normalize();
+        return new T(dx,dy,N);
+    }
+
+/* constructs a coordinate frame from a normal and approximate x-direction */
+// template<typename T> __forceinline LinearSpace3<T> frame(const T& N, const T& dxi)
+// {
+//     if (abs(dot(dxi,N)) > 0.99f) return frame(N); // fallback in case N and dxi are very parallel
+//     const T dx = normalize(cross(dxi,N));
+//     const T dy = normalize(cross(N,dx));
+//     return LinearSpace3<T>(dx,dy,N);
+// }
+}

@@ -173,7 +173,7 @@ function onTracerMessage(msg) {
             numReady++;
             if (numReady == CPU_available) {
                 console.timeEnd(`${CPU_available} Tracers initialized`);
-                start_trace(100);
+                //start_trace(100);
             }
             break;
         case "TRACE_COMPLETED":

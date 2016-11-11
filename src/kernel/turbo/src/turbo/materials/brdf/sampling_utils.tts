@@ -1,0 +1,180 @@
+export class Sample3f {
+    constructor(public v:Vector3=null, public pdf:number=0){
+    }
+}
+
+/*! \brief utility library containing sampling functions */
+
+// convention is to return the sample (Vec3fa) generated from given Vec2f 's'ample as last parameter
+// sampling functions often come in pairs: sample and pdf (needed later for MIS)
+// good reference is "Total Compendium" by Philip Dutre http://people.cs.kuleuven.be/~philip.dutre/GI/
+
+
+    export function cartesian_3(phi:number, sinTheta:number, cosTheta:number):Vector3
+    {
+        let sinPhi = Math.sin(phi);
+        let cosPhi = Math.cos(phi);
+        // sincosf(phi, &sinPhi, &cosPhi); //TODO: Investigate SIMD sincos<T>
+        return new Vector3(cosPhi * sinTheta, sinPhi * sinTheta, cosTheta);
+    }
+
+    export function cartesian_2(phi, cosTheta):Vector3
+    {
+        return cartesian_3(phi, cos2sin(cosTheta), cosTheta);
+    }
+
+
+/// cosine-weighted sampling of hemisphere oriented along the +z-axis
+////////////////////////////////////////////////////////////////////////////////
+
+    export function cosineSampleHemisphere_vec2(s:{x:number, y:number}):Vector3
+    {
+        let phi = two_pi * s.x;
+        let cosTheta = Math.sqrt(s.y);
+        let sinTheta = Math.sqrt(1.0 - s.y);
+        return cartesian_3(phi, sinTheta, cosTheta);
+    }
+
+    export function cosineSampleHemispherePDF_vec3(dir:Vector3):number
+    {
+        return dir.z / pi;
+    }
+
+    export function cosineSampleHemispherePDF_theta(cosTheta:number):number
+    {
+        return cosTheta / pi;
+    }
+
+
+/// power cosine-weighted sampling of hemisphere oriented along the +z-axis
+////////////////////////////////////////////////////////////////////////////////
+
+    export function powerCosineSampleHemisphere(n:number, s:Vector3):Vector3
+    {
+        let phi = two_pi * s.x;
+        let cosTheta = Math.pow(s.y, 1.0 / (n + 1.0));
+        return cartesian_2(phi, cosTheta);
+    }
+
+    export function powerCosineSampleHemispherePDF_theta(cosTheta, n:number):number // TODO: order of arguments
+    {
+        return (n + 1.0) * (0.5 / pi) * Math.pow(cosTheta, n);
+    }
+
+    export function powerCosineSampleHemispherePDF_vec3(dir:Vector3, n:number):number // TODO: order of arguments
+    {
+        return (n + 1.0) * (0.5 / pi) * Math.pow(dir.z, n);
+    }
+
+/// sampling of cone of directions oriented along the +z-axis
+////////////////////////////////////////////////////////////////////////////////
+
+    export function uniformSampleCone(cosAngle:number, s:Vector3):Vector3
+    {
+        let phi = two_pi * s.x;
+        let cosTheta = 1.0 - s.y * (1.0 - cosAngle);
+        return cartesian_2(phi, cosTheta);
+    }
+
+    export function uniformSampleConePDF(cosAngle:number):number
+    {
+        return rcp(two_pi * (1.0 - cosAngle));
+    }
+
+    export function _uniformSampleConePDF(cosAngle:number):number
+    {
+        return rcp(two_pi * (1.0 - cosAngle));
+    }
+
+
+/// sampling of disk
+////////////////////////////////////////////////////////////////////////////////
+
+    export function uniformSampleDisk(radius:number, s:Vector3):Vector3
+    {
+        let r = Math.sqrt(s.x) * radius;
+        let phi = two_pi * s.y;
+        let sinPhi = Math.sin(phi);
+        let cosPhi = Math.cos(phi);
+        // sincosf(phi, &sinPhi, &cosPhi); //TODO: Investigate SIMD sincos<T>
+        return new Vector3(r * cosPhi, r * sinPhi, 0.0);
+    }
+
+    export function uniformSampleDiskPDF(radius:number):number
+    {
+        return rcp(pi * sqr(radius));
+    }
+
+    export function _uniformSampleDiskPDF(radius:number):number
+    {
+        return rcp(pi * sqr(radius));
+    }
+
+
+/// sampling of triangle abc
+////////////////////////////////////////////////////////////////////////////////
+
+    export function uniformSampleTriangle(a:Vector3, b:Vector3, c:Vector3, s:{x:number, y:number}):Vector3
+    {
+        let su = Math.sqrt(s.x);
+        return c.add(a.sub(c).mulScalar(1.0 - su)).add(b.sub(c).mulScalar(s.y * su));
+    }
+
+    export function uniformSampleTrianglePDF(a:Vector3, b:Vector3, c:Vector3):number
+    {
+        return 2.0 * rcp(Math.abs(a.sub(c).cross(b.sub(c)).length()));
+    }
+
+export function sample_component2(c0, wi0:Sample3f, medium0, c1, wi1, medium1, Lw, s)
+{
+    c0 = new Vector3().read(c0);
+    c1 = new Vector3().read(c1);
+    Lw = new Vector3().read(Lw);
+
+    let m0:Vector3 = Lw.mul(c0).divScalar(wi0.pdf);
+    let m1:Vector3 = Lw.mul(c1).divScalar(wi1.pdf);
+
+    let C0:number = wi0.pdf == 0.0 ? 0.0 : m0.maxComponent();
+    let C1:number = wi1.pdf == 0.0 ? 0.0 : m1.maxComponent();
+    let C:number  = C0 + C1;
+
+    let wi_o:Sample3f;
+
+    if (C == 0.0) {
+        wi_o = new Sample3f(new Vector3(0,0,0), 0);
+        return {
+            medium : medium0,
+            color: Vector.NewVector(0,0,0),
+            sample: wi_o
+        };
+    }
+
+    let CP0:number = C0/C;
+    let CP1:number = C1/C;
+    if (s < CP0) {
+        wi_o = new Sample3f(wi0.v, wi0.pdf * CP0);
+        return {
+            medium : medium0,
+            color: c0,
+            sample: wi_o
+        };
+    }
+    else {
+        wi_o = new Sample3f(wi1.v,wi1.pdf*CP1);
+        return {
+            medium : medium1,
+            color: c1,
+            sample: wi_o
+        };
+    }
+}
+
+/*! Cosine weighted hemisphere sampling. Up direction is provided as argument. */
+export function cosineSampleHemisphere(u:number, v:number, N:Vector3):Sample3f
+{
+    let localDir:Vector3 = cosineSampleHemisphere_vec2({x:u, y:v});
+    let s:Sample3f = new Sample3f();
+    s.v = linearspace3.frame(N) * localDir;
+    s.pdf = cosineSampleHemispherePDF_vec3(localDir);
+    return s;
+}

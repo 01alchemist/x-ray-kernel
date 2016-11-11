@@ -1,0 +1,69 @@
+////////////////////////////////////////////////////////////////////////////////
+//              Lambertian BRDF with Dielectric Layer on top                  //
+////////////////////////////////////////////////////////////////////////////////
+
+@turbo class DielectricLayerLambertian
+{
+    T:Vector             //!< Transmission coefficient of dielectricum
+    etait:float32         //!< Relative refraction index etai/etat of both media
+    etati:float32         //!< relative refraction index etat/etai of both media
+    ground:Lambertian   //!< the BRDF of the ground layer
+
+    @method init(SELF, T, etai, etat, ground){
+        SELF.T = T;
+        SELF.etait = etai * rcp(etat);
+        SELF.etati = etat * rcp(etai);
+        SELF.ground = ground;
+        return SELF;
+    }
+
+    static New(T, etai, etat, ground){
+        let ptr = @new DielectricLayerLambertian;
+        return DielectricLayerLambertian.init(ptr, T, etai, etat, ground);
+    }
+
+    static eval(SELF, wo, dg/*DifferentialGeometry*/, wi) {
+        let cosThetaO = wo.dot(dg.Ns);
+        let cosThetaI = wi.dot(dg.Ns);
+
+        if (cosThetaI <= 0.0 || cosThetaO <= 0.0){
+            return new Vector3();
+        }
+
+        float cosThetaO1;
+        const Sample3f wo1 = refract(wo,dg.Ns,This->etait,cosThetaO,cosThetaO1);
+        float cosThetaI1;
+        const Sample3f wi1 = refract(wi,dg.Ns,This->etait,cosThetaI,cosThetaI1);
+        let Fi = 1.0f - fresnelDielectric(cosThetaI,cosThetaI1,This->etait);
+        const Vec3fa Fg = Lambertian__eval(&This->ground,neg(wo1.v),dg,neg(wi1.v));
+        let Fo = 1.0f - fresnelDielectric(cosThetaO,cosThetaO1,This->etait);
+        return Fo * This->T * Fg * This->T * Fi;
+    }
+
+    static sample(SELF, wo, dg/*DifferentialGeometry*/, wi):number {
+        /*! refract ray into medium */
+        float cosThetaO = dot(wo,dg.Ns);
+        if (cosThetaO <= 0.0f) { wi = make_Sample3f(Vec3fa(0.0f),0.0f); return Vec3fa(0.f); }
+        float cosThetaO1; Sample3f wo1 = refract(wo,dg.Ns,This->etait,cosThetaO,cosThetaO1);
+
+        /*! sample ground BRDF */
+        Sample3f wi1 = make_Sample3f(Vec3fa(0.f),1.f);
+        Vec3fa Fg = Lambertian__sample(&This->ground,neg(wo1.v),dg,wi1,s);
+
+        /*! refract ray out of medium */
+        float cosThetaI1 = dot(wi1.v,dg.Ns);
+        if (cosThetaI1 <= 0.0f) { wi = make_Sample3f(Vec3fa(0.0f),0.0f); return Vec3fa(0.f); }
+
+        float cosThetaI;
+        Sample3f wi0 = refract(neg(wi1.v),neg(dg.Ns),This->etati,cosThetaI1,cosThetaI);
+        if (wi0.pdf == 0.0f) { wi = make_Sample3f(Vec3fa(0.0f),0.0f); return Vec3fa(0.f); }
+
+        /*! accumulate contribution of path */
+        wi = make_Sample3f(wi0.v,wi1.pdf);
+        float Fi = 1.0f - fresnelDielectric(cosThetaI,cosThetaI1,This->etait);
+        float Fo = 1.0f - fresnelDielectric(cosThetaO,cosThetaO1,This->etait);
+        return Fo * This->T * Fg * This->T * Fi;
+    }
+
+
+} @end

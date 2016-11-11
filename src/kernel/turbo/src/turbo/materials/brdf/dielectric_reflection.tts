@@ -1,0 +1,29 @@
+////////////////////////////////////////////////////////////////////////////////
+//                  Dielectric Reflection BRDF                                //
+////////////////////////////////////////////////////////////////////////////////
+
+@turbo class DielectricReflection {
+    
+    eta:float32
+
+    @method init(SELF, eta){
+        SELF.eta = eta;
+        return SELF;
+    }
+
+    static New(etai, etat){
+        let ptr = @new DielectricReflection;
+        DielectricReflection.init(ptr, etai * rcp(etat));
+    }
+
+    static eval(SELF, wo, dg/*DifferentialGeometry*/, wi) {
+        return new Vector3(0.0);
+    }
+
+    static sample(SELF, wo, dg/*DifferentialGeometry*/, wi):number {
+        let cosThetaO = clamp(wo.dot(dg.Ns));
+        wi = new Sample3f(wo.reflect(dg.Ns,cosThetaO), 1.0); //FIXME: wi should return
+        return Vec3fa(fresnelDielectric2(cosThetaO, SELF.eta));
+    }
+
+} @end

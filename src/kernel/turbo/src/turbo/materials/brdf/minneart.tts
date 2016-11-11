@@ -1,0 +1,29 @@
+////////////////////////////////////////////////////////////////////////////////
+//                          Minneart BRDF                                     //
+////////////////////////////////////////////////////////////////////////////////
+@turbo class Minneart{
+    R:Vector
+    b:float32
+
+    @method init(SELF, R, f){
+        SELF.R = R;
+        SELF.f = f;
+        return SELF;
+    }
+
+    static New(R, f:number):number {
+        let ptr = @new Velvety;
+        return Velvety.init(ptr, R, f);
+    }
+
+    static eval(self, wo, dg/*DifferentialGeometry*/, wi) {
+        let cosThetaI:number = clamp(wi.dot(dg.Ns));
+        let backScatter = Math.pow(clamp(wo.dot(wi)), Velvety.b(self));
+        return (backScatter * cosThetaI * float(one_over_pi)) * Velvety.R(self);
+    }
+    static sample(self, wo:Vector3, dg, wi, s) {
+        wi = cosineSampleHemisphere(s.x,s.y,dg.Ns);
+        return Minneart.eval(self, wo, dg, wi.v);
+    }
+
+} @end

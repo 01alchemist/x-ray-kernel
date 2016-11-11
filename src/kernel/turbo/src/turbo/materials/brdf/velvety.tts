@@ -1,0 +1,41 @@
+////////////////////////////////////////////////////////////////////////////////
+//                            Velvet BRDF                                     //
+////////////////////////////////////////////////////////////////////////////////
+
+@turbo class Velvety {
+
+    base:BRDF
+
+    /*! The reflectance parameter. The vale 0 means no reflection,
+     *  and 1 means full reflection. */
+    R:Vector
+
+    /*! The falloff of horizon scattering. 0 no falloff,
+     *  and inf means maximum falloff. */
+    f:float32
+
+    @method init(SELF, R, f){
+        SELF.R = R;
+        SELF.f = f;
+        return SELF;
+    }
+
+    static New(R, f:number):number {
+        let ptr = @new Velvety;
+        return Velvety.init(ptr, R, f);
+    }
+
+    static eval(SELF, wo, dg/*DifferentialGeometry*/, wi):number {
+        let cosThetaO:number = clamp(wo.dot(dg.Ns));
+        let cosThetaI:number = clamp(wi.dot(dg.Ns));
+        let sinThetaO:number = Math.sqrt(1.0 - cosThetaO * cosThetaO);
+        let horizonScatter:number = Math.pow(sinThetaO, SELF.f);
+        return (horizonScatter * cosThetaI * float(one_over_pi)) * SELF.R;
+    }
+
+    static sample(self, wo:Vector3, dg, wi, s) {
+        wi = cosineSampleHemisphere(s.x,s.y,dg.Ns);
+        return Velvety.eval(self, wo, dg, wi.v);
+    }
+
+} @end
