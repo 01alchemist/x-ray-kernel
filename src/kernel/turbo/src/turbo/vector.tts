@@ -554,6 +554,20 @@ type XYZ = {
         return SELF;
     }
 
+    static SetFromJSON(SELF:number, d) {
+        SELF.X = d.x;
+        SELF.Y = d.y;
+        SELF.Z = d.z;
+        return SELF;
+    }
+
+    static SetFromArray(SELF:number, d:number[]) {
+        SELF.X = d[0];
+        SELF.Y = d[1];
+        SELF.Z = d[2];
+        return SELF;
+    }
+
     static Copy(SELF:number, a:number):number {
         return Vector.Set(SELF, Vector.X(a), Vector.Y(a), Vector.Z(a));
     }

@@ -1084,20 +1084,6 @@ export class Vector extends MemoryObject{
         return SELF;
     }
 
-    static SetFromJSON(SELF:number, d) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d.x); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d.y); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d.z); 
-        return SELF;
-    }
-
-    static SetFromArray(SELF:number, d:number[]) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d[0]); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d[1]); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d[2]); 
-        return SELF;
-    }
-
     static Copy(SELF:number, a:number):number {
         return Vector.Set(SELF, turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
     }
@@ -2072,14 +2058,14 @@ export class Material extends MemoryObject{
 
     static MaterialAt(shape:number, point:Vector3):number{
         let material:number = Shape.MaterialAt(shape, point);
-        // let uv:Vector3 = Shape.UV(shape, point);
-        // if (turbo.Runtime._mem_int32[(material + 8) >> 2]) {
-        //     turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], uv.x, uv.y);
-        // }
-        // if (turbo.Runtime._mem_int32[(material + 20) >> 2]) {
-        //     let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], uv.x, uv.y);
-        //     turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
-        // }
+        let uv:Vector3 = Shape.UV(shape, point);
+        if (turbo.Runtime._mem_int32[(material + 8) >> 2]) {
+            turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], uv.x, uv.y);
+        }
+        if (turbo.Runtime._mem_int32[(material + 20) >> 2]) {
+            let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], uv.x, uv.y);
+            turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
+        }
         return material;
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=167722613; return SELF; }
@@ -3793,20 +3779,6 @@ export class Camera extends MemoryObject{
         };
     }
 
-    static SetFromJSON(SELF, data){
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 4) >> 2], data.p);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2], data.u);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2], data.v);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2], data.w);
-
-        if(typeof data.m === "number")
-             turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (data.m); 
-        if(typeof data.focalDistance === "number")
-             turbo.Runtime._mem_float64[(SELF + 32) >> 3] = (data.focalDistance); 
-        if(typeof data.apertureRadius === "number")
-             turbo.Runtime._mem_float64[(SELF + 40) >> 3] = (data.apertureRadius); 
-    }
-
     static LookAt(eye, center, up, fovy:number, c?:number):number {
         c = c?c:Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
         Camera.init(c);
@@ -3957,8 +3929,8 @@ export class MasterScene{
 
 	static defaultMaterial;
 
-	constructor(color){
-		this.scenePtr = Scene.NewScene(color);
+	constructor(){
+		this.scenePtr = Scene.NewScene(0x000000);
         this.shapes = [];
         this.lights = [];
 
@@ -3968,17 +3940,18 @@ export class MasterScene{
 
 	}
     AddDebugScene(){
-        let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
-        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
-        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+        let v1 = Vector.NewVector(0,0,0);
+        let v2 = Vector.NewVector(0,1,0);
+        let v3 = Vector.NewVector(1,1,0);
+        let t1 = Vector.NewVector(1,1,0);
+        let t2 = Vector.NewVector(1,1,0);
+        let t3 = Vector.NewVector(1,1,0);
+        let t = Triangle.NewTriangle(v1,v2,v3,t1,t2,t3, MasterScene.defaultMaterial);
+        this.Add(t);
     }
-	AddDefaultLights() {
-		let light = Material.LightMaterial(Color.WHITE, 50);
-        this.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
-	}
 	Add(shape) {
 		this.shapes.push(shape);
-
+		
 		if (turbo.Runtime._mem_float64[((Shape.MaterialAt(shape, Vector.ZERO)) + 32) >> 3] > 0) {
 			this.lights.push(shape);
 		}

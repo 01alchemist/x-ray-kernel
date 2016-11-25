@@ -169,10 +169,11 @@ export class xRayTracer {
                             let fu = (u + 0.5) / sppRoot;
                             let fv = (v + 0.5) / sppRoot;
                             let ray = Camera.CastRay(camera, x, y, this.full_width, this.full_height, fu, fv);
-                            let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
+                            let sample = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
                             c = c.add(sample);
                         }
                     }
+                    c = c.divScalar(sppRoot * sppRoot);
                 } else {
                     // random subsampling
                     for (let i = 0; i < spp; i++) {
@@ -180,11 +181,12 @@ export class xRayTracer {
                         let fv = Math.random();
                         let ray = Camera.CastRay(camera, x, y, this.full_width, this.full_height, fu, fv);
                         // let sample = Sampler.Sample(sampler, scene, ray);
-                        let sample:Color3 = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
+                        let sample = sampler.sample(scene, ray, true, sampler.FirstHitSamples, 1);
                         c = c.add(sample);
                         //Color.Add_mem(c, sample, c);
                         //Buffer.AddSample(buf, x, y, sample);
                     }
+                    c = c.divScalar(spp);
                 }
 
                 /*// adaptive sampling
@@ -215,6 +217,7 @@ export class xRayTracer {
                     }
                 }*/
 
+                c = c.pow(1 / 2.2);
                 var screen_index:number = (y * (this.full_width * 3)) + (x * 3);
                 this.updatePixel(c, screen_index);
             }

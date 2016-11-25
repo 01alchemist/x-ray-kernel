@@ -42,6 +42,20 @@
         };
     }
 
+    static SetFromJSON(SELF, data){
+        Vector.SetFromJSON(SELF.p, data.p);
+        Vector.SetFromJSON(SELF.u, data.u);
+        Vector.SetFromJSON(SELF.v, data.v);
+        Vector.SetFromJSON(SELF.w, data.w);
+
+        if(typeof data.m === "number")
+            SELF.m = data.m;
+        if(typeof data.focalDistance === "number")
+            SELF.focalDistance = data.focalDistance;
+        if(typeof data.apertureRadius === "number")
+            SELF.apertureRadius = data.apertureRadius;
+    }
+
     static LookAt(eye, center, up, fovy:number, c?:number):number {
         c = c?c:@new Camera;
         Camera.init(c);
