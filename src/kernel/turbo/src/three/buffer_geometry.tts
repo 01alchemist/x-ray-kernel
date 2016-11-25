@@ -58,14 +58,12 @@ export class BufferGeometry {
         }
 
         var triangles:number[] = [];
-        // var triangles;
 
         if (!geometry.attributes) {
 
             var vertices = geometry.vertices;
             var faces = geometry.faces;
             if (vertices && faces) {
-                // triangles = @new Triangle.Array(faces.length);
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
                     var t:number = @new Triangle;
@@ -78,10 +76,8 @@ export class BufferGeometry {
                     Triangle.N2(t) = Vector.NewVector();
                     Triangle.N3(t) = Vector.NewVector();
 
-                    // triangle.updateBox();
-                    // triangle.fixNormals();
+                    Triangle.FixNormals(t);
                     triangles.push(t);
-                    // Triangle.Array.setAt(triangles, i, t);
                 }
             } else {
                 return null;
@@ -107,7 +103,6 @@ export class BufferGeometry {
 
                 var indices = indexAttribute.array;
                 var uvIndex:number = 0;
-                // triangles = @new Triangle.Array(indices.length);
 
                 for (var i = 0; i < indices.length; i = i + 3) {
 
@@ -169,16 +164,13 @@ export class BufferGeometry {
                         Triangle.T3(t) = Vector.NewVector(uv[cu], uv[cv], 0);
                     }
 
-                    // triangle.fixNormals();
-                    // triangle.updateBox();
+                    Triangle.FixNormals(t);
                     triangles.push(t);
-                    // Triangle.Array.setAt(triangles, i, t);
                     uvIndex += 2;
                 }
 
             } else {
                 uvIndex = 0;
-                // triangles = @new Triangle.Array(positions.length);
                 for (let i = 0; i < positions.length; i = i + 9) {
 
                     // triCount++;
@@ -271,24 +263,15 @@ export class BufferGeometry {
                         Triangle.T3(t) = Vector.NewVector(uv[uvIndex + 4], uv[uvIndex + 5], 0);
                     }
 
-                    //Triangle.UpdateBox(t);
                     Triangle.FixNormals(t);
-                    // triangle.fixNormals();
-                    // triangle.updateBox();
                     triangles.push(t);
-                    // Triangle.Array.setAt(triangles, i, t);
                     uvIndex += 6;
                 }
             }
         }
 
-        // console.log(`Num triangles: ${triangles.length}`);
-        // let meshRef = Mesh.NewMesh(Triangle.Pack(triangles), triangles.length);
         let meshRef = Mesh.NewMesh(Triangle.Pack(triangles));
         // Mesh.SmoothNormals(meshRef);
-        // let meshRef = Mesh.NewMesh(triangles);
-        // console.log(turbo.getMemoryUsage());
-        // Mesh.Compile(meshRef);
         return meshRef;
         // if(smooth){
         //     mesh.smoothNormals();

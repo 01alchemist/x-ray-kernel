@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace xray {
-// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 type float32 = number;
@@ -624,10 +624,6 @@ export class Vector extends MemoryObject{
         return (a.X * B.X) + (a.Y * B.Y) + (a.Z * B.Z);
     }
 
-    static Dot_12(a:number, B:Vector3):number {
-        return (turbo.Runtime._mem_float64[(a + 8) >> 3] * B.x) + (turbo.Runtime._mem_float64[(a + 16) >> 3] * B.y) + (turbo.Runtime._mem_float64[(a + 24) >> 3] * B.z);
-    }
-
     static Dot_mem(a:number, B:number):number {
         return (turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3]) + (turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3]) + (turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3]);
     }
@@ -737,7 +733,7 @@ export class Vector extends MemoryObject{
         return new Vector3(turbo.Runtime._mem_float64[(a + 8) >> 3] - b.x, turbo.Runtime._mem_float64[(a + 16) >> 3] - b.y, turbo.Runtime._mem_float64[(a + 24) >> 3] - b.z);
     }
 
-    static Sub_21(a:Vector3, b:number):Vector3 {
+    static Sub_21(a:number, b:Vector3):Vector3 {
         return new Vector3(a.x - turbo.Runtime._mem_float64[(b + 8) >> 3], a.y - turbo.Runtime._mem_float64[(b + 16) >> 3], a.z - turbo.Runtime._mem_float64[(b + 24) >> 3]);
     }
     static Sub_mem(a:number, b:number, c?:number):number {
@@ -1088,20 +1084,6 @@ export class Vector extends MemoryObject{
         return SELF;
     }
 
-    static SetFromJSON(SELF:number, d) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d.x); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d.y); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d.z); 
-        return SELF;
-    }
-
-    static SetFromArray(SELF:number, d:number[]) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d[0]); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d[1]); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d[2]); 
-        return SELF;
-    }
-
     static Copy(SELF:number, a:number):number {
         return Vector.Set(SELF, turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
     }
@@ -1350,7 +1332,7 @@ export class Box extends MemoryObject{
 
 	static OuterRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], center, center);
+        let tmp = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], center);
 		let len = Vector.Length_mem(tmp);
         free(center);
         free(tmp);
@@ -1359,7 +1341,7 @@ export class Box extends MemoryObject{
 
 	static InnerRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(center, turbo.Runtime._mem_int32[(SELF + 4) >> 2], center);
+        let tmp = Vector.Sub_mem(center, turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
 		let result = Vector.MaxComponent_mem(tmp);
         free(tmp);
         return result;
@@ -2076,14 +2058,14 @@ export class Material extends MemoryObject{
 
     static MaterialAt(shape:number, point:Vector3):number{
         let material:number = Shape.MaterialAt(shape, point);
-        // let uv:Vector3 = Shape.UV(shape, point);
-        // if (turbo.Runtime._mem_int32[(material + 8) >> 2]) {
-        //     turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], uv.x, uv.y);
-        // }
-        // if (turbo.Runtime._mem_int32[(material + 20) >> 2]) {
-        //     let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], uv.x, uv.y);
-        //     turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
-        // }
+        let uv:Vector3 = Shape.UV(shape, point);
+        if (turbo.Runtime._mem_int32[(material + 8) >> 2]) {
+            turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], uv.x, uv.y);
+        }
+        if (turbo.Runtime._mem_int32[(material + 20) >> 2]) {
+            let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], uv.x, uv.y);
+            turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
+        }
         return material;
     }
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=167722613; return SELF; }
@@ -2212,7 +2194,7 @@ export class Shape extends MemoryObject{
 		return SELF;
 	}
     static Type_impl(SELF:number){
-		return ShapeType.UNKNOWN;
+		throw ShapeType.UNKNOWN;
 	}
     static ToJSON_impl(SELF:number){
 		throw "Pure: Shape.ToJSON()";
@@ -2247,8 +2229,6 @@ export class Shape extends MemoryObject{
                 return Triangle.Type_impl(SELF );
             case 48819938:
                 return Mesh.Type_impl(SELF );
-            case 122109087:
-                return Plane.Type_impl(SELF );
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2265,8 +2245,6 @@ export class Shape extends MemoryObject{
                 return Triangle.ToJSON_impl(SELF );
             case 48819938:
                 return Mesh.ToJSON_impl(SELF );
-            case 122109087:
-                return Plane.ToJSON_impl(SELF );
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2283,8 +2261,6 @@ export class Shape extends MemoryObject{
                 return Triangle.Compile_impl(SELF , c);
             case 48819938:
                 return Mesh.Compile_impl(SELF , c);
-            case 122109087:
-                return Plane.Compile_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2301,8 +2277,6 @@ export class Shape extends MemoryObject{
                 return Triangle.BoundingBox_impl(SELF , c);
             case 48819938:
                 return Mesh.BoundingBox_impl(SELF , c);
-            case 122109087:
-                return Plane.BoundingBox_impl(SELF , c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2319,8 +2293,6 @@ export class Shape extends MemoryObject{
                 return Triangle.Intersect_impl(SELF , ray,c);
             case 48819938:
                 return Mesh.Intersect_impl(SELF , ray,c);
-            case 122109087:
-                return Plane.Intersect_impl(SELF , ray,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2337,8 +2309,6 @@ export class Shape extends MemoryObject{
                 return Triangle.UV_impl(SELF , p,c);
             case 48819938:
                 return Mesh.UV_impl(SELF , p,c);
-            case 122109087:
-                return Plane.UV_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2355,8 +2325,6 @@ export class Shape extends MemoryObject{
                 return Triangle.NormalAt_impl(SELF , p,c);
             case 48819938:
                 return Mesh.NormalAt_impl(SELF , p,c);
-            case 122109087:
-                return Plane.NormalAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2373,8 +2341,6 @@ export class Shape extends MemoryObject{
                 return Triangle.MaterialAt_impl(SELF , p,c);
             case 48819938:
                 return Mesh.MaterialAt_impl(SELF , p,c);
-            case 122109087:
-                return Plane.MaterialAt_impl(SELF , p,c);
             default:
               throw turbo.Runtime._badType(SELF);
         }
@@ -2463,7 +2429,7 @@ export class Cube extends Shape{
         return Cube.init(Cube.initInstance(turbo.Runtime.allocOrThrow(24,4)), min, max, material, box);
     }
     static Type_impl(SELF:number){
-        return ShapeType.CUBE;
+        throw ShapeType.CUBE;
     }
     static ToJSON_impl(SELF){
         return {
@@ -3219,7 +3185,7 @@ export class Mesh extends Shape{
 		return Mesh.NewMesh(triangles);
 	}
     static Type_impl(SELF:number){
-        return ShapeType.MESH;
+        throw ShapeType.MESH;
     }
     static ToJSON_impl(SELF){
         return {
@@ -3433,146 +3399,6 @@ export class Mesh extends Shape{
     static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=48819938; return SELF; }
 }
 turbo.Runtime._idToType[48819938] = Mesh;
-
-export class Plane extends Shape{
-   static NAME:string = "Plane";
-   static SIZE:number = 25;
-   static ALIGN:number = 4;
-   static CLSID:number = 122109087;
-
-   static get BASE():string{
-       return Shape
-   }
-
-   constructor(p:number){
-       super(p);
-   }
-
-    static init(SELF, point, normal, material){
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = point; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = normal; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = material; 
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = 0; 
-         turbo.Runtime._mem_uint8[(SELF + 24) >> 0] = 0; 
-        return SELF;
-    }
-
-    static NewPlane(point:number, normal:number, material:number):number {
-        Vector.Normalize_mem(normal, normal);
-        let ptr:number = Plane.initInstance(turbo.Runtime.allocOrThrow(25,4));
-        return Plane.init(ptr, point, normal, material);
-    }
-    static Type_impl(SELF:number){
-        return ShapeType.PLANE;
-    }
-    static ToJSON_impl(SELF){
-        return {
-            point:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
-            normal:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
-            material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2]),
-            box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 20) >> 2])
-        }
-    }
-    static Compile_impl(SELF) {
-    }
-    static BoundingBox_impl(SELF):number {
-        if(turbo.Runtime._mem_uint8[(SELF + 24) >> 0]){
-            return turbo.Runtime._mem_int32[(SELF + 20) >> 2];
-        }
-        let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-        let inf = Number.POSITIVE_INFINITY;
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = (Box.init(ptr, Vector.NewVector(-inf,-inf,-inf), Vector.NewVector(inf,inf,inf))); 
-         turbo.Runtime._mem_uint8[(SELF + 24) >> 0] = 1; 
-        return ptr;
-    }
-    static Intersect_impl(SELF, ray:Ray):Hit {
-        let d = Vector.Dot_12(turbo.Runtime._mem_int32[(SELF + 12) >> 2], ray.direction);
-        if (Math.abs(d) < EPS) {
-            return Hit.NoHit;
-        }
-        let a:Vector3 = Vector.Sub_12(turbo.Runtime._mem_int32[(SELF + 8) >> 2], ray.origin);
-        let t:number = Vector.Dot_12(turbo.Runtime._mem_int32[(SELF + 12) >> 2], a) / d;
-        if (t < EPS) {
-            return Hit.NoHit;
-        }
-        return new Hit(SELF, t);
-    }
-    static UV_impl(SELF, a:Vector3):Vector3 {
-        return new Vector3();
-    }
-    static MaterialAt_impl(SELF, a:Vector3):number {
-        return turbo.Runtime._mem_int32[(SELF + 16) >> 2];
-    }
-    static NormalAt_impl(SELF, a:Vector3):number {
-        return new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
-    }
-    static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.Type_impl(SELF );
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.ToJSON_impl(SELF );
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static Compile(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.Compile_impl(SELF );
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static BoundingBox(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.BoundingBox_impl(SELF );
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static Intersect(SELF , ray) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.Intersect_impl(SELF , ray);
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static UV(SELF , a) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.UV_impl(SELF , a);
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static MaterialAt(SELF , a) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.MaterialAt_impl(SELF , a);
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static NormalAt(SELF , a) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
-            case 122109087:
-                return Plane.NormalAt_impl(SELF , a);
-            default:
-              throw turbo.Runtime._badType(SELF);
-        }
-    }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=122109087; return SELF; }
-}
-turbo.Runtime._idToType[122109087] = Plane;
 
 export class Node extends MemoryObject{
    static NAME:string = "Node";
@@ -3953,20 +3779,6 @@ export class Camera extends MemoryObject{
         };
     }
 
-    static SetFromJSON(SELF, data){
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 4) >> 2], data.p);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2], data.u);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2], data.v);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2], data.w);
-
-        if(typeof data.m === "number")
-             turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (data.m); 
-        if(typeof data.focalDistance === "number")
-             turbo.Runtime._mem_float64[(SELF + 32) >> 3] = (data.focalDistance); 
-        if(typeof data.apertureRadius === "number")
-             turbo.Runtime._mem_float64[(SELF + 40) >> 3] = (data.apertureRadius); 
-    }
-
     static LookAt(eye, center, up, fovy:number, c?:number):number {
         c = c?c:Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
         Camera.init(c);
@@ -4117,8 +3929,8 @@ export class MasterScene{
 
 	static defaultMaterial;
 
-	constructor(color){
-		this.scenePtr = Scene.NewScene(color);
+	constructor(){
+		this.scenePtr = Scene.NewScene(0x000000);
         this.shapes = [];
         this.lights = [];
 
@@ -4128,17 +3940,18 @@ export class MasterScene{
 
 	}
     AddDebugScene(){
-        let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
-        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
-        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
+        let v1 = Vector.NewVector(0,0,0);
+        let v2 = Vector.NewVector(0,1,0);
+        let v3 = Vector.NewVector(1,1,0);
+        let t1 = Vector.NewVector(1,1,0);
+        let t2 = Vector.NewVector(1,1,0);
+        let t3 = Vector.NewVector(1,1,0);
+        let t = Triangle.NewTriangle(v1,v2,v3,t1,t2,t3, MasterScene.defaultMaterial);
+        this.Add(t);
     }
-	AddDefaultLights() {
-		let light = Material.LightMaterial(Color.WHITE, 50);
-        this.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
-	}
 	Add(shape) {
 		this.shapes.push(shape);
-
+		
 		if (turbo.Runtime._mem_float64[((Shape.MaterialAt(shape, Vector.ZERO)) + 32) >> 3] > 0) {
 			this.lights.push(shape);
 		}
@@ -4213,8 +4026,7 @@ export class BufferGeometry {
         }*/
         // return null;
         let color = src.material.color || {r:0,g:0,b:0};
-        // let mat = Material.DiffuseMaterial(Color.NewColor(color.r, color.g, color.b));
-        let mat  = Material.GlossyMaterial(Color.NewColor(color.r, color.g, color.b), 1.5, Utils.Radians(10));
+        let mat = Material.DiffuseMaterial(Color.NewColor(color.r, color.g, color.b));
         return this.buildGeometry(src.geometry, mat, src.smooth);
     }
 

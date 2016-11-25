@@ -55,8 +55,8 @@ export class MasterScene{
 
 	static defaultMaterial;
 
-	constructor(){
-		this.scenePtr = Scene.NewScene(0x000000);
+	constructor(color){
+		this.scenePtr = Scene.NewScene(color);
         this.shapes = [];
         this.lights = [];
 
@@ -66,18 +66,17 @@ export class MasterScene{
 
 	}
     AddDebugScene(){
-        let v1 = Vector.NewVector(0,0,0);
-        let v2 = Vector.NewVector(0,1,0);
-        let v3 = Vector.NewVector(1,1,0);
-        let t1 = Vector.NewVector(1,1,0);
-        let t2 = Vector.NewVector(1,1,0);
-        let t3 = Vector.NewVector(1,1,0);
-        let t = Triangle.NewTriangle(v1,v2,v3,t1,t2,t3, MasterScene.defaultMaterial);
-        this.Add(t);
+        let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
+        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(-2, 10, 10), wall));
+        this.Add(Cube.NewCube(Vector.NewVector(-10, -1, -10), Vector.NewVector(10, 0, 10), wall));
     }
+	AddDefaultLights() {
+		let light = Material.LightMaterial(Color.WHITE, 50);
+        this.Add(Sphere.NewSphere(Vector.NewVector(0, 8, 0), 0.5, light));
+	}
 	Add(shape) {
 		this.shapes.push(shape);
-		
+
 		if (Material.Emittance(Shape.MaterialAt(shape, Vector.ZERO)) > 0) {
 			this.lights.push(shape);
 		}

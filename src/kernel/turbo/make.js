@@ -45,12 +45,12 @@ fs.writeFileSync(path.resolve(__dirname, "xray-kernel-turbo.tts"), source);
 
 compiler.compile({
     sources: [path.resolve(__dirname, "xray-kernel-turbo.tts")],
-    options:{
-        bundle:true,
-        moduleName:"xray",
+    options: {
+        bundle: true,
+        moduleName: "xray",
         outDir: __dirname,
         outFile: "xray-kernel-turbo.ts",
-        target:turbo.CompilerTarget.TypeScript
+        target: turbo.CompilerTarget.TypeScript
     }
 });
 
@@ -58,23 +58,60 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
 
 //Compile TypeScript
-// const spawn = require('child_process').spawn;
-// const ls = spawn('tsc', [
-//     // __dirname + '/xray-kernel-turbo.ts',
-//     '-p', __dirname,
-//     '--target', 'es5',
-//     '--module', 'commonjs',
-//     '--sourceMap'
-// ]);
-//
-// ls.stdout.on('data', (data) => {
-//     console.log(`stdout: ${data}`);
-// });
-//
-// ls.stderr.on('data', (data) => {
-//     console.log(`stderr: ${data}`);
-// });
-//
-// ls.on('close', (code) => {
-//     console.log(`child process exited with code ${code}`);
-// });
+const spawn = require('child_process').spawn;
+const ls = spawn('tsc', [
+    // __dirname + '/xray-kernel-turbo.ts',
+    '-p', __dirname,
+    '--target', 'es5',
+    '--module', 'commonjs',
+    '-d',
+    '--sourceMap'
+]);
+
+ls.stdout.on('data', (data) => {
+    console.log(`stdout: ${data}`);
+});
+
+ls.stderr.on('data', (data) => {
+    console.log(`stderr: ${data}`);
+});
+
+ls.on('close', (code) => {
+    console.log(`child process exited with code ${code}`);
+    // let compiledCode = fs.readFileSync(__dirname + '/xray-kernel-turbo.js');
+    // fs.writeFileSync(__dirname + '/../../../bin/xray-kernel-turbo.js', compiledCode);
+    copyFile(__dirname + '/turbo-runtime.js', __dirname + '/../../../../x-ray.js/libs/xray-kernel/turbo-runtime.js');
+    copyFile(__dirname + '/xray-kernel-turbo.ts', __dirname + '/../../../../x-ray.js/libs/xray-kernel/xray-kernel-turbo.ts');
+    copyFile(__dirname + '/xray-kernel-turbo.js', __dirname + '/../../../../x-ray.js/libs/xray-kernel/xray-kernel-turbo.js');
+});
+
+
+function copyFile(source, target, cb) {
+    var cbCalled = false;
+
+    console.log('#########################');
+    console.log(target);
+    console.log('#########################');
+
+    var rd = fs.createReadStream(source);
+    rd.on("error", function(err) {
+        console.error(err);
+        done(err);
+    });
+    var wr = fs.createWriteStream(target);
+    wr.on("error", function(err) {
+        console.error(err);
+        done(err);
+    });
+    wr.on("close", function(ex) {
+        done();
+    });
+    rd.pipe(wr);
+
+    function done(err) {
+        if (!cbCalled && cb) {
+            cb(err);
+            cbCalled = true;
+        }
+    }
+}
