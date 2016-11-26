@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace xray {
-// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 type float32 = number;
@@ -3244,11 +3244,12 @@ export class Mesh extends Shape{
 
             let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
 			let min = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
-			let max = Vector.Clone(min);
+			let max = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
             let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
 			for (let i=1;i < NumTriangles;i++) {
-				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, t.V1, min), t.V2, min), t.V3, min);
-				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, t.V1, max), t.V2, max), t.V3, max);
+				t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, turbo.Runtime._mem_int32[(t + 8) >> 2], min), turbo.Runtime._mem_int32[(t + 12) >> 2], min), turbo.Runtime._mem_int32[(t + 16) >> 2], min);
+				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, turbo.Runtime._mem_int32[(t + 8) >> 2], max), turbo.Runtime._mem_int32[(t + 12) >> 2], max), turbo.Runtime._mem_int32[(t + 16) >> 2], max);
 			}
             let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
 			 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max)); 
@@ -4839,8 +4840,12 @@ export class Vector3 {
         return new Vector3(0, 0, 1);
     }
 
-    minComponent() {
-        return Math.min(Math.min(this.x, this.y), this.z)
+    minComponent():number {
+        return Math.min(Math.min(this.x, this.y), this.z);
+    }
+
+    maxComponent():number {
+        return Math.max(Math.max(this.x, this.y), this.z);
     }
 
     reflect(i:Vector3):Vector3 {
