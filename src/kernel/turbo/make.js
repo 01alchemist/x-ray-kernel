@@ -1,5 +1,6 @@
 // combine kernel modules and compile
 "use strict";
+var shell = require("shelljs");
 let fs = require("fs");
 let path = require("path");
 let turbo = require("../../../../turbo.js/lib/compiler.js");
@@ -58,32 +59,19 @@ fs.unlinkSync(path.resolve(__dirname, "xray-kernel-turbo.tts"));
 
 
 //Compile TypeScript
-const spawn = require('child_process').spawn;
-const ls = spawn('tsc', [
-    // __dirname + '/xray-kernel-turbo.ts',
-    '-p', __dirname,
-    '--target', 'es5',
-    '--module', 'commonjs',
-    '-d',
-    '--sourceMap'
-]);
-
-ls.stdout.on('data', (data) => {
-    console.log(`stdout: ${data}`);
-});
-
-ls.stderr.on('data', (data) => {
-    console.log(`stderr: ${data}`);
-});
-
-ls.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
+// let code = shell.exec('build-ts').code;
+let typings = [
+  './src/manual_types/simd.d.ts'
+].join(' ');
+let code = shell.exec(`tsc -p ./src/kernel/turbo/ -t ES5 -d -m commonjs --sourceMap`).code;
+console.log(`child process exited with code ${code}`);
+// if(code == 0){
     // let compiledCode = fs.readFileSync(__dirname + '/xray-kernel-turbo.js');
     // fs.writeFileSync(__dirname + '/../../../bin/xray-kernel-turbo.js', compiledCode);
     copyFile(__dirname + '/turbo-runtime.js', __dirname + '/../../../../x-ray.js/libs/xray-kernel/turbo-runtime.js');
     copyFile(__dirname + '/xray-kernel-turbo.ts', __dirname + '/../../../../x-ray.js/libs/xray-kernel/xray-kernel-turbo.ts');
     copyFile(__dirname + '/xray-kernel-turbo.js', __dirname + '/../../../../x-ray.js/libs/xray-kernel/xray-kernel-turbo.js');
-});
+// }
 
 
 function copyFile(source, target, cb) {

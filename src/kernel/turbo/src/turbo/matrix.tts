@@ -1,8 +1,3 @@
-interface Ray{
-    Origin:number;
-    Direction:number;
-}
-
 @turbo class Matrix{
 
     x00:float64
@@ -53,6 +48,16 @@ interface Ray{
             x20, x21, x22, x23,
             x30, x31, x32, x33
         )
+    }
+
+    static fromTHREEJS(e:number[]):number {
+
+        return Matrix.NewMatrix(
+            e[0], e[4], e[8], e[12],
+            e[1], e[5], e[9], e[13],
+            e[2], e[6], e[10], e[14],
+            e[3], e[7], e[11], e[15]
+        );
     }
 
     static DATA(SELF:number) {
@@ -212,19 +217,19 @@ interface Ray{
         return m;
     }
 
-    static MulPosition2(a:number, b:Vector3):Vector3 {
-        let x:number = Matrix.x00(a) * b.x + Matrix.x01(a) * b.y + Matrix.x02(a) * b.z + Matrix.x03(a);
-        let y:number = Matrix.x10(a) * b.x + Matrix.x11(a) * b.y + Matrix.x12(a) * b.z + Matrix.x13(a);
-        let z:number = Matrix.x20(a) * b.x + Matrix.x21(a) * b.y + Matrix.x22(a) * b.z + Matrix.x23(a);
-        return new Vector3(x, y, z);
-    }
-
     static MulPosition(a:number, b:number, c?:number):number {
         let x:number = Matrix.x00(a) * Vector.X(b) + Matrix.x01(a) * Vector.Y(b) + Matrix.x02(a) * Vector.Z(b) + Matrix.x03(a);
         let y:number = Matrix.x10(a) * Vector.X(b) + Matrix.x11(a) * Vector.Y(b) + Matrix.x12(a) * Vector.Z(b) + Matrix.x13(a);
         let z:number = Matrix.x20(a) * Vector.X(b) + Matrix.x21(a) * Vector.Y(b) + Matrix.x22(a) * Vector.Z(b) + Matrix.x23(a);
         let ptr:number = c?c:@new Vector();
         return Vector.Init_mem(ptr, x, y, z);
+    }
+
+    static MulPosition_vec3(a:number, b:Vector3):Vector3 {
+        let x:number = Matrix.x00(a) * b.x + Matrix.x01(a) * b.y + Matrix.x02(a) * b.z + Matrix.x03(a);
+        let y:number = Matrix.x10(a) * b.x + Matrix.x11(a) * b.y + Matrix.x12(a) * b.z + Matrix.x13(a);
+        let z:number = Matrix.x20(a) * b.x + Matrix.x21(a) * b.y + Matrix.x22(a) * b.z + Matrix.x23(a);
+        return new Vector3(x, y, z);
     }
 
     static MulDirection(a:number, b:number, c?:number):number {
@@ -235,20 +240,17 @@ interface Ray{
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
-    static MulDirection2(a:number, b:Vector3):Vector3 {
+    static MulDirection_vec3(a:number, b:Vector3):Vector3 {
         let x:number = Matrix.x00(a) * b.x + Matrix.x01(a) * b.y + Matrix.x02(a) * b.z;
         let y:number = Matrix.x10(a) * b.x + Matrix.x11(a) * b.y + Matrix.x12(a) * b.z;
         let z:number = Matrix.x20(a) * b.x + Matrix.x21(a) * b.y + Matrix.x22(a) * b.z;
-        return new Vector3(x, y, z).normalize();
+        return new Vector3(x, y, z);
     }
 
-    static MulRay(a:number, b:number):Ray {
-        let origin = Matrix.MulPosition(a, Ray.Origin(b));
-        let direction = Matrix.MulDirection(a, Ray.Direction(b));
-        let ray = new Ray(new Vector3().read(origin), new Vector3().read(direction));
-        free(origin);
-        free(direction);
-        return ray;
+    static MulRay(a:number, ray:Ray):Ray {
+        let origin:Vector3 = Matrix.MulPosition_vec3(a, ray.origin);
+        let direction:Vector3 = Matrix.MulDirection_vec3(a, ray.direction);
+        return new Ray(origin, direction);
     }
 
     static  MulBox(a:number, box:number, c?:number):number {

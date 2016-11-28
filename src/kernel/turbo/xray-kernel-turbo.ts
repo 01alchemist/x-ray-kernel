@@ -1,6 +1,6 @@
 //turbo.js bundle
 declare var turbo:{
-
+    Runtime:any
 };
 
 class MemoryObject {
@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace xray {
-// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 type float32 = number;
@@ -1493,11 +1493,6 @@ turbo.Runtime._idToType[1841] = Box;
 
 
 
-interface Ray{
-    Origin:number;
-    Direction:number;
-}
-
 export class Matrix extends MemoryObject{
    static NAME:string = "Matrix";
    static SIZE:number = 136;
@@ -1540,6 +1535,16 @@ export class Matrix extends MemoryObject{
             x20, x21, x22, x23,
             x30, x31, x32, x33
         )
+    }
+
+    static fromTHREEJS(e:number[]):number {
+
+        return Matrix.NewMatrix(
+            e[0], e[4], e[8], e[12],
+            e[1], e[5], e[9], e[13],
+            e[2], e[6], e[10], e[14],
+            e[3], e[7], e[11], e[15]
+        );
     }
 
     static DATA(SELF:number) {
@@ -1699,19 +1704,19 @@ export class Matrix extends MemoryObject{
         return m;
     }
 
-    static MulPosition2(a:number, b:Vector3):Vector3 {
-        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 16) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 24) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 32) >> 3];
-        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 48) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 56) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 64) >> 3];
-        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 80) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 88) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 96) >> 3];
-        return new Vector3(x, y, z);
-    }
-
     static MulPosition(a:number, b:number, c?:number):number {
         let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3];
         let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3];
         let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3];
         let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8))();
         return Vector.Init_mem(ptr, x, y, z);
+    }
+
+    static MulPosition_vec3(a:number, b:Vector3):Vector3 {
+        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 16) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 24) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 32) >> 3];
+        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 48) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 56) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 64) >> 3];
+        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 80) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 88) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 96) >> 3];
+        return new Vector3(x, y, z);
     }
 
     static MulDirection(a:number, b:number, c?:number):number {
@@ -1722,20 +1727,17 @@ export class Matrix extends MemoryObject{
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
-    static MulDirection2(a:number, b:Vector3):Vector3 {
+    static MulDirection_vec3(a:number, b:Vector3):Vector3 {
         let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 16) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 24) >> 3] * b.z;
         let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 48) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 56) >> 3] * b.z;
         let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 80) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 88) >> 3] * b.z;
-        return new Vector3(x, y, z).normalize();
+        return new Vector3(x, y, z);
     }
 
-    static MulRay(a:number, b:number):Ray {
-        let origin = Matrix.MulPosition(a, Ray.Origin(b));
-        let direction = Matrix.MulDirection(a, Ray.Direction(b));
-        let ray = new Ray(new Vector3().read(origin), new Vector3().read(direction));
-        free(origin);
-        free(direction);
-        return ray;
+    static MulRay(a:number, ray:Ray):Ray {
+        let origin:Vector3 = Matrix.MulPosition_vec3(a, ray.origin);
+        let direction:Vector3 = Matrix.MulDirection_vec3(a, ray.direction);
+        return new Ray(origin, direction);
     }
 
     static  MulBox(a:number, box:number, c?:number):number {
@@ -2239,6 +2241,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.Type_impl(SELF );
+            case 124486674:
+                return TransformedShape.Type_impl(SELF );
             case 48824165:
                 return Cube.Type_impl(SELF );
             case 171432461:
@@ -2257,6 +2261,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.ToJSON_impl(SELF );
+            case 124486674:
+                return TransformedShape.ToJSON_impl(SELF );
             case 48824165:
                 return Cube.ToJSON_impl(SELF );
             case 171432461:
@@ -2275,6 +2281,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.Compile_impl(SELF , c);
+            case 124486674:
+                return TransformedShape.Compile_impl(SELF , c);
             case 48824165:
                 return Cube.Compile_impl(SELF , c);
             case 171432461:
@@ -2293,6 +2301,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.BoundingBox_impl(SELF , c);
+            case 124486674:
+                return TransformedShape.BoundingBox_impl(SELF , c);
             case 48824165:
                 return Cube.BoundingBox_impl(SELF , c);
             case 171432461:
@@ -2311,6 +2321,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.Intersect_impl(SELF , ray,c);
+            case 124486674:
+                return TransformedShape.Intersect_impl(SELF , ray,c);
             case 48824165:
                 return Cube.Intersect_impl(SELF , ray,c);
             case 171432461:
@@ -2329,6 +2341,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.UV_impl(SELF , p,c);
+            case 124486674:
+                return TransformedShape.UV_impl(SELF , p,c);
             case 48824165:
                 return Cube.UV_impl(SELF , p,c);
             case 171432461:
@@ -2347,6 +2361,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.NormalAt_impl(SELF , p,c);
+            case 124486674:
+                return TransformedShape.NormalAt_impl(SELF , p,c);
             case 48824165:
                 return Cube.NormalAt_impl(SELF , p,c);
             case 171432461:
@@ -2365,6 +2381,8 @@ export class Shape extends MemoryObject{
         switch (turbo.Runtime._mem_int32[SELF>>2]) {
             case 255446:
                 return Shape.MaterialAt_impl(SELF , p,c);
+            case 124486674:
+                return TransformedShape.MaterialAt_impl(SELF , p,c);
             case 48824165:
                 return Cube.MaterialAt_impl(SELF , p,c);
             case 171432461:
@@ -2383,44 +2401,51 @@ export class Shape extends MemoryObject{
 }
 turbo.Runtime._idToType[255446] = Shape;
 
-export class TransformedShape extends MemoryObject{
+export class TransformedShape extends Shape{
    static NAME:string = "TransformedShape";
-   static SIZE:number = 16;
+   static SIZE:number = 28;
    static ALIGN:number = 4;
-   static CLSID:number = 245094204;
+   static CLSID:number = 124486674;
 
    static get BASE():string{
-       return null
+       return Shape
    }
 
    constructor(p:number){
        super(p);
    }
 
-    static init(SELF:number, shape:number){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = shape; 
+    static init(SELF, shape:number, matrix){
+         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = shape; 
+		 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = matrix; 
+		 turbo.Runtime._mem_int32[(SELF + 20) >> 2] = (Matrix.Inverse(matrix)); 
+		 turbo.Runtime._mem_int32[(SELF + 24) >> 2] = (Matrix.Transpose(turbo.Runtime._mem_int32[(SELF + 20) >> 2])); 
 		return SELF;
 	}
 
 	static NewTransformedShape(s:number, m:number):number {
-		return TransformedShape.init(TransformedShape.initInstance(turbo.Runtime.allocOrThrow(16,4)), s, m, Matrix.Inverse(m));
+		return TransformedShape.init(TransformedShape.initInstance(turbo.Runtime.allocOrThrow(28,4)), s, m);
 	}
-
-	static BoundingBox(s:TransformedShape):Box {
-		return Matrix.MulBox(s, Shape.BoundingBox(s));
+    static BoundingBox_impl(SELF) {
+        if(!turbo.Runtime._mem_int32[(SELF + 8) >> 2]){
+             turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (Matrix.MulBox(turbo.Runtime._mem_int32[(SELF + 16) >> 2], Shape.BoundingBox(turbo.Runtime._mem_int32[(SELF + 12) >> 2]))); 
+        }
+        return turbo.Runtime._mem_int32[(SELF + 8) >> 2];
 	}
+    static Intersect_impl(SELF, r:Ray):Hit {
 
-	static Intersect(s:number, r:Ray):Hit {
-		let shapeRay:Ray = Matrix.MulRay(turbo.Runtime._mem_int32[(s + 12) >> 2], r);
-		let hit = Shape.Intersect(s, shapeRay);
+        let invMat = turbo.Runtime._mem_int32[(SELF + 20) >> 2];
+		let shapeRay:Ray = Matrix.MulRay(invMat, r);
+		let hit = Shape.Intersect(turbo.Runtime._mem_int32[(SELF + 12) >> 2], shapeRay);
 		if (!hit.Ok()) {
 			return hit;
 		}
+        let transMat = turbo.Runtime._mem_int32[(SELF + 24) >> 2];
 		let shape:number = hit.Shape;
 		let shapePosition:Vector3 = shapeRay.position(hit.T);
 		let shapeNormal:Vector3 = Shape.NormalAt(shape, shapePosition);
-		let position:Vector3 = Matrix.MulPosition2(s, shapePosition);
-		let normal:Vector3 = Matrix.MulDirection2(Matrix.Transpose(Matrix.Inverse(s)), shapeNormal);
+		let position:Vector3 = Matrix.MulPosition_vec3(turbo.Runtime._mem_int32[(SELF + 16) >> 2], shapePosition);
+		let normal:Vector3 = Matrix.MulDirection_vec3(transMat, shapeNormal);
 		let material = Material.MaterialAt(shape, shapePosition);
 		let inside = false;
 		if (shapeNormal.dot(shapeRay.direction) > 0) {
@@ -2433,9 +2458,91 @@ export class TransformedShape extends MemoryObject{
 		hit.HitInfo = info;
 		return hit;
 	}
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=245094204; return SELF; }
+    static Type_impl(SELF){
+        return Shape.Type(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+    }
+    static ToJSON_impl(SELF){
+        return Shape.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+    }
+    static Compile_impl(SELF, c?:number){
+        return Shape.Compile(turbo.Runtime._mem_int32[(SELF + 12) >> 2], c);
+    }
+    static UV_impl(SELF:number, p:Vector3, c?:number):number{
+        return Shape.UV(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+    }
+    static NormalAt_impl(SELF:number, p:Vector3, c?:number):number{
+        return Shape.NormalAt(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+    }
+    static MaterialAt_impl(SELF:number, p:Vector3, c?:number):number{
+        return Shape.MaterialAt(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+    }
+    static BoundingBox(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.BoundingBox_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Intersect(SELF , r) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.Intersect_impl(SELF , r);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Type(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.Type_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static ToJSON(SELF ) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.ToJSON_impl(SELF );
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static Compile(SELF , c) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.Compile_impl(SELF , c);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static UV(SELF , p,c) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.UV_impl(SELF , p,c);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static NormalAt(SELF , p,c) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.NormalAt_impl(SELF , p,c);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static MaterialAt(SELF , p,c) {
+        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+            case 124486674:
+                return TransformedShape.MaterialAt_impl(SELF , p,c);
+            default:
+              throw turbo.Runtime._badType(SELF);
+        }
+    }
+    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=124486674; return SELF; }
 }
-turbo.Runtime._idToType[245094204] = TransformedShape;
+turbo.Runtime._idToType[124486674] = TransformedShape;
 
 export class Cube extends Shape{
    static NAME:string = "Cube";
