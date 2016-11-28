@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "Ray trace kernel for JavaScript written in C/C++",
   "main": "index.js",
-  "bin": {
-    "x-ray-kernel": "x-ray-kernel.js"
-  },
   "directories": {
     "test": "test"
   },
@@ -31,6 +28,7 @@
     "karma-typescript": "^2.0.6",
     "require": "^2.4.20",
     "requirejs": "^2.3.1",
+    "shelljs": "^0.7.5",
     "ts-node": "1.2.1",
     "tslint": "3.13.0",
     "typescript": "^2.0.3"
@@ -49,6 +47,9 @@
       ],
       "quiet": true
     }
+  },
+  "bin":{
+    "build-ts": "tsc -p ./src/kernel/turbo/ -t ES5 -d -m commonjs --sourceMap"
   },
   "scripts": {
     "tst": "bash -e ",

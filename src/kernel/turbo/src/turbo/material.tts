@@ -7,10 +7,10 @@
 	GlossTexture:Texture
 	BumpMultiplier:float64
 	Emittance:float64
-	Index:float64 // refractive index
-	Gloss:float64 // reflection cone angle in radians
-	Tint:float64 // specular and refractive tinting
-	Reflectivity:float64 // metallic reflection
+	Index:float64
+	Gloss:float64
+	Tint:float64
+	Reflectivity:float64
 	Transparent:uint8
 
     @method init(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
