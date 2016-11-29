@@ -13,7 +13,7 @@
   "files": [
     "xray-kernel-turbo.spec.ts",
     "./src/worker/xray-tracer.ts",
-    "./src/manual_types/simd.d.ts"
+    "./src/manual_types/simd.d.ts",
     "./xray-kernel-turbo.ts"
   ],
   "exclude": [

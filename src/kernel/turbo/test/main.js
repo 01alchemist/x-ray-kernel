@@ -21,8 +21,8 @@ let imageData;
 let pixelData;
 let bucketSize = 32;
 let renderOptions = {
-    full_width: 2560 / 2,
-    full_height: 1440 / 2,
+    full_width: 2560 / 4,
+    full_height: 1440 / 4,
     // full_width: 448 * 2,
     // full_height: 640 * 2,
     iterations: 1,
