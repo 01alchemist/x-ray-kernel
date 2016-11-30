@@ -58,15 +58,16 @@
 	@virtual BoundingBox(SELF):number {
 		if (!SELF.box) {
 
-            let t = int32.Array.at(SELF.Triangles, 0);
+			let t = int32.Array.at(SELF.Triangles, 0);
 			let min = Vector.Clone(Triangle.V1(t));
-			let max = Vector.Clone(min);
-            let NumTriangles = Triangle.Array.len(SELF.Triangles);
+			let max = Vector.Clone(Triangle.V1(t));
+			let NumTriangles = Triangle.Array.len(SELF.Triangles);
 			for (let i=1;i < NumTriangles;i++) {
-				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, t.V1, min), t.V2, min), t.V3, min);
-				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, t.V1, max), t.V2, max), t.V3, max);
+				t = int32.Array.at(SELF.Triangles, i);
+				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, Triangle.V1(t), min), Triangle.V2(t), min), Triangle.V3(t), min);
+				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, Triangle.V1(t), max), Triangle.V2(t), max), Triangle.V3(t), max);
 			}
-            let ptr:number = @new Box;
+			let ptr:number = @new Box;
 			SELF.box = Box.Init_mem(ptr, min, max);
 		}
 		return SELF.box;
