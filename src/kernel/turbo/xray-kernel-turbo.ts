@@ -3329,15 +3329,16 @@ export class Mesh extends Shape{
     static BoundingBox_impl(SELF):number {
 		if (!turbo.Runtime._mem_int32[(SELF + 12) >> 2]) {
 
-            let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
+			let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
 			let min = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
-			let max = Vector.Clone(min);
-            let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+			let max = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
+			let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
 			for (let i=1;i < NumTriangles;i++) {
-				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, t.V1, min), t.V2, min), t.V3, min);
-				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, t.V1, max), t.V2, max), t.V3, max);
+				t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, turbo.Runtime._mem_int32[(t + 8) >> 2], min), turbo.Runtime._mem_int32[(t + 12) >> 2], min), turbo.Runtime._mem_int32[(t + 16) >> 2], min);
+				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, turbo.Runtime._mem_int32[(t + 8) >> 2], max), turbo.Runtime._mem_int32[(t + 12) >> 2], max), turbo.Runtime._mem_int32[(t + 16) >> 2], max);
 			}
-            let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+			let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
 			 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max)); 
 		}
 		return turbo.Runtime._mem_int32[(SELF + 12) >> 2];
@@ -4108,7 +4109,7 @@ export class MasterScene{
             turbo.Runtime._mem_int32[(  lightList + 4 + (4 * index)  ) >> 2] = shape;
 		});
 
-        Scene.Compile(this.scenePtr);
+        // Scene.Compile(this.scenePtr);
 	}
 }
 
