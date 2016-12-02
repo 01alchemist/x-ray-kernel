@@ -1,7 +1,7 @@
-interface Hit{
+export interface Hit{
     Shape:number;
 }
-interface Ray{
+export interface Ray{
 
 }
 

@@ -65,21 +65,31 @@
             transparent:SELF.Transparent
         }
     }
-    static set(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
-        SELF.Color = Color;
-        SELF.Texture = Texture;
-        SELF.NormalTexture = NormalTexture;
-        SELF.BumpTexture = BumpTexture;
-        SELF.GlossTexture = GlossTexture;
-        SELF.BumpMultiplier = BumpMultiplier;
+
+    static setEmittance(SELF, Emittance) {
         SELF.Emittance = Emittance;
-        SELF.Index = Index;
-        SELF.Gloss = Gloss;
-        SELF.Tint = Tint;
-        SELF.Reflectivity = Reflectivity;
-        SELF.Transparent = Transparent;
-        return SELF;
     }
+
+    static setIndex(SELF, Index) {
+        SELF.Index = Index;
+    }
+
+    static setGloss(SELF, Gloss) {
+        SELF.Gloss = Gloss;
+    }
+
+    static setTint(SELF, Tint) {
+        SELF.Tint = Tint;
+    }
+
+    static setReflectivity(SELF, Reflectivity) {
+        SELF.Reflectivity = Reflectivity;
+    }
+
+    static setTransparent(SELF, Transparent) {
+        SELF.Transparent = Transparent;
+    }
+
     static DiffuseMaterial(color:number):number{
         let ptr:number = @new Material;
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
