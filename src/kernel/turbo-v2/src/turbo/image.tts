@@ -1,0 +1,34 @@
+export class Image {
+
+    width:number;
+    height:number;
+    depth:number;
+    data:Uint8ClampedArray|Uint16Array;
+
+    constructor(rect:{x:number, y:number, width:number, height:number}, depth:number = 8) {
+
+        this.width = rect.width;
+        this.height = rect.height;
+        this.depth = depth;
+
+        if(depth == 16) {
+            this.data = new Uint16Array(rect.width * rect.height * 4);
+        }else{
+            this.data = new Uint8ClampedArray(rect.width * rect.height * 4);
+        }
+    }
+
+    SetRGBA64(x, y, c){
+        
+        this.data[] = c;
+    }
+
+
+    static NewRGBA64(rect:{x:number, y:number, width:number, height:number}) {
+        return new Image(rect, 16);
+    }
+
+    static NewRGBA(rect:{x:number, y:number, width:number, height:number}) {
+        return new Image(rect, 8);
+    }
+}
