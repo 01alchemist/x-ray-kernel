@@ -101,14 +101,15 @@ function init() {
 }
 
 init();
-add_debug_scene();
-// loadModel("box-slit");
-loadModel("cornellbox_suzanne_lucy");
+//add_debug_scene();
+loadModel("box-slit");
+//loadModel("cornellbox_suzanne_lucy");
+//loadModel("cornellbox_suzanne_lucy");
 // loadModel("gopher");
 // loadModel("sphere");
 // loadModel("teapot");
 // loadModel("uvplane");
-// debug_init();
+//debug_init();
 
 function debug_init(){
     masterScene.AddDebugScene();

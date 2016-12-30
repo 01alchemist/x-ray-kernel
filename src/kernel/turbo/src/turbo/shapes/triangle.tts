@@ -160,12 +160,12 @@
     }*/
     @virtual Intersect(SELF, r:Ray):Hit {
 
-		let e1x = Vector.X(SELF.V2) - Vector.X(SELF.V1);
-        let e1y = Vector.Y(SELF.V2) - Vector.Y(SELF.V1);
-        let e1z = Vector.Z(SELF.V2) - Vector.Z(SELF.V1);
-        let e2x = Vector.X(SELF.V3) - Vector.X(SELF.V1);
-        let e2y = Vector.Y(SELF.V3) - Vector.Y(SELF.V1);
-        let e2z = Vector.Z(SELF.V3) - Vector.Z(SELF.V1);
+		let e1x = Vector.x(SELF.V2) - Vector.x(SELF.V1);
+        let e1y = Vector.y(SELF.V2) - Vector.y(SELF.V1);
+        let e1z = Vector.z(SELF.V2) - Vector.z(SELF.V1);
+        let e2x = Vector.x(SELF.V3) - Vector.x(SELF.V1);
+        let e2y = Vector.y(SELF.V3) - Vector.y(SELF.V1);
+        let e2z = Vector.z(SELF.V3) - Vector.z(SELF.V1);
         let px = r.direction.y * e2z - r.direction.z * e2y;
         let py = r.direction.z * e2x - r.direction.x * e2z;
         let pz = r.direction.x * e2y - r.direction.y * e2x;
@@ -174,9 +174,9 @@
 			return Hit.NoHit;
 		}
 		let inv = 1 / det;
-        let tx = r.origin.x - Vector.X(SELF.V1);
-        let ty = r.origin.y - Vector.Y(SELF.V1);
-        let tz = r.origin.z - Vector.Z(SELF.V1);
+        let tx = r.origin.x - Vector.x(SELF.V1);
+        let ty = r.origin.y - Vector.y(SELF.V1);
+        let tz = r.origin.z - Vector.z(SELF.V1);
         let u = (tx * px + ty * py + tz * pz) * inv;
 		if (u < 0 || u > 1) {
 			return Hit.NoHit;
@@ -246,13 +246,13 @@
             let dt2 = T3.sub(T1);
 
 			let T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
-			let B = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
-            let N = T.cross(B);
+			let b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
+            let N = T.cross(b);
 			let matrix = @new Matrix;
 			Matrix.init(matrix,
-					T.x, B.x, N.x, 0,
-					T.y, B.y, N.y, 0,
-					T.z, B.z, N.z, 0,
+					T.x, b.x, N.x, 0,
+					T.y, b.y, N.y, 0,
+					T.z, b.z, N.z, 0,
 					0, 0, 0, 1);
 			n = Matrix.MulDirection2(matrix, ns);
 		}

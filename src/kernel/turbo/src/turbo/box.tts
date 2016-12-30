@@ -108,9 +108,9 @@
         let a_min = SELF.Min;
         let a_max = SELF.Max;
 
-		return Vector.X(a_min) <= Vector.X(b) && Vector.X(a_max) >= Vector.X(b) &&
-			Vector.Y(a_min) <= Vector.Y(b) && Vector.Y(a_max) >= Vector.Y(b) &&
-			Vector.Z(a_min) <= Vector.Z(b) && Vector.Z(a_max) >= Vector.Z(b);
+		return Vector.x(a_min) <= Vector.x(b) && Vector.x(a_max) >= Vector.x(b) &&
+			Vector.y(a_min) <= Vector.y(b) && Vector.y(a_max) >= Vector.y(b) &&
+			Vector.z(a_min) <= Vector.z(b) && Vector.z(a_max) >= Vector.z(b);
 	}
 
 	static Intersects(a:number, b:number):boolean {
@@ -119,8 +119,8 @@
         let b_min = Box.Min(b);
         let b_max = Box.Max(b);
 
-		return !(Vector.X(a_min) > Vector.X(b_max) || Vector.X(a_max) < Vector.X(b_min) || Vector.Y(a_min) > Vector.Y(b_max) ||
-		Vector.Y(a_max) < Vector.Y(b_min) || Vector.Z(a_min) > Vector.Z(b_max) || Vector.Z(a_max) < Vector.Z(b_min));
+		return !(Vector.x(a_min) > Vector.x(b_max) || Vector.x(a_max) < Vector.x(b_min) || Vector.y(a_min) > Vector.y(b_max) ||
+		Vector.y(a_max) < Vector.y(b_min) || Vector.z(a_min) > Vector.z(b_max) || Vector.z(a_max) < Vector.z(b_min));
 	}
 
 	static Intersect(SELF, r:Ray):{tmax:number, tmin:number} {
@@ -128,19 +128,19 @@
         let min = SELF.Min;
         let max = SELF.Max;
 
-        // x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-        // y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-        // z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-        // x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-        // y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-        // z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+        // x1 := (b.Min.x - r.Origin.x) / r.Direction.x
+        // y1 := (b.Min.y - r.Origin.y) / r.Direction.y
+        // z1 := (b.Min.z - r.Origin.z) / r.Direction.z
+        // x2 := (b.Max.x - r.Origin.x) / r.Direction.x
+        // y2 := (b.Max.y - r.Origin.y) / r.Direction.y
+        // z2 := (b.Max.z - r.Origin.z) / r.Direction.z
 
-		let x1 = (Vector.X(min) - r.origin.x) / r.direction.x;
-        let y1 = (Vector.Y(min) - r.origin.y) / r.direction.y;
-        let z1 = (Vector.Z(min) - r.origin.z) / r.direction.z;
-        let x2 = (Vector.X(max) - r.origin.x) / r.direction.x;
-        let y2 = (Vector.Y(max) - r.origin.y) / r.direction.y;
-        let z2 = (Vector.Z(max) - r.origin.z) / r.direction.z;
+		let x1 = (Vector.x(min) - r.origin.x) / r.direction.x;
+        let y1 = (Vector.y(min) - r.origin.y) / r.direction.y;
+        let z1 = (Vector.z(min) - r.origin.z) / r.direction.z;
+        let x2 = (Vector.x(max) - r.origin.x) / r.direction.x;
+        let y2 = (Vector.y(max) - r.origin.y) / r.direction.y;
+        let z2 = (Vector.z(max) - r.origin.z) / r.direction.z;
         let tmp;
 
 		if (x1 > x2) {
@@ -164,12 +164,12 @@
         };
 
         /*
-        * 	 x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-             y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-             z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-             x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-             y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-             z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+        * 	 x1 := (b.Min.x - r.Origin.x) / r.Direction.x
+             y1 := (b.Min.y - r.Origin.y) / r.Direction.y
+             z1 := (b.Min.z - r.Origin.z) / r.Direction.z
+             x2 := (b.Max.x - r.Origin.x) / r.Direction.x
+             y2 := (b.Max.y - r.Origin.y) / r.Direction.y
+             z2 := (b.Max.z - r.Origin.z) / r.Direction.z
 
              if x1 > x2 {
              x1, x2 = x2, x1
@@ -195,16 +195,16 @@
         let right;
 		switch (axis) {
 			case Axis.AxisX:
-				left = Vector.X(min) <= point;
-				right = Vector.X(max) >= point;
+				left = Vector.x(min) <= point;
+				right = Vector.x(max) >= point;
                 break;
 			case Axis.AxisY:
-				left = Vector.Y(min) <= point;
-				right = Vector.Y(max) >= point;
+				left = Vector.y(min) <= point;
+				right = Vector.y(max) >= point;
                 break;
             case Axis.AxisZ:
-				left = Vector.Z(min) <= point;
-				right = Vector.Z(max) >= point;// EPIC Bug :D it was min and got weird triangle intersection
+				left = Vector.z(min) <= point;
+				right = Vector.z(max) >= point;// EPIC Bug :D it was min and got weird triangle intersection
                 break;
 		}
 		return {

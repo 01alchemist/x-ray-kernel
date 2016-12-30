@@ -124,13 +124,12 @@ export class DefaultSampler {
             return new Color3();
         }
 
-        let shapes = Scene.Shapes(scene);
+        let lights = Scene.Lights(scene);
 
         if (this.LightMode == LightMode.LightModeAll) {
             var result:Color3 =  new Color3();
             for (let i=0; i < nLights;i++) {
-                let light = int32.Array.at(Scene.Lights(scene), i);
-                //let light = Shape.Array.at(shapes, lightIndex);
+                let light = int32.Array.at(lights, i);
                 result.add(this.sampleLight(scene, n, light));
             }
             return result;
@@ -193,7 +192,7 @@ export class DefaultSampler {
         }
 
         // construct ray toward light point
-        let ray = new Ray(n.origin, point.sub(n.origin));
+        let ray = new Ray(n.origin, point.sub(n.origin).normalize());
 
         // get cosine term
         let diffuse = ray.direction.dot(n.direction);

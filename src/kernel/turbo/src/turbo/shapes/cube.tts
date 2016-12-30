@@ -95,14 +95,14 @@
         let b = SELF.Max;
         let z = Vector.NewVector();
         let m = SELF.Material;
-        let v000 = Vector.NewVector(Vector.X(a), Vector.Y(a), Vector.Z(a));
-        let v001 = Vector.NewVector(Vector.X(a), Vector.Y(a), Vector.Z(b));
-        let v010 = Vector.NewVector(Vector.X(a), Vector.Y(b), Vector.Z(a));
-        let v011 = Vector.NewVector(Vector.X(a), Vector.Y(b), Vector.Z(b));
-        let v100 = Vector.NewVector(Vector.X(b), Vector.Y(a), Vector.Z(a));
-        let v101 = Vector.NewVector(Vector.X(b), Vector.Y(a), Vector.Z(b));
-        let v110 = Vector.NewVector(Vector.X(b), Vector.Y(b), Vector.Z(a));
-        let v111 = Vector.NewVector(Vector.X(b), Vector.Y(b), Vector.Z(b));
+        let v000 = Vector.NewVector(Vector.x(a), Vector.y(a), Vector.z(a));
+        let v001 = Vector.NewVector(Vector.x(a), Vector.y(a), Vector.z(b));
+        let v010 = Vector.NewVector(Vector.x(a), Vector.y(b), Vector.z(a));
+        let v011 = Vector.NewVector(Vector.x(a), Vector.y(b), Vector.z(b));
+        let v100 = Vector.NewVector(Vector.x(b), Vector.y(a), Vector.z(a));
+        let v101 = Vector.NewVector(Vector.x(b), Vector.y(a), Vector.z(b));
+        let v110 = Vector.NewVector(Vector.x(b), Vector.y(b), Vector.z(a));
+        let v111 = Vector.NewVector(Vector.x(b), Vector.y(b), Vector.z(b));
         let triangles = [
             Triangle.NewTriangle(v000, v100, v110, z, z, z, m),
             Triangle.NewTriangle(v000, v110, v010, z, z, z, m),

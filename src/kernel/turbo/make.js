@@ -47,7 +47,7 @@ compiler.compile({
     sources: [path.resolve(__dirname, "xray-kernel-turbo.tts")],
     options: {
         bundle: true,
-        moduleName: "xray",
+        moduleName: "XRAY",
         outDir: __dirname,
         outFile: "xray-kernel-turbo.ts",
         target: turbo.CompilerTarget.TypeScript

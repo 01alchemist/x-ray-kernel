@@ -37,6 +37,34 @@ export class Ray{
         return new Ray(this.origin, Utils.Cone(this.direction, theta, u, v));
     }
 
+
+    bounce2(info:HitInfo, p:number, u:number, v:number):{ray:Ray,reflected:boolean} {
+        var n:Ray = info.Ray;F
+        let material = info.Material;
+        let n1 = 1.0;
+        let n2 = Material.Index(material);
+        let gloss = Material.Gloss(material);
+        let transparent = Material.Transparent(material);
+
+        if (info.Inside) {
+            var _n1 = n1;
+            n1 = n2;
+            n2 = _n1;
+        }
+        if (p < n.reflectance(this, n1, n2)) {
+            var reflected:Ray = n.reflect(this);
+            var ray:Ray = reflected.coneBounce(gloss, u, v);
+            return {ray: ray, reflected: true};
+        } else if (transparent) {
+            var refracted = n.Refract(this, n1, n2);
+            var ray = refracted.coneBounce(gloss, u, v);
+            return {ray: ray, reflected: true};
+        } else {
+            var ray:Ray = n.weightedBounce(u, v);
+            return {ray: ray, reflected: false};
+        }
+    }
+
     bounce(info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, coefficient:number} {
         let n:Ray = info.Ray;
         let material = info.Material;

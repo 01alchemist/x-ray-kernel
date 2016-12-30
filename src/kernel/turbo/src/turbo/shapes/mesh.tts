@@ -33,7 +33,7 @@
 	}
 
     @virtual Type(SELF:number){
-        throw ShapeType.MESH;
+        return ShapeType.MESH;
     }
 
     @virtual ToJSON(SELF){

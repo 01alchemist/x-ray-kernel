@@ -35,15 +35,15 @@
 
     static NewTexture(im:number /*Image*/):number /*Texture*/{
         let size:number = Box.Max(Image.Bounds(im));
-        let data:number = @new Color.Array(Vector.X(size) * Vector.Y(size));
-        for (let y:number = 0; y < Vector.Y(size); y++) {
-            for (let x:number = 0; x < Vector.X(size); x++) {
-                let index = y * Vector.X(size) + x;
+        let data:number = @new Color.Array(Vector.x(size) * Vector.y(size));
+        for (let y:number = 0; y < Vector.y(size); y++) {
+            for (let x:number = 0; x < Vector.x(size); x++) {
+                let index = y * Vector.x(size) + x;
                 Color.Array.setAt(data, index, Color.Pow(Image.At(im, x, y), 2.2) );
             }
         }
         let ptr:number = @new Texture;
-        return Texture.init(ptr, Vector.X(size), Vector.Y(size), data);
+        return Texture.init(ptr, Vector.x(size), Vector.y(size), data);
     }
 
     Pow(t:number, a:number):number {
@@ -78,14 +78,14 @@
         
         let _ = Utils.Modf(u * w);
         
-        let X = _.int;
+        let x = _.int;
         let x = _.frac;
         _ = Utils.Modf(v * h);
-        let Y = _.int;
+        let y = _.int;
         let y = _.frac;
 
-        let x0:number = parseInt(X);
-        let y0:number = parseInt(Y);
+        let x0:number = parseInt(x);
+        let y0:number = parseInt(y);
         let x1:number = x0 + 1;
         let y1:number = y0 + 1;
         let c00:number = Color.Array.at(data, y0 * Width + x0);
@@ -109,7 +109,7 @@
 
     static NormalSample(t:number, u:number, v:number, c?:number):Vector3 {
         let c = Texture.Sample(t, u, v);
-        return new Vector3(Color.R(c) * 2 - 1, Color.G(c) * 2 - 1, Color.B(c) * 2 - 1).normalize();
+        return new Vector3(Color.r(c) * 2 - 1, Color.g(c) * 2 - 1, Color.b(c) * 2 - 1).normalize();
     }
 
     static BumpSample(t:number, u:number, v:number, c?:number):Vector3 {
@@ -127,7 +127,7 @@
         let y2 = Utils.ClampInt(y+1, 0, Height-1);
         let cx = Color.Sub_mem(Color.Array.at(data, y * Width + x1), Color.Array.at(data, y * Width + x2));
         let cy = Color.Sub_mem(Color.Array.at(data, y1 * Width + x), Color.Array.at(data, y2 * Width + x));
-        return new Vector3(Color.R(cx), Color.R(cy), 0);
+        return new Vector3(Color.r(cx), Color.r(cy), 0);
     }
 
 } @end

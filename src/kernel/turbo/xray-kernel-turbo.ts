@@ -14,10 +14,11 @@ class MemoryObject {
    }
 }
 
-namespace xray {
+namespace XRAY {
 // Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
+///<reference path="./src/declaration.d.ts" />
 type float32 = number;
 type float64 = number;
 
@@ -36,25 +37,25 @@ const EPS:number = 1e-9;
 const SENTINEL:number = 1e32;
 
 function xy(x:number, y:number) {
-    return {X: x, Y: y};
+    return {x: x, y: y};
 }
 function xyz(x:number, y:number, z:number) {
-    return {X: x, Y: y, Z: z};
+    return {x: x, y: y, z: z};
 }
 function xyzw(x:number, y:number, z:number, w:number) {
-    return {X: x, Y: y, Z: z, W: w};
+    return {x: x, y: y, z: z, W: w};
 }
 function F3(a:number, b:number, c:number) {
-    return {A: a, B: b, C: c};
+    return {A: a, b: b, C: c};
 }
 function rgb(r:number, g:number, b:number) {
-    return {R: r, G: g, B: b};
+    return {r: r, g: g, b: b};
 }
 function ray(origin:number, direction:number) {
     return {Origin: origin, Direction: direction};
 }
 function free(ptr){
-    turbo.Runtime.free(ptr);
+    unsafe.free(ptr);
 }
 // const black = DL3(0,0,0);
 
@@ -100,15 +101,15 @@ export enum Axis{
 }
 
 type RGBA  = {
-    R:number,
-    G:number,
-    B:number,
+    r:number,
+    g:number,
+    b:number,
     A:number
 };
 type RGB = {
-    R:number,
-    G:number,
-    B:number
+    r:number,
+    g:number,
+    b:number
 };
 
 export class Color extends MemoryObject{
@@ -125,35 +126,35 @@ export class Color extends MemoryObject{
        super(p);
    }
 
-    static init(SELF:number, color = {R:0,G:0,B:0}):number {
-		 turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (color.R); 
-		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (color.G); 
-		 turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (color.B); 
+    static init(SELF:number, color = {r:0,g:0,b:0}):number {
+		 unsafe._mem_f64[(SELF + 8) >> 3] = (color.r); 
+		 unsafe._mem_f64[(SELF + 16) >> 3] = (color.g); 
+		 unsafe._mem_f64[(SELF + 24) >> 3] = (color.b); 
 		return SELF;
 	}
 
-    static Init_mem(SELF:number, R:number = 0,G:number = 0,B:number = 0):number {
-		 turbo.Runtime._mem_float64[(SELF + 8) >> 3] = R; 
-		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = G; 
-		 turbo.Runtime._mem_float64[(SELF + 24) >> 3] = B; 
+    static Init_mem(SELF:number, r:number = 0,g:number = 0,b:number = 0):number {
+		 unsafe._mem_f64[(SELF + 8) >> 3] = r; 
+		 unsafe._mem_f64[(SELF + 16) >> 3] = g; 
+		 unsafe._mem_f64[(SELF + 24) >> 3] = b; 
 		return SELF;
 	}
 
-    static NewColor(color?,G:number = 0,B:number = 0):number {
-        let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+    static NewColor(color?,g:number = 0,b:number = 0):number {
+        let ptr:number = Color.initInstance(unsafe.alloc(32,8));
         if(typeof color === "object"){
             return Color.init(ptr, color);
         }else{
-            return Color.Init_mem(ptr, color, G, B);
+            return Color.Init_mem(ptr, color, g, b);
         }
     }
     
 	static HexColor(hex:number):number {
-		let R = ((hex >> 16) & 255 ) / 255;
-		let G = ((hex >> 8) & 255) / 255;
-		let B = (hex & 255) / 255;
-        let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
-		return Color.Pow_mem(Color.Init_mem(ptr, R, G, B), 2.2);
+		let r = ((hex >> 16) & 255 ) / 255;
+		let g = ((hex >> 8) & 255) / 255;
+		let b = (hex & 255) / 255;
+        let ptr:number = Color.initInstance(unsafe.alloc(32,8));
+		return Color.Pow_mem(Color.Init_mem(ptr, r, g, b), 2.2);
 	}
 
     static Kelvin(K:number):number {
@@ -163,26 +164,26 @@ export class Color extends MemoryObject{
         // red
         if(K >= 6600){
             var A = 351.97690566805693;
-            var B = 0.114206453784165;
+            var b = 0.114206453784165;
             var c = -40.25366309332127;
             var x = K/100 - 55;
-            red = A + B*x + c*Math.log(x)
+            red = A + b*x + c*Math.log(x)
         } else {
             red = 255;
         }
         // green
         if(K >= 6600){
             A = 325.4494125711974;
-            B = 0.07943456536662342;
+            b = 0.07943456536662342;
             c = -28.0852963507957;
             x = K/100 - 50;
-            green = A + B*x + c*Math.log(x)
+            green = A + b*x + c*Math.log(x)
         } else if (K >= 1000) {
             A = -155.25485562709179;
-            B = -0.44596950469579133;
+            b = -0.44596950469579133;
             c = 104.49216199393888;
             x = K/100 - 2;
-            green = A + B*x + c*Math.log(x)
+            green = A + b*x + c*Math.log(x)
         } else {
             green = 0
         }
@@ -191,266 +192,266 @@ export class Color extends MemoryObject{
             blue = 255
         } else if (K >= 2000) {
             A = -254.76935184120902;
-            B = 0.8274096064007395;
+            b = 0.8274096064007395;
             c = 115.67994401066147;
             x = K/100 - 10;
-            blue = A + B*x + c*Math.log(x)
+            blue = A + b*x + c*Math.log(x)
         } else {
             blue = 0
         }
         red = Math.min(1, red/255);
         green = Math.min(1, green/255);
         blue = Math.min(1, blue/255);
-        let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        let ptr:number = Color.initInstance(unsafe.alloc(32,8));
         return Color.Init_mem(ptr, red, green, blue);
     }
 
     static FloatRGBA(SELF:number):RGBA {
         return {
-            R: turbo.Runtime._mem_float64[(SELF + 8) >> 3],
-            G: turbo.Runtime._mem_float64[(SELF + 16) >> 3],
-            B: turbo.Runtime._mem_float64[(SELF + 24) >> 3],
+            r: unsafe._mem_f64[(SELF + 8) >> 3],
+            g: unsafe._mem_f64[(SELF + 16) >> 3],
+            b: unsafe._mem_f64[(SELF + 24) >> 3],
             A: 1.0
         };
     }
 
     static RGB(SELF:number):RGB {
         let _d:Uint8ClampedArray = new Uint8ClampedArray([
-            turbo.Runtime._mem_float64[(SELF + 8) >> 3] * 255,
-            turbo.Runtime._mem_float64[(SELF + 16) >> 3] * 255,
-            turbo.Runtime._mem_float64[(SELF + 24) >> 3] * 255
+            unsafe._mem_f64[(SELF + 8) >> 3] * 255,
+            unsafe._mem_f64[(SELF + 16) >> 3] * 255,
+            unsafe._mem_f64[(SELF + 24) >> 3] * 255
         ]);
         return rgb(_d[0], _d[1], _d[2]);
     }
 
     static RGBA(SELF:number):RGBA {
         let _d:Uint8ClampedArray = new Uint8ClampedArray([
-            turbo.Runtime._mem_float64[(SELF + 8) >> 3] * 255,
-            turbo.Runtime._mem_float64[(SELF + 16) >> 3] * 255,
-            turbo.Runtime._mem_float64[(SELF + 24) >> 3] * 255
+            unsafe._mem_f64[(SELF + 8) >> 3] * 255,
+            unsafe._mem_f64[(SELF + 16) >> 3] * 255,
+            unsafe._mem_f64[(SELF + 24) >> 3] * 255
         ]);
         return {
-            R: _d[0],
-            G: _d[1],
-            B: _d[2],
+            r: _d[0],
+            g: _d[1],
+            b: _d[2],
             A: 255
         };
     }
 
     static RGBA64(SELF:number):RGBA {
         return {
-            R: Math.round(Math.max(0, Math.min(65535, turbo.Runtime._mem_float64[(SELF + 8) >> 3] * 65535))),
-            G: Math.round(Math.max(0, Math.min(65535, turbo.Runtime._mem_float64[(SELF + 16) >> 3] * 65535))),
-            B: Math.round(Math.max(0, Math.min(65535, turbo.Runtime._mem_float64[(SELF + 24) >> 3] * 65535))),
+            r: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 8) >> 3] * 65535))),
+            g: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 16) >> 3] * 65535))),
+            b: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 24) >> 3] * 65535))),
             A: 65535
         };
     }
     
-    static Add(A:RGBA, B:RGBA):RGB { return rgb(A.R + B.R, A.G + B.G, A.B + B.B); }
+    static Add(A:RGBA, b:RGBA):RGB { return rgb(A.r + b.r, A.g + b.g, A.b + b.b); }
 
     /**
      *
      * @param A Color 1
-     * @param B Color 2
+     * @param b Color 2
      * @param C result Color
      * @returns {number}
      * @constructor
      */
-    static Add_mem(A:number, B:number, C?:number):number {
+    static Add_mem(A:number, b:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[(A + 8) >> 3] + turbo.Runtime._mem_float64[(B + 8) >> 3];
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[(A + 16) >> 3] + turbo.Runtime._mem_float64[(B + 16) >> 3];
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[(A + 24) >> 3] + turbo.Runtime._mem_float64[(B + 24) >> 3];
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(A + 8) >> 3] + turbo.Runtime._mem_float64[(B + 8) >> 3],
-                turbo.Runtime._mem_float64[(A + 16) >> 3] + turbo.Runtime._mem_float64[(B + 16) >> 3],
-                turbo.Runtime._mem_float64[(A + 24) >> 3] + turbo.Runtime._mem_float64[(B + 24) >> 3]
+                unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
-    static Sub(A:RGBA, B:RGBA):RGB { return rgb(A.R - B.R, A.G - B.G, A.B - B.B); }
-    static Sub_mem(A:number, B:number, C?:number):number {
+    static Sub(A:RGBA, b:RGBA):RGB { return rgb(A.r - b.r, A.g - b.g, A.b - b.b); }
+    static Sub_mem(A:number, b:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[(A + 8) >> 3] - turbo.Runtime._mem_float64[(B + 8) >> 3];
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[(A + 16) >> 3] - turbo.Runtime._mem_float64[(B + 16) >> 3];
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[(A + 24) >> 3] - turbo.Runtime._mem_float64[(B + 24) >> 3];
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(A + 8) >> 3] - turbo.Runtime._mem_float64[(B + 8) >> 3],
-                turbo.Runtime._mem_float64[(A + 16) >> 3] - turbo.Runtime._mem_float64[(B + 16) >> 3],
-                turbo.Runtime._mem_float64[(A + 24) >> 3] - turbo.Runtime._mem_float64[(B + 24) >> 3]
+                unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
     
-    static Mul(A:RGBA, B:Color3):RGB { return rgb(A.R * B.R, A.G * B.G, A.B * B.B); }
-    static Mul2(A:number, B:Color3):Color3 {
+    static Mul(A:RGBA, b:Color3):RGB { return rgb(A.r * b.r, A.g * b.g, A.b * b.b); }
+    static Mul2(A:number, b:Color3):Color3 {
         return new Color3(
-            turbo.Runtime._mem_float64[(A + 8) >> 3] * B.R,
-            turbo.Runtime._mem_float64[(A + 16) >> 3] * B.G,
-            turbo.Runtime._mem_float64[(A + 24) >> 3] * B.B
+            unsafe._mem_f64[(A + 8) >> 3] * b.r,
+            unsafe._mem_f64[(A + 16) >> 3] * b.g,
+            unsafe._mem_f64[(A + 24) >> 3] * b.b
         );
     }
-    static Mul_mem(A:number, B:number, C?:number):number {
+    static Mul_mem(A:number, b:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[(A + 8) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3];
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[(A + 16) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3];
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[(A + 24) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3];
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(A + 8) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3],
-                turbo.Runtime._mem_float64[(A + 16) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3],
-                turbo.Runtime._mem_float64[(A + 24) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3]
+                unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
-    static MulScalar(A:RGBA, f:number):RGB { return rgb(A.R * f, A.G * f, A.B * f); }
+    static MulScalar(A:RGBA, f:number):RGB { return rgb(A.r * f, A.g * f, A.b * f); }
     static MulScalar2(A:number, f:number):Color3 {
         return new Color3(
-            turbo.Runtime._mem_float64[(A + 8) >> 3] * f,
-            turbo.Runtime._mem_float64[(A + 16) >> 3] * f,
-            turbo.Runtime._mem_float64[(A + 24) >> 3] * f
+            unsafe._mem_f64[(A + 8) >> 3] * f,
+            unsafe._mem_f64[(A + 16) >> 3] * f,
+            unsafe._mem_f64[(A + 24) >> 3] * f
         );
     }
     static MulScalar_mem(A:number, f:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[(A + 8) >> 3] * f;
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[(A + 16) >> 3] * f;
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[(A + 24) >> 3] * f;
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * f;
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * f;
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * f;
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(A + 8) >> 3] * f,
-                turbo.Runtime._mem_float64[(A + 16) >> 3] * f,
-                turbo.Runtime._mem_float64[(A + 24) >> 3] * f
+                unsafe._mem_f64[(A + 8) >> 3] * f,
+                unsafe._mem_f64[(A + 16) >> 3] * f,
+                unsafe._mem_f64[(A + 24) >> 3] * f
             );
         }
     }
 
-    static DivScalar(A:RGBA, f:number):RGB { return rgb(A.R / f, A.G / f, A.B / f); }
+    static DivScalar(A:RGBA, f:number):RGB { return rgb(A.r / f, A.g / f, A.b / f); }
     static DivScalar_mem(A:number, f:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[(A + 8) >> 3] / f;
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[(A + 16) >> 3] / f;
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[(A + 24) >> 3] / f;
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] / f;
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] / f;
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] / f;
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(A + 8) >> 3] / f,
-                turbo.Runtime._mem_float64[(A + 16) >> 3] / f,
-                turbo.Runtime._mem_float64[(A + 24) >> 3] / f
+                unsafe._mem_f64[(A + 8) >> 3] / f,
+                unsafe._mem_f64[(A + 16) >> 3] / f,
+                unsafe._mem_f64[(A + 24) >> 3] / f
             );
         }
     }
 
-    static Min(A:RGBA, B:RGBA):RGB { return rgb( Math.min(A.R , B.R), Math.min(A.G , B.G), Math.min(A.B , B.B) ); }
-    static Min_mem(A:number, B:number, C?:number):number {
+    static Min(A:RGBA, b:RGBA):RGB { return rgb( Math.min(A.r , b.r), Math.min(A.g , b.g), Math.min(A.b , b.b) ); }
+    static Min_mem(A:number, b:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = Math.min(turbo.Runtime._mem_float64[(A + 8) >> 3] , turbo.Runtime._mem_float64[(B + 8) >> 3]);
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = Math.min(turbo.Runtime._mem_float64[(A + 16) >> 3] , turbo.Runtime._mem_float64[(B + 16) >> 3]);
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = Math.min(turbo.Runtime._mem_float64[(A + 24) >> 3] , turbo.Runtime._mem_float64[(B + 24) >> 3]);
+            unsafe._mem_f64[(C + 8) >> 3] = Math.min(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(C + 16) >> 3] = Math.min(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(C + 24) >> 3] = Math.min(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.min(turbo.Runtime._mem_float64[(A + 8) >> 3] , turbo.Runtime._mem_float64[(B + 8) >> 3]),
-                Math.min(turbo.Runtime._mem_float64[(A + 16) >> 3] , turbo.Runtime._mem_float64[(B + 16) >> 3]),
-                Math.min(turbo.Runtime._mem_float64[(A + 24) >> 3] , turbo.Runtime._mem_float64[(B + 24) >> 3])
+                Math.min(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.min(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.min(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static Max(A:RGBA, B:RGBA):RGB {return rgb( Math.max(A.R , B.R), Math.max(A.G , B.G), Math.max(A.B , B.B) );}
-    static Max_mem(A:number, B:number, C?:number):number {
+    static Max(A:RGBA, b:RGBA):RGB {return rgb( Math.max(A.r , b.r), Math.max(A.g , b.g), Math.max(A.b , b.b) );}
+    static Max_mem(A:number, b:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = Math.max(turbo.Runtime._mem_float64[(A + 8) >> 3] , turbo.Runtime._mem_float64[(B + 8) >> 3]);
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = Math.max(turbo.Runtime._mem_float64[(A + 16) >> 3] , turbo.Runtime._mem_float64[(B + 16) >> 3]);
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = Math.max(turbo.Runtime._mem_float64[(A + 24) >> 3] , turbo.Runtime._mem_float64[(B + 24) >> 3]);
+            unsafe._mem_f64[(C + 8) >> 3] = Math.max(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(C + 16) >> 3] = Math.max(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(C + 24) >> 3] = Math.max(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.max(turbo.Runtime._mem_float64[(A + 8) >> 3] , turbo.Runtime._mem_float64[(B + 8) >> 3]),
-                Math.max(turbo.Runtime._mem_float64[(A + 16) >> 3] , turbo.Runtime._mem_float64[(B + 16) >> 3]),
-                Math.max(turbo.Runtime._mem_float64[(A + 24) >> 3] , turbo.Runtime._mem_float64[(B + 24) >> 3])
+                Math.max(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.max(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.max(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static MinComponent(A:RGBA):number {return Math.min(Math.min(A.R, A.G), A.B)}
+    static MinComponent(A:RGBA):number {return Math.min(Math.min(A.r, A.g), A.b)}
     static MinComponent_mem(A:number) {
-        return Math.min( Math.min(turbo.Runtime._mem_float64[(A + 8) >> 3], turbo.Runtime._mem_float64[(A + 16) >> 3]), turbo.Runtime._mem_float64[(A + 24) >> 3] );
+        return Math.min( Math.min(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3] );
     }
 
-    static MaxComponent(A:RGBA):number { return Math.max(Math.max(A.R, A.G), A.B) }
+    static MaxComponent(A:RGBA):number { return Math.max(Math.max(A.r, A.g), A.b) }
     static MaxComponent_mem(A:number):number {
-        return Math.max( Math.max(turbo.Runtime._mem_float64[(A + 8) >> 3], turbo.Runtime._mem_float64[(A + 16) >> 3]), turbo.Runtime._mem_float64[(A + 24) >> 3] );
+        return Math.max( Math.max(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3] );
     }
 
-    static Pow(A:RGBA, f:number):RGB {return rgb( Math.pow(A.R, f), Math.pow(A.G, f), Math.pow(A.B, f) );}
+    static Pow(A:RGBA, f:number):RGB {return rgb( Math.pow(A.r, f), Math.pow(A.g, f), Math.pow(A.b, f) );}
     static Pow_mem(A:number, f:number, C?:number):number {
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = Math.pow(turbo.Runtime._mem_float64[(A + 8) >> 3] , f);
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = Math.pow(turbo.Runtime._mem_float64[(A + 16) >> 3] , f);
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = Math.pow(turbo.Runtime._mem_float64[(A + 24) >> 3] , f);
+            unsafe._mem_f64[(C + 8) >> 3] = Math.pow(unsafe._mem_f64[(A + 8) >> 3] , f);
+            unsafe._mem_f64[(C + 16) >> 3] = Math.pow(unsafe._mem_f64[(A + 16) >> 3] , f);
+            unsafe._mem_f64[(C + 24) >> 3] = Math.pow(unsafe._mem_f64[(A + 24) >> 3] , f);
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.pow(turbo.Runtime._mem_float64[(A + 8) >> 3] , f),
-                Math.pow(turbo.Runtime._mem_float64[(A + 16) >> 3] , f),
-                Math.pow(turbo.Runtime._mem_float64[(A + 24) >> 3] , f)
+                Math.pow(unsafe._mem_f64[(A + 8) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(A + 16) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(A + 24) >> 3] , f)
             );
         }
     }
 
-    static Mix(A:RGBA, B:RGBA, pct:number):RGB {
+    static Mix(A:RGBA, b:RGBA, pct:number):RGB {
         let _a = Color.MulScalar(A, 1 - pct);
-        let _b = Color.MulScalar(B, pct);
-        return rgb(_a.R + _b.R, _a.G + _b.G, _a.B + _b.B);
+        let _b = Color.MulScalar(b, pct);
+        return rgb(_a.r + _b.r, _a.g + _b.g, _a.b + _b.b);
     }
-    static Mix_mem(A:number, B:number, pct:number, C?:number):number {
+    static Mix_mem(A:number, b:number, pct:number, C?:number):number {
 
         let _a:number = Color.MulScalar_mem(A, 1 - pct);
-        let _b:number = Color.MulScalar_mem(B, pct);
+        let _b:number = Color.MulScalar_mem(b, pct);
 
         if(C){
-            turbo.Runtime._mem_float64[(C + 8) >> 3] = turbo.Runtime._mem_float64[((_a) + 8) >> 3] + turbo.Runtime._mem_float64[((_b) + 8) >> 3];
-            turbo.Runtime._mem_float64[(C + 16) >> 3] = turbo.Runtime._mem_float64[((_a) + 16) >> 3] + turbo.Runtime._mem_float64[((_b) + 16) >> 3];
-            turbo.Runtime._mem_float64[(C + 24) >> 3] = turbo.Runtime._mem_float64[((_a) + 24) >> 3] + turbo.Runtime._mem_float64[((_b) + 24) >> 3];
+            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3];
+            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3];
+            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3];
             return C;
         }else{
-            let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[((_a) + 8) >> 3] + turbo.Runtime._mem_float64[((_b) + 8) >> 3],
-                turbo.Runtime._mem_float64[((_a) + 16) >> 3] + turbo.Runtime._mem_float64[((_b) + 16) >> 3],
-                turbo.Runtime._mem_float64[((_a) + 24) >> 3] + turbo.Runtime._mem_float64[((_b) + 24) >> 3]
+                unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3],
+                unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3],
+                unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3]
             );
         }
     }
 
-    static IsEqual(A:number, B:number):boolean{
-        return turbo.Runtime._mem_float64[(A + 8) >> 3] === turbo.Runtime._mem_float64[(B + 8) >> 3] && turbo.Runtime._mem_float64[(A + 16) >> 3] === turbo.Runtime._mem_float64[(B + 16) >> 3] && turbo.Runtime._mem_float64[(A + 24) >> 3] === turbo.Runtime._mem_float64[(B + 24) >> 3];
+    static IsEqual(A:number, b:number):boolean{
+        return unsafe._mem_f64[(A + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(A + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(A + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
     }
 
     static IsBlack(A:number):boolean{
@@ -460,16 +461,16 @@ export class Color extends MemoryObject{
     static IsWhite(A:number):boolean{
         return Color.IsEqual(A, Color.WHITE);
     }
-    static Set(SELF:number, R:number, G:number, B:number) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = R; 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = G; 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = B; 
+    static Set(SELF:number, r:number, g:number, b:number) {
+         unsafe._mem_f64[(SELF + 8) >> 3] = r; 
+         unsafe._mem_f64[(SELF + 16) >> 3] = g; 
+         unsafe._mem_f64[(SELF + 24) >> 3] = b; 
         return SELF;
     }
 
     static Clone(SELF:number, c?:number):number {
-        let ptr:number = c?c:Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
-        return Color.Init_mem(ptr, turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3]);
+        let ptr:number = c?c:Color.initInstance(unsafe.alloc(32,8));
+        return Color.Init_mem(ptr, unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3]);
     }
 
     static get BLACK():number{
@@ -497,7 +498,7 @@ export class Color extends MemoryObject{
     ];
 
     static Random():number {
-        let ptr:number = Color.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        let ptr:number = Color.initInstance(unsafe.alloc(32,8));
         return Color.Init_mem(ptr, Math.random(), Math.random(), Math.random());
     }
 
@@ -514,16 +515,20 @@ export class Color extends MemoryObject{
         var i:number = Math.round(Math.random() * Color.RGBAColors.length);
         return Color.RGBAColors[i];
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=194603; return SELF; }
+
+    static toColor3(SELF){
+        return new Color3(unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3]);
+    }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=194603; return SELF; }
 }
-turbo.Runtime._idToType[194603] = Color;
+unsafe._idToType[194603] = Color;
 
 
 
 export type XYZ = {
-    X:number,
-    Y:number,
-    Z:number
+    x:number,
+    y:number,
+    z:number
 };
 
 export class Vector extends MemoryObject{
@@ -540,43 +545,43 @@ export class Vector extends MemoryObject{
        super(p);
    }
 
-    static init(SELF:number, vector = {X:0,Y:0,Z:0}):number {
-		 turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (vector.X); 
-		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (vector.Y); 
-		 turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (vector.Z); 
+    static init(SELF:number, vector = {x:0,y:0,z:0}):number {
+		 unsafe._mem_f64[(SELF + 8) >> 3] = (vector.x); 
+		 unsafe._mem_f64[(SELF + 16) >> 3] = (vector.y); 
+		 unsafe._mem_f64[(SELF + 24) >> 3] = (vector.z); 
 		return SELF;
 	}
 
-    static Init_mem(SELF:number, X:number = 0,Y:number = 0,Z:number = 0):number {
-		 turbo.Runtime._mem_float64[(SELF + 8) >> 3] = X; 
-		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = Y; 
-		 turbo.Runtime._mem_float64[(SELF + 24) >> 3] = Z; 
+    static Init_mem(SELF:number, x:number = 0,y:number = 0,z:number = 0):number {
+		 unsafe._mem_f64[(SELF + 8) >> 3] = x; 
+		 unsafe._mem_f64[(SELF + 16) >> 3] = y; 
+		 unsafe._mem_f64[(SELF + 24) >> 3] = z; 
 		return SELF;
 	}
 
-    static NewVector(vector?,Y:number=0,Z:number=0):number {
-        let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+    static NewVector(vector?,y:number=0,z:number=0):number {
+        let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
         if(typeof vector === "object"){
             return Vector.init(ptr, vector);
         }else{
-            return Vector.Init_mem(ptr, vector, Y, Z);
+            return Vector.Init_mem(ptr, vector, y, z);
         }
     }
 
     static ToJSON(SELF){
         return {
-            X:turbo.Runtime._mem_float64[(SELF + 8) >> 3],
-            Y:turbo.Runtime._mem_float64[(SELF + 16) >> 3],
-            Z:turbo.Runtime._mem_float64[(SELF + 24) >> 3]
+            x:unsafe._mem_f64[(SELF + 8) >> 3],
+            y:unsafe._mem_f64[(SELF + 16) >> 3],
+            z:unsafe._mem_f64[(SELF + 24) >> 3]
         };
     }
 
     static XYZ(a:number):XYZ {
-        return xyz(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        return xyz(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
     }
 
     static RandomUnitVector():number {
-        let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
 
         let x = Math.random() * 2 - 1;
         let y = Math.random() * 2 - 1;
@@ -591,11 +596,11 @@ export class Vector extends MemoryObject{
     }
 
     static Length(a:XYZ):number {
-        return Math.sqrt((a.X * a.X) + (a.Y * a.Y) + (a.Z * a.Z));
+        return Math.sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z));
     }
 
     static Length_mem(a:number):number {
-        return Math.sqrt(turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(a + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(a + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        return Math.sqrt(unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(a + 24) >> 3]);
     }
 
     static LengthN(a:XYZ, n:number):number {
@@ -604,7 +609,7 @@ export class Vector extends MemoryObject{
         }
         a = Vector.Abs(a);
         return Math.pow(
-            Math.pow(a.X, n) + Math.pow(a.Y, n) + Math.pow(a.Z, n),
+            Math.pow(a.x, n) + Math.pow(a.y, n) + Math.pow(a.z, n),
             1/n
         );
     }
@@ -615,325 +620,325 @@ export class Vector extends MemoryObject{
         }
         a = Vector.Abs_mem(a);
         return Math.pow(
-            Math.pow(turbo.Runtime._mem_float64[(a + 8) >> 3], n) + Math.pow(turbo.Runtime._mem_float64[(a + 16) >> 3], n) + Math.pow(turbo.Runtime._mem_float64[(a + 24) >> 3], n),
+            Math.pow(unsafe._mem_f64[(a + 8) >> 3], n) + Math.pow(unsafe._mem_f64[(a + 16) >> 3], n) + Math.pow(unsafe._mem_f64[(a + 24) >> 3], n),
             1/n
         );
     }
 
-    static Dot(a:XYZ, B:XYZ):number {
-        return (a.X * B.X) + (a.Y * B.Y) + (a.Z * B.Z);
+    static Dot(a:XYZ, b:XYZ):number {
+        return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
     }
 
-    static Dot_mem(a:number, B:number):number {
-        return (turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3]) + (turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3]) + (turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3]);
+    static Dot_mem(a:number, b:number):number {
+        return (unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3]) + (unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3]) + (unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]);
     }
 
-    static Cross(a:XYZ, B:XYZ):XYZ {
-        let x:number = (a.Y * B.Z) - (a.Z * B.Y);
-        let y:number = (a.Z * B.X) - (a.X * B.Z);
-        let z:number = (a.X * B.Y) - (a.Y * B.X);
+    static Cross(a:XYZ, b:XYZ):XYZ {
+        let x:number = (a.y * b.z) - (a.z * b.y);
+        let y:number = (a.z * b.x) - (a.x * b.z);
+        let z:number = (a.x * b.y) - (a.y * b.x);
         return xyz(x, y, z);
     }
 
-    static Cross_mem(a:number, B:number, c?:number):number {
-        let x:number = (turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3]) - (turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3]);
-        let y:number = (turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3]) - (turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(B + 24) >> 3]);
-        let z:number = (turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(B + 16) >> 3]) - (turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(B + 8) >> 3]);
+    static Cross_mem(a:number, b:number, c?:number):number {
+        let x:number = (unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 24) >> 3]) - (unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 16) >> 3]);
+        let y:number = (unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 8) >> 3]) - (unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 24) >> 3]);
+        let z:number = (unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 16) >> 3]) - (unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 8) >> 3]);
 
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = x;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = y;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = z;
+            unsafe._mem_f64[(c + 8) >> 3] = x;
+            unsafe._mem_f64[(c + 16) >> 3] = y;
+            unsafe._mem_f64[(c + 24) >> 3] = z;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(ptr, x, y, z);
         }
     }
 
     static Normalize(a:XYZ):XYZ {
         let d:number = Vector.Length(a);
-        return xyz(a.X / d, a.Y / d, a.Z / d);
+        return xyz(a.x / d, a.y / d, a.z / d);
     }
 
     static Normalize_mem(a:number, c?:number):number {
         let d:number = Vector.Length_mem(a);
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] / d;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] / d;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] / d;
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] / d;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] / d;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] / d;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-            return Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(a + 8) >> 3] / d, turbo.Runtime._mem_float64[(a + 16) >> 3] / d, turbo.Runtime._mem_float64[(a + 24) >> 3] / d);
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
+            return Vector.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] / d, unsafe._mem_f64[(a + 16) >> 3] / d, unsafe._mem_f64[(a + 24) >> 3] / d);
         }
     }
 
     static Negate(a:XYZ):XYZ {
-        return xyz(-a.X, -a.Y, -a.Z);
+        return xyz(-a.x, -a.y, -a.z);
     }
 
     static Negate_mem(a:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = -turbo.Runtime._mem_float64[(a + 8) >> 3];
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = -turbo.Runtime._mem_float64[(a + 16) >> 3];
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = -turbo.Runtime._mem_float64[(a + 24) >> 3];
+            unsafe._mem_f64[(c + 8) >> 3] = -unsafe._mem_f64[(a + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = -unsafe._mem_f64[(a + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = -unsafe._mem_f64[(a + 24) >> 3];
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                -turbo.Runtime._mem_float64[(a + 8) >> 3],
-                -turbo.Runtime._mem_float64[(a + 16) >> 3],
-                -turbo.Runtime._mem_float64[(a + 24) >> 3]
+                -unsafe._mem_f64[(a + 8) >> 3],
+                -unsafe._mem_f64[(a + 16) >> 3],
+                -unsafe._mem_f64[(a + 24) >> 3]
             );
         }
     }
 
     static Abs(a:XYZ):XYZ {
-        return xyz(Math.abs(a.X), Math.abs(a.Y), Math.abs(a.Z));
+        return xyz(Math.abs(a.x), Math.abs(a.y), Math.abs(a.z));
     }
 
     static Abs_mem(a:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = Math.abs(turbo.Runtime._mem_float64[(a + 8) >> 3]);
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = Math.abs(turbo.Runtime._mem_float64[(a + 16) >> 3]);
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = Math.abs(turbo.Runtime._mem_float64[(a + 24) >> 3]);
+            unsafe._mem_f64[(c + 8) >> 3] = Math.abs(unsafe._mem_f64[(a + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.abs(unsafe._mem_f64[(a + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.abs(unsafe._mem_f64[(a + 24) >> 3]);
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                Math.abs(turbo.Runtime._mem_float64[(a + 8) >> 3]),
-                Math.abs(turbo.Runtime._mem_float64[(a + 16) >> 3]),
-                Math.abs(turbo.Runtime._mem_float64[(a + 24) >> 3])
+                Math.abs(unsafe._mem_f64[(a + 8) >> 3]),
+                Math.abs(unsafe._mem_f64[(a + 16) >> 3]),
+                Math.abs(unsafe._mem_f64[(a + 24) >> 3])
             );
         }
     }
-    static Add(a:XYZ, b:XYZ):XYZ { return xyz(a.X + b.X, a.Y + b.Y, a.Z + b.Z); }
+    static Add(a:XYZ, b:XYZ):XYZ { return xyz(a.x + b.x, a.y + b.y, a.z + b.z); }
 
     static Add_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] + turbo.Runtime._mem_float64[(b + 8) >> 3];
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] + turbo.Runtime._mem_float64[(b + 16) >> 3];
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] + turbo.Runtime._mem_float64[(b + 24) >> 3];
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] + turbo.Runtime._mem_float64[(b + 8) >> 3],
-                turbo.Runtime._mem_float64[(a + 16) >> 3] + turbo.Runtime._mem_float64[(b + 16) >> 3],
-                turbo.Runtime._mem_float64[(a + 24) >> 3] + turbo.Runtime._mem_float64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
     static Sub_12(a:number, b:Vector3):Vector3 {
-        return new Vector3(turbo.Runtime._mem_float64[(a + 8) >> 3] - b.x, turbo.Runtime._mem_float64[(a + 16) >> 3] - b.y, turbo.Runtime._mem_float64[(a + 24) >> 3] - b.z);
+        return new Vector3(unsafe._mem_f64[(a + 8) >> 3] - b.x, unsafe._mem_f64[(a + 16) >> 3] - b.y, unsafe._mem_f64[(a + 24) >> 3] - b.z);
     }
 
     static Sub_21(a:number, b:Vector3):Vector3 {
-        return new Vector3(a.x - turbo.Runtime._mem_float64[(b + 8) >> 3], a.y - turbo.Runtime._mem_float64[(b + 16) >> 3], a.z - turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        return new Vector3(a.x - unsafe._mem_f64[(b + 8) >> 3], a.y - unsafe._mem_f64[(b + 16) >> 3], a.z - unsafe._mem_f64[(b + 24) >> 3]);
     }
     static Sub_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] - turbo.Runtime._mem_float64[(b + 8) >> 3];
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] - turbo.Runtime._mem_float64[(b + 16) >> 3];
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] - turbo.Runtime._mem_float64[(b + 24) >> 3];
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] - turbo.Runtime._mem_float64[(b + 8) >> 3],
-                turbo.Runtime._mem_float64[(a + 16) >> 3] - turbo.Runtime._mem_float64[(b + 16) >> 3],
-                turbo.Runtime._mem_float64[(a + 24) >> 3] - turbo.Runtime._mem_float64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
     static Sub_mem_2(a:number, b:number):Vector3 {
-        return new Vector3(turbo.Runtime._mem_float64[(a + 8) >> 3] - turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3] - turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3] - turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        return new Vector3(unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]);
     }
 
-    static Mul(a:XYZ, b:XYZ):XYZ { return xyz(a.X * b.X, a.Y * b.Y, a.Z * b.Z); }
+    static Mul(a:XYZ, b:XYZ):XYZ { return xyz(a.x * b.x, a.y * b.y, a.z * b.z); }
     static Mul_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3];
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3];
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3],
-                turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3],
-                turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
     static Div_12(a:number, b:Vector3):Vector3 {
-        return new Vector3(turbo.Runtime._mem_float64[(a + 8) >> 3] / b.X, turbo.Runtime._mem_float64[(a + 16) >> 3] / b.Y, turbo.Runtime._mem_float64[(a + 24) >> 3] / b.Z);
+        return new Vector3(unsafe._mem_f64[(a + 8) >> 3] / b.x, unsafe._mem_f64[(a + 16) >> 3] / b.y, unsafe._mem_f64[(a + 24) >> 3] / b.z);
     }
 
     static Div_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] / turbo.Runtime._mem_float64[(b + 8) >> 3];
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] / turbo.Runtime._mem_float64[(b + 16) >> 3];
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] / turbo.Runtime._mem_float64[(b + 24) >> 3];
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] / unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] / unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] / unsafe._mem_f64[(b + 24) >> 3];
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] / turbo.Runtime._mem_float64[(b + 8) >> 3],
-                turbo.Runtime._mem_float64[(a + 16) >> 3] / turbo.Runtime._mem_float64[(b + 16) >> 3],
-                turbo.Runtime._mem_float64[(a + 24) >> 3] / turbo.Runtime._mem_float64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] / unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] / unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] / unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
     static Mod(a:XYZ, b:XYZ):XYZ {
         // as implemented in GLSL
-        let x = a.X - b.X * Math.floor(a.X/b.X);
-        let y = a.Y - b.Y * Math.floor(a.Y/b.Y);
-        let z = a.Z - b.Z * Math.floor(a.Z/b.Z);
+        let x = a.x - b.x * Math.floor(a.x/b.x);
+        let y = a.y - b.y * Math.floor(a.y/b.y);
+        let z = a.z - b.z * Math.floor(a.z/b.z);
         return xyz(x, y, z);
     }
 
     static Mod_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] - turbo.Runtime._mem_float64[(b + 8) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 8) >> 3]/turbo.Runtime._mem_float64[(b + 8) >> 3]);
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] - turbo.Runtime._mem_float64[(b + 16) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 16) >> 3]/turbo.Runtime._mem_float64[(b + 16) >> 3]);
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] - turbo.Runtime._mem_float64[(b + 24) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 24) >> 3]/turbo.Runtime._mem_float64[(b + 24) >> 3]);
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3] * Math.floor(unsafe._mem_f64[(a + 8) >> 3]/unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3] * Math.floor(unsafe._mem_f64[(a + 16) >> 3]/unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3] * Math.floor(unsafe._mem_f64[(a + 24) >> 3]/unsafe._mem_f64[(b + 24) >> 3]);
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] - turbo.Runtime._mem_float64[(b + 8) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 8) >> 3]/turbo.Runtime._mem_float64[(b + 8) >> 3]),
-                turbo.Runtime._mem_float64[(a + 16) >> 3] - turbo.Runtime._mem_float64[(b + 16) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 16) >> 3]/turbo.Runtime._mem_float64[(b + 16) >> 3]),
-                turbo.Runtime._mem_float64[(a + 24) >> 3] - turbo.Runtime._mem_float64[(b + 24) >> 3] * Math.floor(turbo.Runtime._mem_float64[(a + 24) >> 3]/turbo.Runtime._mem_float64[(b + 24) >> 3])
+                unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3] * Math.floor(unsafe._mem_f64[(a + 8) >> 3]/unsafe._mem_f64[(b + 8) >> 3]),
+                unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3] * Math.floor(unsafe._mem_f64[(a + 16) >> 3]/unsafe._mem_f64[(b + 16) >> 3]),
+                unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3] * Math.floor(unsafe._mem_f64[(a + 24) >> 3]/unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static AddScalar(a:XYZ, f:number):XYZ { return xyz(a.X + f, a.Y + f, a.Z + f); }
+    static AddScalar(a:XYZ, f:number):XYZ { return xyz(a.x + f, a.y + f, a.z + f); }
 
     static AddScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] + f;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] + f;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] + f;
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] + f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] + f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] + f;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] + f,
-                turbo.Runtime._mem_float64[(a + 16) >> 3] + f,
-                turbo.Runtime._mem_float64[(a + 24) >> 3] + f
+                unsafe._mem_f64[(a + 8) >> 3] + f,
+                unsafe._mem_f64[(a + 16) >> 3] + f,
+                unsafe._mem_f64[(a + 24) >> 3] + f
             );
         }
     }
 
-    static SubScalar(a:XYZ, f:number):XYZ { return xyz(a.X - f, a.Y - f, a.Z - f); }
+    static SubScalar(a:XYZ, f:number):XYZ { return xyz(a.x - f, a.y - f, a.z - f); }
 
     static SubScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] - f;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] - f;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] - f;
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] - f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] - f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] - f;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] - f,
-                turbo.Runtime._mem_float64[(a + 16) >> 3] - f,
-                turbo.Runtime._mem_float64[(a + 24) >> 3] - f
+                unsafe._mem_f64[(a + 8) >> 3] - f,
+                unsafe._mem_f64[(a + 16) >> 3] - f,
+                unsafe._mem_f64[(a + 24) >> 3] - f
             );
         }
     }
 
-    static MulScalar(a:XYZ, f:number):XYZ { return xyz(a.X * f, a.Y * f, a.Z * f); }
+    static MulScalar(a:XYZ, f:number):XYZ { return xyz(a.x * f, a.y * f, a.z * f); }
     static MulScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * f;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] * f;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] * f;
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * f;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] * f,
-                turbo.Runtime._mem_float64[(a + 16) >> 3] * f,
-                turbo.Runtime._mem_float64[(a + 24) >> 3] * f
+                unsafe._mem_f64[(a + 8) >> 3] * f,
+                unsafe._mem_f64[(a + 16) >> 3] * f,
+                unsafe._mem_f64[(a + 24) >> 3] * f
             );
         }
     }
 
-    static DivScalar(a:XYZ, f:number):XYZ { return xyz(a.X / f, a.Y / f, a.Z / f); }
+    static DivScalar(a:XYZ, f:number):XYZ { return xyz(a.x / f, a.y / f, a.z / f); }
     static DivScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] / f;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = turbo.Runtime._mem_float64[(a + 16) >> 3] / f;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = turbo.Runtime._mem_float64[(a + 24) >> 3] / f;
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] / f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] / f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] / f;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                turbo.Runtime._mem_float64[(a + 8) >> 3] / f,
-                turbo.Runtime._mem_float64[(a + 16) >> 3] / f,
-                turbo.Runtime._mem_float64[(a + 24) >> 3] / f
+                unsafe._mem_f64[(a + 8) >> 3] / f,
+                unsafe._mem_f64[(a + 16) >> 3] / f,
+                unsafe._mem_f64[(a + 24) >> 3] / f
             );
         }
     }
 
-    static Min(a:XYZ, b:XYZ):XYZ { return xyz( Math.min(a.X , b.X), Math.min(a.Y , b.Y), Math.min(a.Z , b.Z) ); }
+    static Min(a:XYZ, b:XYZ):XYZ { return xyz( Math.min(a.x , b.x), Math.min(a.y , b.y), Math.min(a.z , b.z) ); }
     static Min_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = Math.min(turbo.Runtime._mem_float64[(a + 8) >> 3] , turbo.Runtime._mem_float64[(b + 8) >> 3]);
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = Math.min(turbo.Runtime._mem_float64[(a + 16) >> 3] , turbo.Runtime._mem_float64[(b + 16) >> 3]);
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = Math.min(turbo.Runtime._mem_float64[(a + 24) >> 3] , turbo.Runtime._mem_float64[(b + 24) >> 3]);
+            unsafe._mem_f64[(c + 8) >> 3] = Math.min(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.min(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.min(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                Math.min(turbo.Runtime._mem_float64[(a + 8) >> 3] , turbo.Runtime._mem_float64[(b + 8) >> 3]),
-                Math.min(turbo.Runtime._mem_float64[(a + 16) >> 3] , turbo.Runtime._mem_float64[(b + 16) >> 3]),
-                Math.min(turbo.Runtime._mem_float64[(a + 24) >> 3] , turbo.Runtime._mem_float64[(b + 24) >> 3])
+                Math.min(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.min(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.min(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static Max(a:XYZ, b:XYZ):XYZ {return xyz( Math.max(a.X , b.X), Math.max(a.Y , b.Y), Math.max(a.Z , b.Z) );}
+    static Max(a:XYZ, b:XYZ):XYZ {return xyz( Math.max(a.x , b.x), Math.max(a.y , b.y), Math.max(a.z , b.z) );}
     static Max_mem(a:number, b:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = Math.max(turbo.Runtime._mem_float64[(a + 8) >> 3] , turbo.Runtime._mem_float64[(b + 8) >> 3]);
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = Math.max(turbo.Runtime._mem_float64[(a + 16) >> 3] , turbo.Runtime._mem_float64[(b + 16) >> 3]);
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = Math.max(turbo.Runtime._mem_float64[(a + 24) >> 3] , turbo.Runtime._mem_float64[(b + 24) >> 3]);
+            unsafe._mem_f64[(c + 8) >> 3] = Math.max(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.max(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.max(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                Math.max(turbo.Runtime._mem_float64[(a + 8) >> 3] , turbo.Runtime._mem_float64[(b + 8) >> 3]),
-                Math.max(turbo.Runtime._mem_float64[(a + 16) >> 3] , turbo.Runtime._mem_float64[(b + 16) >> 3]),
-                Math.max(turbo.Runtime._mem_float64[(a + 24) >> 3] , turbo.Runtime._mem_float64[(b + 24) >> 3])
+                Math.max(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.max(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.max(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
     static MinAxis(a:XYZ):XYZ {
-        let x:number = Math.abs(a.X);
-        let y:number = Math.abs(a.Y);
-        let z:number = Math.abs(a.Z);
+        let x:number = Math.abs(a.x);
+        let y:number = Math.abs(a.y);
+        let z:number = Math.abs(a.z);
 
         if(x <= y && x <= z) {
             return xyz(1, 0, 0);
@@ -944,9 +949,9 @@ export class Vector extends MemoryObject{
     }
 
     static MinAxis_mem(a:number, c?:number):number {
-        let x:number = Math.abs(turbo.Runtime._mem_float64[(a + 8) >> 3]);
-        let y:number = Math.abs(turbo.Runtime._mem_float64[(a + 16) >> 3]);
-        let z:number = Math.abs(turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        let x:number = Math.abs(unsafe._mem_f64[(a + 8) >> 3]);
+        let y:number = Math.abs(unsafe._mem_f64[(a + 16) >> 3]);
+        let z:number = Math.abs(unsafe._mem_f64[(a + 24) >> 3]);
 
         if(x <= y && x <= z) {
             x = 1;
@@ -963,24 +968,24 @@ export class Vector extends MemoryObject{
         }
 
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = x;
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = y;
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = z;
+            unsafe._mem_f64[(c + 8) >> 3] = x;
+            unsafe._mem_f64[(c + 16) >> 3] = y;
+            unsafe._mem_f64[(c + 24) >> 3] = z;
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(ptr, x,y,z);
         }
     }
 
-    static MinComponent(a:XYZ):number {return Math.min(Math.min(a.X, a.Y), a.Z)}
+    static MinComponent(a:XYZ):number {return Math.min(Math.min(a.x, a.y), a.z)}
     static MinComponent_mem(a:number) {
-        return Math.min( Math.min(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3]), turbo.Runtime._mem_float64[(a + 24) >> 3] );
+        return Math.min( Math.min(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3] );
     }
 
-    static MaxComponent(a:XYZ):number { return Math.max(Math.max(a.X, a.Y), a.Z) }
+    static MaxComponent(a:XYZ):number { return Math.max(Math.max(a.x, a.y), a.z) }
     static MaxComponent_mem(a:number):number {
-        return Math.max( Math.max(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3]), turbo.Runtime._mem_float64[(a + 24) >> 3] );
+        return Math.max( Math.max(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3] );
     }
 
     static Reflect(a:XYZ, b:XYZ):XYZ {
@@ -988,7 +993,7 @@ export class Vector extends MemoryObject{
     }
 
     static Reflect_mem(a:number, b:number, c?:number):number {
-        c = c? c: Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        c = c? c: Vector.initInstance(unsafe.alloc(32,8));
         return Vector.Sub_mem(b, Vector.MulScalar_mem(a, 2 * Vector.Dot_mem(a,b), c), c);
     }
 
@@ -1008,10 +1013,10 @@ export class Vector extends MemoryObject{
         let cosI:number = -Vector.Dot_mem(a, b);
         let sinT2:number = nr * nr * (1 - cosI * cosI);
         if (sinT2 > 1) {
-            return Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)));
+            return Vector.Init_mem(Vector.initInstance(unsafe.alloc(32,8)));
         }
         let cosT:number = Math.sqrt(1 - sinT2);
-        c = c? c: Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        c = c? c: Vector.initInstance(unsafe.alloc(32,8));
         return Vector.Add_mem(Vector.MulScalar_mem(b, nr), Vector.MulScalar_mem(a, nr * cosI - cosT, c), c);
     }
 
@@ -1043,72 +1048,72 @@ export class Vector extends MemoryObject{
 
 
     //--------------------------------
-    // X X X X X X X X X X X X X X X X
+    // x x x x x x x x x x x x x x x x
     //--------------------------------
 
 
-    static Pow(a:XYZ, f:number):XYZ {return xyz( Math.pow(a.X, f), Math.pow(a.Y, f), Math.pow(a.Z, f) );}
+    static Pow(a:XYZ, f:number):XYZ {return xyz( Math.pow(a.x, f), Math.pow(a.y, f), Math.pow(a.z, f) );}
     static Pow_mem(a:number, f:number, c?:number):number {
         if(c){
-            turbo.Runtime._mem_float64[(c + 8) >> 3] = Math.pow(turbo.Runtime._mem_float64[(a + 8) >> 3] , f);
-            turbo.Runtime._mem_float64[(c + 16) >> 3] = Math.pow(turbo.Runtime._mem_float64[(a + 16) >> 3] , f);
-            turbo.Runtime._mem_float64[(c + 24) >> 3] = Math.pow(turbo.Runtime._mem_float64[(a + 24) >> 3] , f);
+            unsafe._mem_f64[(c + 8) >> 3] = Math.pow(unsafe._mem_f64[(a + 8) >> 3] , f);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.pow(unsafe._mem_f64[(a + 16) >> 3] , f);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.pow(unsafe._mem_f64[(a + 24) >> 3] , f);
             return c;
         }else{
-            let ptr:number = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+            let ptr:number = Vector.initInstance(unsafe.alloc(32,8));
             return Vector.Init_mem(
                 ptr,
-                Math.pow(turbo.Runtime._mem_float64[(a + 8) >> 3] , f),
-                Math.pow(turbo.Runtime._mem_float64[(a + 16) >> 3] , f),
-                Math.pow(turbo.Runtime._mem_float64[(a + 24) >> 3] , f)
+                Math.pow(unsafe._mem_f64[(a + 8) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(a + 16) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(a + 24) >> 3] , f)
             );
         }
     }
 
     static IsEqual(a:number, b:number):boolean{
-        return turbo.Runtime._mem_float64[(a + 8) >> 3] === turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[(a + 16) >> 3] === turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[(a + 24) >> 3] === turbo.Runtime._mem_float64[(b + 24) >> 3];
+        return unsafe._mem_f64[(a + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(a + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(a + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
     }
 
-    static ZERO:number = Vector.NewVector({X:0,Y:0,Y:0});
-    static ONE:number = Vector.NewVector({X:1,Y:1,Y:1});
-    static NegativeONE:number = Vector.NewVector({X:-1,Y:-1,Y:-1});
+    static ZERO:number = Vector.NewVector({x:0,y:0,y:0});
+    static ONE:number = Vector.NewVector({x:1,y:1,y:1});
+    static NegativeONE:number = Vector.NewVector({x:-1,y:-1,y:-1});
 
     static IsZero(a:number):boolean{
-        return turbo.Runtime._mem_float64[(a + 8) >> 3] === 0 && turbo.Runtime._mem_float64[(a + 16) >> 3] === 0 && turbo.Runtime._mem_float64[(a + 24) >> 3] === 0;
+        return unsafe._mem_f64[(a + 8) >> 3] === 0 && unsafe._mem_f64[(a + 16) >> 3] === 0 && unsafe._mem_f64[(a + 24) >> 3] === 0;
     }
 
-    static Set(SELF:number, X:number, Y:number, Z:number) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = X; 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = Y; 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = Z; 
+    static Set(SELF:number, x:number, y:number, z:number) {
+         unsafe._mem_f64[(SELF + 8) >> 3] = x; 
+         unsafe._mem_f64[(SELF + 16) >> 3] = y; 
+         unsafe._mem_f64[(SELF + 24) >> 3] = z; 
         return SELF;
     }
 
     static SetFromJSON(SELF:number, d) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d.x); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d.y); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d.z); 
+         unsafe._mem_f64[(SELF + 8) >> 3] = (d.x); 
+         unsafe._mem_f64[(SELF + 16) >> 3] = (d.y); 
+         unsafe._mem_f64[(SELF + 24) >> 3] = (d.z); 
         return SELF;
     }
 
     static SetFromArray(SELF:number, d:number[]) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = (d[0]); 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = (d[1]); 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (d[2]); 
+         unsafe._mem_f64[(SELF + 8) >> 3] = (d[0]); 
+         unsafe._mem_f64[(SELF + 16) >> 3] = (d[1]); 
+         unsafe._mem_f64[(SELF + 24) >> 3] = (d[2]); 
         return SELF;
     }
 
     static Copy(SELF:number, a:number):number {
-        return Vector.Set(SELF, turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
+        return Vector.Set(SELF, unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
     }
 
     static Clone(SELF:number, c?:number):number {
-        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-        return Vector.Init_mem(ptr, turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3]);
+        let ptr:number = c?c:Vector.initInstance(unsafe.alloc(32,8));
+        return Vector.Init_mem(ptr, unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3]);
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1266219; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=1266219; return SELF; }
 }
-turbo.Runtime._idToType[1266219] = Vector;
+unsafe._idToType[1266219] = Vector;
 
 
 export class Utils {
@@ -1173,7 +1178,7 @@ export class Utils {
     }
 
     static NumberString(x:number):string {
-        let suffixes = ["", "k", "M", "G"];
+        let suffixes = ["", "k", "M", "g"];
 
         suffixes.forEach((suffix) => {
             if (x < 1000) {
@@ -1275,28 +1280,28 @@ export class Box extends MemoryObject{
    }
 
     static init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = (Vector.NewVector(min)); 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (Vector.NewVector(max)); 
+         unsafe._mem_i32[(SELF + 4) >> 2] = (Vector.NewVector(min)); 
+         unsafe._mem_i32[(SELF + 8) >> 2] = (Vector.NewVector(max)); 
         return SELF;
 	}
 
     static Init_mem(SELF, min:number, max:number){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = min; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = max; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = min; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = max; 
         return SELF;
 	}
 
     static NewBox(min?:number, max?:number){
-        let SELF = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = (min?min:Vector.NewVector()); 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (max?max:Vector.NewVector()); 
+        let SELF = Box.initInstance(unsafe.alloc(12,4));
+         unsafe._mem_i32[(SELF + 4) >> 2] = (min?min:Vector.NewVector()); 
+         unsafe._mem_i32[(SELF + 8) >> 2] = (max?max:Vector.NewVector()); 
         return SELF;
 	}
 
     static ToJSON(SELF){
         return {
-            min:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
-            max:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2])
+            min:Vector.ToJSON(unsafe._mem_i32[(SELF + 4) >> 2]),
+            max:Vector.ToJSON(unsafe._mem_i32[(SELF + 8) >> 2])
         };
 	}
 
@@ -1304,11 +1309,11 @@ export class Box extends MemoryObject{
 		if(numShapes == 0) {
 			return Box.NewBox();
 		}
-		// let box = Shape.BoundingBox(turbo.Runtime._mem_int32[(  shapes + 4 + (4 * 0)  ) >> 2]);
+		// let box = Shape.BoundingBox(unsafe._mem_i32[(  shapes + 4 + (4 * 0)  ) >> 2]);
 		let box = Box.NewBox();
 
 		for(let i:number = 0; i < numShapes; i++){
-			let shape:number = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * i)  ) >> 2];
+			let shape:number = unsafe._mem_i32[(  shapes + 4 + (4 * i)  ) >> 2];
 			box = Box.Extend(box, Shape.BoundingBox(shape));
 		}
 		return box;
@@ -1318,10 +1323,10 @@ export class Box extends MemoryObject{
         if(numShapes == 0) {
             return Box.NewBox();
         }
-        let box = Triangle.BoundingBox(turbo.Runtime._mem_int32[(  shapes + 4 + (4 * 0)  ) >> 2]);
+        let box = Triangle.BoundingBox(unsafe._mem_i32[(  shapes + 4 + (4 * 0)  ) >> 2]);
 
         for(let i:number = 0; i < numShapes; i++){
-            let shape:number = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * i)  ) >> 2];
+            let shape:number = unsafe._mem_i32[(  shapes + 4 + (4 * i)  ) >> 2];
             box = Box.Extend(box, Triangle.BoundingBox(shape));
         }
         return box
@@ -1336,7 +1341,7 @@ export class Box extends MemoryObject{
         }else{
             c = tmp;
         }
-		return Vector.Add_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], c, c);
+		return Vector.Add_mem(unsafe._mem_i32[(SELF + 4) >> 2], c, c);
     }
 
 	static Center(SELF):number {
@@ -1346,7 +1351,7 @@ export class Box extends MemoryObject{
 
 	static OuterRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 4) >> 2], center);
+        let tmp = Vector.Sub_mem(unsafe._mem_i32[(SELF + 4) >> 2], center);
 		let len = Vector.Length_mem(tmp);
         free(center);
         free(tmp);
@@ -1355,63 +1360,63 @@ export class Box extends MemoryObject{
 
 	static InnerRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(center, turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+        let tmp = Vector.Sub_mem(center, unsafe._mem_i32[(SELF + 4) >> 2]);
 		let result = Vector.MaxComponent_mem(tmp);
         free(tmp);
         return result;
     }
 
 	static Size(SELF):number {
-		return Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 4) >> 2]);
+		return Vector.Sub_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
 	}
 
 	static Extend(SELF, b:number):number{
-        //let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-		let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
-		let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
-		let bmin = turbo.Runtime._mem_int32[(b + 4) >> 2];
-		let bmax = turbo.Runtime._mem_int32[(b + 8) >> 2];
+        //let ptr:number = Box.initInstance(unsafe.alloc(12,4));
+		let min = unsafe._mem_i32[(SELF + 4) >> 2];
+		let max = unsafe._mem_i32[(SELF + 8) >> 2];
+		let bmin = unsafe._mem_i32[(b + 4) >> 2];
+		let bmax = unsafe._mem_i32[(b + 8) >> 2];
 		return Box.Init_mem(SELF, Vector.Min_mem(min, bmin, min), Vector.Max_mem(max, bmax, max));
 	}
 
 	static Contains(SELF , b:number):boolean{
 
-        let a_min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
-        let a_max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let a_min = unsafe._mem_i32[(SELF + 4) >> 2];
+        let a_max = unsafe._mem_i32[(SELF + 8) >> 2];
 
-		return turbo.Runtime._mem_float64[((a_min) + 8) >> 3] <= turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[((a_max) + 8) >> 3] >= turbo.Runtime._mem_float64[(b + 8) >> 3] &&
-			turbo.Runtime._mem_float64[((a_min) + 16) >> 3] <= turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[((a_max) + 16) >> 3] >= turbo.Runtime._mem_float64[(b + 16) >> 3] &&
-			turbo.Runtime._mem_float64[((a_min) + 24) >> 3] <= turbo.Runtime._mem_float64[(b + 24) >> 3] && turbo.Runtime._mem_float64[((a_max) + 24) >> 3] >= turbo.Runtime._mem_float64[(b + 24) >> 3];
+		return unsafe._mem_f64[((a_min) + 8) >> 3] <= unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[((a_max) + 8) >> 3] >= unsafe._mem_f64[(b + 8) >> 3] &&
+			unsafe._mem_f64[((a_min) + 16) >> 3] <= unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[((a_max) + 16) >> 3] >= unsafe._mem_f64[(b + 16) >> 3] &&
+			unsafe._mem_f64[((a_min) + 24) >> 3] <= unsafe._mem_f64[(b + 24) >> 3] && unsafe._mem_f64[((a_max) + 24) >> 3] >= unsafe._mem_f64[(b + 24) >> 3];
 	}
 
 	static Intersects(a:number, b:number):boolean {
-        let a_min = turbo.Runtime._mem_int32[(a + 4) >> 2];
-        let a_max = turbo.Runtime._mem_int32[(a + 8) >> 2];
-        let b_min = turbo.Runtime._mem_int32[(b + 4) >> 2];
-        let b_max = turbo.Runtime._mem_int32[(b + 8) >> 2];
+        let a_min = unsafe._mem_i32[(a + 4) >> 2];
+        let a_max = unsafe._mem_i32[(a + 8) >> 2];
+        let b_min = unsafe._mem_i32[(b + 4) >> 2];
+        let b_max = unsafe._mem_i32[(b + 8) >> 2];
 
-		return !(turbo.Runtime._mem_float64[((a_min) + 8) >> 3] > turbo.Runtime._mem_float64[((b_max) + 8) >> 3] || turbo.Runtime._mem_float64[((a_max) + 8) >> 3] < turbo.Runtime._mem_float64[((b_min) + 8) >> 3] || turbo.Runtime._mem_float64[((a_min) + 16) >> 3] > turbo.Runtime._mem_float64[((b_max) + 16) >> 3] ||
-		turbo.Runtime._mem_float64[((a_max) + 16) >> 3] < turbo.Runtime._mem_float64[((b_min) + 16) >> 3] || turbo.Runtime._mem_float64[((a_min) + 24) >> 3] > turbo.Runtime._mem_float64[((b_max) + 24) >> 3] || turbo.Runtime._mem_float64[((a_max) + 24) >> 3] < turbo.Runtime._mem_float64[((b_min) + 24) >> 3]);
+		return !(unsafe._mem_f64[((a_min) + 8) >> 3] > unsafe._mem_f64[((b_max) + 8) >> 3] || unsafe._mem_f64[((a_max) + 8) >> 3] < unsafe._mem_f64[((b_min) + 8) >> 3] || unsafe._mem_f64[((a_min) + 16) >> 3] > unsafe._mem_f64[((b_max) + 16) >> 3] ||
+		unsafe._mem_f64[((a_max) + 16) >> 3] < unsafe._mem_f64[((b_min) + 16) >> 3] || unsafe._mem_f64[((a_min) + 24) >> 3] > unsafe._mem_f64[((b_max) + 24) >> 3] || unsafe._mem_f64[((a_max) + 24) >> 3] < unsafe._mem_f64[((b_min) + 24) >> 3]);
 	}
 
 	static Intersect(SELF, r:Ray):{tmax:number, tmin:number} {
 
-        let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
-        let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let min = unsafe._mem_i32[(SELF + 4) >> 2];
+        let max = unsafe._mem_i32[(SELF + 8) >> 2];
 
-        // x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-        // y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-        // z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-        // x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-        // y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-        // z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+        // x1 := (b.Min.x - r.Origin.x) / r.Direction.x
+        // y1 := (b.Min.y - r.Origin.y) / r.Direction.y
+        // z1 := (b.Min.z - r.Origin.z) / r.Direction.z
+        // x2 := (b.Max.x - r.Origin.x) / r.Direction.x
+        // y2 := (b.Max.y - r.Origin.y) / r.Direction.y
+        // z2 := (b.Max.z - r.Origin.z) / r.Direction.z
 
-		let x1 = (turbo.Runtime._mem_float64[(min + 8) >> 3] - r.origin.x) / r.direction.x;
-        let y1 = (turbo.Runtime._mem_float64[(min + 16) >> 3] - r.origin.y) / r.direction.y;
-        let z1 = (turbo.Runtime._mem_float64[(min + 24) >> 3] - r.origin.z) / r.direction.z;
-        let x2 = (turbo.Runtime._mem_float64[(max + 8) >> 3] - r.origin.x) / r.direction.x;
-        let y2 = (turbo.Runtime._mem_float64[(max + 16) >> 3] - r.origin.y) / r.direction.y;
-        let z2 = (turbo.Runtime._mem_float64[(max + 24) >> 3] - r.origin.z) / r.direction.z;
+		let x1 = (unsafe._mem_f64[(min + 8) >> 3] - r.origin.x) / r.direction.x;
+        let y1 = (unsafe._mem_f64[(min + 16) >> 3] - r.origin.y) / r.direction.y;
+        let z1 = (unsafe._mem_f64[(min + 24) >> 3] - r.origin.z) / r.direction.z;
+        let x2 = (unsafe._mem_f64[(max + 8) >> 3] - r.origin.x) / r.direction.x;
+        let y2 = (unsafe._mem_f64[(max + 16) >> 3] - r.origin.y) / r.direction.y;
+        let z2 = (unsafe._mem_f64[(max + 24) >> 3] - r.origin.z) / r.direction.z;
         let tmp;
 
 		if (x1 > x2) {
@@ -1435,12 +1440,12 @@ export class Box extends MemoryObject{
         };
 
         /*
-        * 	 x1 := (b.Min.X - r.Origin.X) / r.Direction.X
-             y1 := (b.Min.Y - r.Origin.Y) / r.Direction.Y
-             z1 := (b.Min.Z - r.Origin.Z) / r.Direction.Z
-             x2 := (b.Max.X - r.Origin.X) / r.Direction.X
-             y2 := (b.Max.Y - r.Origin.Y) / r.Direction.Y
-             z2 := (b.Max.Z - r.Origin.Z) / r.Direction.Z
+        * 	 x1 := (b.Min.x - r.Origin.x) / r.Direction.x
+             y1 := (b.Min.y - r.Origin.y) / r.Direction.y
+             z1 := (b.Min.z - r.Origin.z) / r.Direction.z
+             x2 := (b.Max.x - r.Origin.x) / r.Direction.x
+             y2 := (b.Max.y - r.Origin.y) / r.Direction.y
+             z2 := (b.Max.z - r.Origin.z) / r.Direction.z
 
              if x1 > x2 {
              x1, x2 = x2, x1
@@ -1460,22 +1465,22 @@ export class Box extends MemoryObject{
 	}
 
 	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
-        let min = turbo.Runtime._mem_int32[(SELF + 4) >> 2];
-        let max = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        let min = unsafe._mem_i32[(SELF + 4) >> 2];
+        let max = unsafe._mem_i32[(SELF + 8) >> 2];
         let left;
         let right;
 		switch (axis) {
 			case Axis.AxisX:
-				left = turbo.Runtime._mem_float64[(min + 8) >> 3] <= point;
-				right = turbo.Runtime._mem_float64[(max + 8) >> 3] >= point;
+				left = unsafe._mem_f64[(min + 8) >> 3] <= point;
+				right = unsafe._mem_f64[(max + 8) >> 3] >= point;
                 break;
 			case Axis.AxisY:
-				left = turbo.Runtime._mem_float64[(min + 16) >> 3] <= point;
-				right = turbo.Runtime._mem_float64[(max + 16) >> 3] >= point;
+				left = unsafe._mem_f64[(min + 16) >> 3] <= point;
+				right = unsafe._mem_f64[(max + 16) >> 3] >= point;
                 break;
             case Axis.AxisZ:
-				left = turbo.Runtime._mem_float64[(min + 24) >> 3] <= point;
-				right = turbo.Runtime._mem_float64[(max + 24) >> 3] >= point;// EPIC Bug :D it was min and got weird triangle intersection
+				left = unsafe._mem_f64[(min + 24) >> 3] <= point;
+				right = unsafe._mem_f64[(max + 24) >> 3] >= point;// EPIC Bug :D it was min and got weird triangle intersection
                 break;
 		}
 		return {
@@ -1483,9 +1488,9 @@ export class Box extends MemoryObject{
             right:right
         };
 	}
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1841; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=1841; return SELF; }
 }
-turbo.Runtime._idToType[1841] = Box;
+unsafe._idToType[1841] = Box;
 
 
 
@@ -1504,27 +1509,27 @@ export class Matrix extends MemoryObject{
    }
 
     static init(SELF:number=0, x00:number=0, x01:number=0, x02:number=0, x03:number=0, x10:number=0, x11:number=0, x12:number=0, x13:number=0, x20:number=0, x21:number=0, x22:number=0, x23:number=0, x30:number=0, x31:number=0, x32:number=0, x33:number=0) {
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = x00; 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = x01; 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = x02; 
-         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = x03; 
-         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = x10; 
-         turbo.Runtime._mem_float64[(SELF + 48) >> 3] = x11; 
-         turbo.Runtime._mem_float64[(SELF + 56) >> 3] = x12; 
-         turbo.Runtime._mem_float64[(SELF + 64) >> 3] = x13; 
-         turbo.Runtime._mem_float64[(SELF + 72) >> 3] = x20; 
-         turbo.Runtime._mem_float64[(SELF + 80) >> 3] = x21; 
-         turbo.Runtime._mem_float64[(SELF + 88) >> 3] = x22; 
-         turbo.Runtime._mem_float64[(SELF + 96) >> 3] = x23; 
-         turbo.Runtime._mem_float64[(SELF + 104) >> 3] = x30; 
-         turbo.Runtime._mem_float64[(SELF + 112) >> 3] = x31; 
-         turbo.Runtime._mem_float64[(SELF + 120) >> 3] = x32; 
-         turbo.Runtime._mem_float64[(SELF + 128) >> 3] = x33; 
+         unsafe._mem_f64[(SELF + 8) >> 3] = x00; 
+         unsafe._mem_f64[(SELF + 16) >> 3] = x01; 
+         unsafe._mem_f64[(SELF + 24) >> 3] = x02; 
+         unsafe._mem_f64[(SELF + 32) >> 3] = x03; 
+         unsafe._mem_f64[(SELF + 40) >> 3] = x10; 
+         unsafe._mem_f64[(SELF + 48) >> 3] = x11; 
+         unsafe._mem_f64[(SELF + 56) >> 3] = x12; 
+         unsafe._mem_f64[(SELF + 64) >> 3] = x13; 
+         unsafe._mem_f64[(SELF + 72) >> 3] = x20; 
+         unsafe._mem_f64[(SELF + 80) >> 3] = x21; 
+         unsafe._mem_f64[(SELF + 88) >> 3] = x22; 
+         unsafe._mem_f64[(SELF + 96) >> 3] = x23; 
+         unsafe._mem_f64[(SELF + 104) >> 3] = x30; 
+         unsafe._mem_f64[(SELF + 112) >> 3] = x31; 
+         unsafe._mem_f64[(SELF + 120) >> 3] = x32; 
+         unsafe._mem_f64[(SELF + 128) >> 3] = x33; 
         return SELF;
     }
 
     static NewMatrix(x00?:number, x01?:number, x02?:number, x03?:number, x10?:number, x11?:number, x12?:number, x13?:number, x20?:number, x21?:number, x22?:number, x23?:number, x30?:number, x31?:number, x32?:number, x33?:number):number {
-        let ptr:number = Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
             x00, x01, x02, x03,
             x10, x11, x12, x13,
@@ -1545,15 +1550,15 @@ export class Matrix extends MemoryObject{
 
     static DATA(SELF:number) {
         return [
-            turbo.Runtime._mem_float64[(SELF + 8) >> 3], turbo.Runtime._mem_float64[(SELF + 16) >> 3], turbo.Runtime._mem_float64[(SELF + 24) >> 3], turbo.Runtime._mem_float64[(SELF + 32) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 40) >> 3], turbo.Runtime._mem_float64[(SELF + 48) >> 3], turbo.Runtime._mem_float64[(SELF + 56) >> 3], turbo.Runtime._mem_float64[(SELF + 64) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 72) >> 3], turbo.Runtime._mem_float64[(SELF + 80) >> 3], turbo.Runtime._mem_float64[(SELF + 88) >> 3], turbo.Runtime._mem_float64[(SELF + 96) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 104) >> 3], turbo.Runtime._mem_float64[(SELF + 112) >> 3], turbo.Runtime._mem_float64[(SELF + 120) >> 3], turbo.Runtime._mem_float64[(SELF + 128) >> 3]
+            unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3], unsafe._mem_f64[(SELF + 32) >> 3],
+            unsafe._mem_f64[(SELF + 40) >> 3], unsafe._mem_f64[(SELF + 48) >> 3], unsafe._mem_f64[(SELF + 56) >> 3], unsafe._mem_f64[(SELF + 64) >> 3],
+            unsafe._mem_f64[(SELF + 72) >> 3], unsafe._mem_f64[(SELF + 80) >> 3], unsafe._mem_f64[(SELF + 88) >> 3], unsafe._mem_f64[(SELF + 96) >> 3],
+            unsafe._mem_f64[(SELF + 104) >> 3], unsafe._mem_f64[(SELF + 112) >> 3], unsafe._mem_f64[(SELF + 120) >> 3], unsafe._mem_f64[(SELF + 128) >> 3]
         ]
     }
 
     static Identity(c?:number):number {
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -1563,29 +1568,29 @@ export class Matrix extends MemoryObject{
     }
 
     static IsEqual(a:number, b:number):boolean {
-        return turbo.Runtime._mem_float64[(a + 8) >> 3] == turbo.Runtime._mem_float64[(b + 8) >> 3] && turbo.Runtime._mem_float64[(a + 16) >> 3] == turbo.Runtime._mem_float64[(b + 16) >> 3] && turbo.Runtime._mem_float64[(a + 24) >> 3] == turbo.Runtime._mem_float64[(b + 24) >> 3] && turbo.Runtime._mem_float64[(a + 32) >> 3] == turbo.Runtime._mem_float64[(b + 32) >> 3] && turbo.Runtime._mem_float64[(a + 40) >> 3] == turbo.Runtime._mem_float64[(b + 40) >> 3] && turbo.Runtime._mem_float64[(a + 48) >> 3] == turbo.Runtime._mem_float64[(b + 48) >> 3] && turbo.Runtime._mem_float64[(a + 56) >> 3] == turbo.Runtime._mem_float64[(b + 56) >> 3] && turbo.Runtime._mem_float64[(a + 64) >> 3] == turbo.Runtime._mem_float64[(b + 64) >> 3] && turbo.Runtime._mem_float64[(a + 72) >> 3] == turbo.Runtime._mem_float64[(b + 72) >> 3] && turbo.Runtime._mem_float64[(a + 80) >> 3] == turbo.Runtime._mem_float64[(b + 80) >> 3] && turbo.Runtime._mem_float64[(a + 88) >> 3] == turbo.Runtime._mem_float64[(b + 88) >> 3] && turbo.Runtime._mem_float64[(a + 96) >> 3] == turbo.Runtime._mem_float64[(b + 96) >> 3] && turbo.Runtime._mem_float64[(a + 104) >> 3] == turbo.Runtime._mem_float64[(b + 104) >> 3] && turbo.Runtime._mem_float64[(a + 112) >> 3] == turbo.Runtime._mem_float64[(b + 112) >> 3] && turbo.Runtime._mem_float64[(a + 120) >> 3] == turbo.Runtime._mem_float64[(b + 120) >> 3] && turbo.Runtime._mem_float64[(a + 128) >> 3] == turbo.Runtime._mem_float64[(b + 128) >> 3];
+        return unsafe._mem_f64[(a + 8) >> 3] == unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(a + 16) >> 3] == unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(a + 24) >> 3] == unsafe._mem_f64[(b + 24) >> 3] && unsafe._mem_f64[(a + 32) >> 3] == unsafe._mem_f64[(b + 32) >> 3] && unsafe._mem_f64[(a + 40) >> 3] == unsafe._mem_f64[(b + 40) >> 3] && unsafe._mem_f64[(a + 48) >> 3] == unsafe._mem_f64[(b + 48) >> 3] && unsafe._mem_f64[(a + 56) >> 3] == unsafe._mem_f64[(b + 56) >> 3] && unsafe._mem_f64[(a + 64) >> 3] == unsafe._mem_f64[(b + 64) >> 3] && unsafe._mem_f64[(a + 72) >> 3] == unsafe._mem_f64[(b + 72) >> 3] && unsafe._mem_f64[(a + 80) >> 3] == unsafe._mem_f64[(b + 80) >> 3] && unsafe._mem_f64[(a + 88) >> 3] == unsafe._mem_f64[(b + 88) >> 3] && unsafe._mem_f64[(a + 96) >> 3] == unsafe._mem_f64[(b + 96) >> 3] && unsafe._mem_f64[(a + 104) >> 3] == unsafe._mem_f64[(b + 104) >> 3] && unsafe._mem_f64[(a + 112) >> 3] == unsafe._mem_f64[(b + 112) >> 3] && unsafe._mem_f64[(a + 120) >> 3] == unsafe._mem_f64[(b + 120) >> 3] && unsafe._mem_f64[(a + 128) >> 3] == unsafe._mem_f64[(b + 128) >> 3];
     }
 
     static IsIdentity(a:number):boolean {
-        return turbo.Runtime._mem_float64[(a + 8) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 16) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 24) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 32) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 40) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 48) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 56) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 64) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 72) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 80) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 88) >> 3] == 1 && turbo.Runtime._mem_float64[(a + 96) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 104) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 112) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 120) >> 3] == 0 && turbo.Runtime._mem_float64[(a + 128) >> 3] == 1;
+        return unsafe._mem_f64[(a + 8) >> 3] == 1 && unsafe._mem_f64[(a + 16) >> 3] == 0 && unsafe._mem_f64[(a + 24) >> 3] == 0 && unsafe._mem_f64[(a + 32) >> 3] == 0 && unsafe._mem_f64[(a + 40) >> 3] == 0 && unsafe._mem_f64[(a + 48) >> 3] == 1 && unsafe._mem_f64[(a + 56) >> 3] == 0 && unsafe._mem_f64[(a + 64) >> 3] == 0 && unsafe._mem_f64[(a + 72) >> 3] == 0 && unsafe._mem_f64[(a + 80) >> 3] == 0 && unsafe._mem_f64[(a + 88) >> 3] == 1 && unsafe._mem_f64[(a + 96) >> 3] == 0 && unsafe._mem_f64[(a + 104) >> 3] == 0 && unsafe._mem_f64[(a + 112) >> 3] == 0 && unsafe._mem_f64[(a + 120) >> 3] == 0 && unsafe._mem_f64[(a + 128) >> 3] == 1;
     }
 
     static TranslateUnitMatrix(v:number, c?:number):number{
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
-            1, 0, 0, turbo.Runtime._mem_float64[(v + 8) >> 3],
-            0, 1, 0, turbo.Runtime._mem_float64[(v + 16) >> 3],
-            0, 0, 1, turbo.Runtime._mem_float64[(v + 24) >> 3],
+            1, 0, 0, unsafe._mem_f64[(v + 8) >> 3],
+            0, 1, 0, unsafe._mem_f64[(v + 16) >> 3],
+            0, 0, 1, unsafe._mem_f64[(v + 24) >> 3],
             0, 0, 0, 1
         )
     }
 
     static ScaleUnitMatrix(v:number, c?:number):number{
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
-            turbo.Runtime._mem_float64[(v + 8) >> 3], 0, 0, 0,
-            0, turbo.Runtime._mem_float64[(v + 16) >> 3], 0, 0,
-            0, 0, turbo.Runtime._mem_float64[(v + 24) >> 3], 0,
+            unsafe._mem_f64[(v + 8) >> 3], 0, 0, 0,
+            0, unsafe._mem_f64[(v + 16) >> 3], 0, 0,
+            0, 0, unsafe._mem_f64[(v + 24) >> 3], 0,
             0, 0, 0, 1
         )
     }
@@ -1597,11 +1602,11 @@ export class Matrix extends MemoryObject{
         let c:number = Math.cos(a);
         let m:number = 1 - c;
 
-        let ptr:number = _c?_c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = _c?_c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
-            m*turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] + c, m * turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] + turbo.Runtime._mem_float64[(v + 24) >> 3] * s, m * turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] - turbo.Runtime._mem_float64[(v + 16) >> 3] * s, 0,
-            m*turbo.Runtime._mem_float64[(v + 8) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] - turbo.Runtime._mem_float64[(v + 24) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 16) >> 3] + c, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] + turbo.Runtime._mem_float64[(v + 8) >> 3] * s, 0,
-            m*turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 8) >> 3] + turbo.Runtime._mem_float64[(v + 16) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 16) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] - turbo.Runtime._mem_float64[(v + 8) >> 3] * s, m*turbo.Runtime._mem_float64[(v + 24) >> 3] * turbo.Runtime._mem_float64[(v + 24) >> 3] + c, 0,
+            m*unsafe._mem_f64[(v + 8) >> 3] * unsafe._mem_f64[(v + 8) >> 3] + c, m * unsafe._mem_f64[(v + 8) >> 3] * unsafe._mem_f64[(v + 16) >> 3] + unsafe._mem_f64[(v + 24) >> 3] * s, m * unsafe._mem_f64[(v + 24) >> 3] * unsafe._mem_f64[(v + 8) >> 3] - unsafe._mem_f64[(v + 16) >> 3] * s, 0,
+            m*unsafe._mem_f64[(v + 8) >> 3] * unsafe._mem_f64[(v + 16) >> 3] - unsafe._mem_f64[(v + 24) >> 3] * s, m*unsafe._mem_f64[(v + 16) >> 3] * unsafe._mem_f64[(v + 16) >> 3] + c, m*unsafe._mem_f64[(v + 16) >> 3] * unsafe._mem_f64[(v + 24) >> 3] + unsafe._mem_f64[(v + 8) >> 3] * s, 0,
+            m*unsafe._mem_f64[(v + 24) >> 3] * unsafe._mem_f64[(v + 8) >> 3] + unsafe._mem_f64[(v + 16) >> 3] * s, m*unsafe._mem_f64[(v + 16) >> 3] * unsafe._mem_f64[(v + 24) >> 3] - unsafe._mem_f64[(v + 8) >> 3] * s, m*unsafe._mem_f64[(v + 24) >> 3] * unsafe._mem_f64[(v + 24) >> 3] + c, 0,
             0, 0, 0, 1
         )
     }
@@ -1613,7 +1618,7 @@ export class Matrix extends MemoryObject{
         let t3:number = t - b;
         let t4:number = f - n;
 
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
             t1 / t2, 0, (r + l) / t2, 0,
             0, t1 / t3, (t + b) / t3, 0,
@@ -1624,7 +1629,7 @@ export class Matrix extends MemoryObject{
 
     static OrthographicUnitMatrix(l:number, r:number, b:number, t:number, n:number, f:number, c?:number):number{
 
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
             2 / (r - l), 0, 0, -(r + l) / (r - l),
             0, 2 / (t - b), 0, -(t + b) / (t - b),
@@ -1645,11 +1650,11 @@ export class Matrix extends MemoryObject{
         let s:number = Vector.Normalize_mem(Vector.Cross_mem(f, up));
         let u:number = Vector.Cross_mem(s,f);
 
-        let ptr:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         Matrix.init(ptr,
-            turbo.Runtime._mem_float64[(s + 8) >> 3], turbo.Runtime._mem_float64[(u + 8) >> 3], turbo.Runtime._mem_float64[(f + 8) >> 3], 0,
-            turbo.Runtime._mem_float64[(s + 16) >> 3], turbo.Runtime._mem_float64[(u + 16) >> 3], turbo.Runtime._mem_float64[(f + 16) >> 3], 0,
-            turbo.Runtime._mem_float64[(s + 24) >> 3], turbo.Runtime._mem_float64[(u + 24) >> 3], turbo.Runtime._mem_float64[(f + 24) >> 3], 0,
+            unsafe._mem_f64[(s + 8) >> 3], unsafe._mem_f64[(u + 8) >> 3], unsafe._mem_f64[(f + 8) >> 3], 0,
+            unsafe._mem_f64[(s + 16) >> 3], unsafe._mem_f64[(u + 16) >> 3], unsafe._mem_f64[(f + 16) >> 3], 0,
+            unsafe._mem_f64[(s + 24) >> 3], unsafe._mem_f64[(u + 24) >> 3], unsafe._mem_f64[(f + 24) >> 3], 0,
             0, 0, 0, 1
         );
         return Matrix.Translate(Matrix.Inverse(Matrix.Transpose(ptr, ptr), ptr), eye, ptr);
@@ -1680,53 +1685,53 @@ export class Matrix extends MemoryObject{
     }
 
     static Mul(a:number, b:number, m?:number):number{
-        m = m?m:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
-        turbo.Runtime._mem_float64[(m + 8) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
-        turbo.Runtime._mem_float64[(m + 40) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
-        turbo.Runtime._mem_float64[(m + 72) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
-        turbo.Runtime._mem_float64[(m + 104) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 40) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 72) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 104) >> 3];
-        turbo.Runtime._mem_float64[(m + 16) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
-        turbo.Runtime._mem_float64[(m + 48) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
-        turbo.Runtime._mem_float64[(m + 80) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
-        turbo.Runtime._mem_float64[(m + 112) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 48) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 80) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 112) >> 3];
-        turbo.Runtime._mem_float64[(m + 24) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
-        turbo.Runtime._mem_float64[(m + 56) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
-        turbo.Runtime._mem_float64[(m + 88) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
-        turbo.Runtime._mem_float64[(m + 120) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 56) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 88) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 120) >> 3];
-        turbo.Runtime._mem_float64[(m + 32) >> 3] = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
-        turbo.Runtime._mem_float64[(m + 64) >> 3] = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
-        turbo.Runtime._mem_float64[(m + 96) >> 3] = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
-        turbo.Runtime._mem_float64[(m + 128) >> 3] = turbo.Runtime._mem_float64[(a + 104) >> 3] * turbo.Runtime._mem_float64[(b + 32) >> 3] + turbo.Runtime._mem_float64[(a + 112) >> 3] * turbo.Runtime._mem_float64[(b + 64) >> 3] + turbo.Runtime._mem_float64[(a + 120) >> 3] * turbo.Runtime._mem_float64[(b + 96) >> 3] + turbo.Runtime._mem_float64[(a + 128) >> 3] * turbo.Runtime._mem_float64[(b + 128) >> 3];
+        m = m?m:Matrix.initInstance(unsafe.alloc(136,8));
+        unsafe._mem_f64[(m + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 40) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 72) >> 3] + unsafe._mem_f64[(a + 32) >> 3] * unsafe._mem_f64[(b + 104) >> 3];
+        unsafe._mem_f64[(m + 40) >> 3] = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 40) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 72) >> 3] + unsafe._mem_f64[(a + 64) >> 3] * unsafe._mem_f64[(b + 104) >> 3];
+        unsafe._mem_f64[(m + 72) >> 3] = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 40) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 72) >> 3] + unsafe._mem_f64[(a + 96) >> 3] * unsafe._mem_f64[(b + 104) >> 3];
+        unsafe._mem_f64[(m + 104) >> 3] = unsafe._mem_f64[(a + 104) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 112) >> 3] * unsafe._mem_f64[(b + 40) >> 3] + unsafe._mem_f64[(a + 120) >> 3] * unsafe._mem_f64[(b + 72) >> 3] + unsafe._mem_f64[(a + 128) >> 3] * unsafe._mem_f64[(b + 104) >> 3];
+        unsafe._mem_f64[(m + 16) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 48) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 80) >> 3] + unsafe._mem_f64[(a + 32) >> 3] * unsafe._mem_f64[(b + 112) >> 3];
+        unsafe._mem_f64[(m + 48) >> 3] = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 48) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 80) >> 3] + unsafe._mem_f64[(a + 64) >> 3] * unsafe._mem_f64[(b + 112) >> 3];
+        unsafe._mem_f64[(m + 80) >> 3] = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 48) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 80) >> 3] + unsafe._mem_f64[(a + 96) >> 3] * unsafe._mem_f64[(b + 112) >> 3];
+        unsafe._mem_f64[(m + 112) >> 3] = unsafe._mem_f64[(a + 104) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 112) >> 3] * unsafe._mem_f64[(b + 48) >> 3] + unsafe._mem_f64[(a + 120) >> 3] * unsafe._mem_f64[(b + 80) >> 3] + unsafe._mem_f64[(a + 128) >> 3] * unsafe._mem_f64[(b + 112) >> 3];
+        unsafe._mem_f64[(m + 24) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 56) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 88) >> 3] + unsafe._mem_f64[(a + 32) >> 3] * unsafe._mem_f64[(b + 120) >> 3];
+        unsafe._mem_f64[(m + 56) >> 3] = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 56) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 88) >> 3] + unsafe._mem_f64[(a + 64) >> 3] * unsafe._mem_f64[(b + 120) >> 3];
+        unsafe._mem_f64[(m + 88) >> 3] = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 56) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 88) >> 3] + unsafe._mem_f64[(a + 96) >> 3] * unsafe._mem_f64[(b + 120) >> 3];
+        unsafe._mem_f64[(m + 120) >> 3] = unsafe._mem_f64[(a + 104) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 112) >> 3] * unsafe._mem_f64[(b + 56) >> 3] + unsafe._mem_f64[(a + 120) >> 3] * unsafe._mem_f64[(b + 88) >> 3] + unsafe._mem_f64[(a + 128) >> 3] * unsafe._mem_f64[(b + 120) >> 3];
+        unsafe._mem_f64[(m + 32) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 32) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 64) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 96) >> 3] + unsafe._mem_f64[(a + 32) >> 3] * unsafe._mem_f64[(b + 128) >> 3];
+        unsafe._mem_f64[(m + 64) >> 3] = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 32) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 64) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 96) >> 3] + unsafe._mem_f64[(a + 64) >> 3] * unsafe._mem_f64[(b + 128) >> 3];
+        unsafe._mem_f64[(m + 96) >> 3] = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 32) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 64) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 96) >> 3] + unsafe._mem_f64[(a + 96) >> 3] * unsafe._mem_f64[(b + 128) >> 3];
+        unsafe._mem_f64[(m + 128) >> 3] = unsafe._mem_f64[(a + 104) >> 3] * unsafe._mem_f64[(b + 32) >> 3] + unsafe._mem_f64[(a + 112) >> 3] * unsafe._mem_f64[(b + 64) >> 3] + unsafe._mem_f64[(a + 120) >> 3] * unsafe._mem_f64[(b + 96) >> 3] + unsafe._mem_f64[(a + 128) >> 3] * unsafe._mem_f64[(b + 128) >> 3];
         return m;
     }
 
     static MulPosition(a:number, b:number, c?:number):number {
-        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 32) >> 3];
-        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 64) >> 3];
-        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3] + turbo.Runtime._mem_float64[(a + 96) >> 3];
-        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8))();
+        let x:number = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 32) >> 3];
+        let y:number = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 64) >> 3];
+        let z:number = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 24) >> 3] + unsafe._mem_f64[(a + 96) >> 3];
+        let ptr:number = c?c:Vector.initInstance(unsafe.alloc(32,8))();
         return Vector.Init_mem(ptr, x, y, z);
     }
 
     static MulPosition_vec3(a:number, b:Vector3):Vector3 {
-        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 16) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 24) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 32) >> 3];
-        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 48) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 56) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 64) >> 3];
-        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 80) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 88) >> 3] * b.z + turbo.Runtime._mem_float64[(a + 96) >> 3];
+        let x:number = unsafe._mem_f64[(a + 8) >> 3] * b.x + unsafe._mem_f64[(a + 16) >> 3] * b.y + unsafe._mem_f64[(a + 24) >> 3] * b.z + unsafe._mem_f64[(a + 32) >> 3];
+        let y:number = unsafe._mem_f64[(a + 40) >> 3] * b.x + unsafe._mem_f64[(a + 48) >> 3] * b.y + unsafe._mem_f64[(a + 56) >> 3] * b.z + unsafe._mem_f64[(a + 64) >> 3];
+        let z:number = unsafe._mem_f64[(a + 72) >> 3] * b.x + unsafe._mem_f64[(a + 80) >> 3] * b.y + unsafe._mem_f64[(a + 88) >> 3] * b.z + unsafe._mem_f64[(a + 96) >> 3];
         return new Vector3(x, y, z);
     }
 
     static MulDirection(a:number, b:number, c?:number):number {
-        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 16) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 24) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
-        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 48) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 56) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
-        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * turbo.Runtime._mem_float64[(b + 8) >> 3] + turbo.Runtime._mem_float64[(a + 80) >> 3] * turbo.Runtime._mem_float64[(b + 16) >> 3] + turbo.Runtime._mem_float64[(a + 88) >> 3] * turbo.Runtime._mem_float64[(b + 24) >> 3];
-        let ptr:number = c?c:Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        let x:number = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
+        let y:number = unsafe._mem_f64[(a + 40) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 48) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 56) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
+        let z:number = unsafe._mem_f64[(a + 72) >> 3] * unsafe._mem_f64[(b + 8) >> 3] + unsafe._mem_f64[(a + 80) >> 3] * unsafe._mem_f64[(b + 16) >> 3] + unsafe._mem_f64[(a + 88) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
+        let ptr:number = c?c:Vector.initInstance(unsafe.alloc(32,8));
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
 
     static MulDirection_vec3(a:number, b:Vector3):Vector3 {
-        let x:number = turbo.Runtime._mem_float64[(a + 8) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 16) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 24) >> 3] * b.z;
-        let y:number = turbo.Runtime._mem_float64[(a + 40) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 48) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 56) >> 3] * b.z;
-        let z:number = turbo.Runtime._mem_float64[(a + 72) >> 3] * b.x + turbo.Runtime._mem_float64[(a + 80) >> 3] * b.y + turbo.Runtime._mem_float64[(a + 88) >> 3] * b.z;
+        let x:number = unsafe._mem_f64[(a + 8) >> 3] * b.x + unsafe._mem_f64[(a + 16) >> 3] * b.y + unsafe._mem_f64[(a + 24) >> 3] * b.z;
+        let y:number = unsafe._mem_f64[(a + 40) >> 3] * b.x + unsafe._mem_f64[(a + 48) >> 3] * b.y + unsafe._mem_f64[(a + 56) >> 3] * b.z;
+        let z:number = unsafe._mem_f64[(a + 72) >> 3] * b.x + unsafe._mem_f64[(a + 80) >> 3] * b.y + unsafe._mem_f64[(a + 88) >> 3] * b.z;
         return new Vector3(x, y, z);
     }
 
@@ -1737,19 +1742,19 @@ export class Matrix extends MemoryObject{
     }
 
     static  MulBox(a:number, box:number, c?:number):number {
-        let min:number = turbo.Runtime._mem_int32[(box + 4) >> 2];
-        let max:number = turbo.Runtime._mem_int32[(box + 8) >> 2];
+        let min:number = unsafe._mem_i32[(box + 4) >> 2];
+        let max:number = unsafe._mem_i32[(box + 8) >> 2];
         // http://dev.theomader.com/transform-bounding-boxes/
-        let r:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 40) >> 3], turbo.Runtime._mem_float64[(a + 72) >> 3]);
-        let u:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 48) >> 3], turbo.Runtime._mem_float64[(a + 80) >> 3]);
-        let b:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 24) >> 3], turbo.Runtime._mem_float64[(a + 56) >> 3], turbo.Runtime._mem_float64[(a + 88) >> 3]);
-        let t:number = Vector.Init_mem(Vector.initInstance(turbo.Runtime.allocOrThrow(32,8)), turbo.Runtime._mem_float64[(a + 32) >> 3], turbo.Runtime._mem_float64[(a + 64) >> 3], turbo.Runtime._mem_float64[(a + 96) >> 3]);
-        let xa:number = Vector.MulScalar_mem(r, turbo.Runtime._mem_float64[(min + 8) >> 3]);
-        let xb:number = Vector.MulScalar_mem(r, turbo.Runtime._mem_float64[(max + 8) >> 3]);
-        let ya:number = Vector.MulScalar_mem(u, turbo.Runtime._mem_float64[(min + 16) >> 3]);
-        let yb:number = Vector.MulScalar_mem(u, turbo.Runtime._mem_float64[(max + 16) >> 3]);
-        let za:number = Vector.MulScalar_mem(b, turbo.Runtime._mem_float64[(min + 24) >> 3]);
-        let zb:number = Vector.MulScalar_mem(b, turbo.Runtime._mem_float64[(max + 24) >> 3]);
+        let r:number = Vector.Init_mem(Vector.initInstance(unsafe.alloc(32,8)), unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 40) >> 3], unsafe._mem_f64[(a + 72) >> 3]);
+        let u:number = Vector.Init_mem(Vector.initInstance(unsafe.alloc(32,8)), unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 48) >> 3], unsafe._mem_f64[(a + 80) >> 3]);
+        let b:number = Vector.Init_mem(Vector.initInstance(unsafe.alloc(32,8)), unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(a + 56) >> 3], unsafe._mem_f64[(a + 88) >> 3]);
+        let t:number = Vector.Init_mem(Vector.initInstance(unsafe.alloc(32,8)), unsafe._mem_f64[(a + 32) >> 3], unsafe._mem_f64[(a + 64) >> 3], unsafe._mem_f64[(a + 96) >> 3]);
+        let xa:number = Vector.MulScalar_mem(r, unsafe._mem_f64[(min + 8) >> 3]);
+        let xb:number = Vector.MulScalar_mem(r, unsafe._mem_f64[(max + 8) >> 3]);
+        let ya:number = Vector.MulScalar_mem(u, unsafe._mem_f64[(min + 16) >> 3]);
+        let yb:number = Vector.MulScalar_mem(u, unsafe._mem_f64[(max + 16) >> 3]);
+        let za:number = Vector.MulScalar_mem(b, unsafe._mem_f64[(min + 24) >> 3]);
+        let zb:number = Vector.MulScalar_mem(b, unsafe._mem_f64[(max + 24) >> 3]);
         xa = Vector.Min_mem(xa, xb, r);
         xb = Vector.Max_mem(xa, xb, u);
         ya = Vector.Min_mem(ya, yb, b);
@@ -1758,59 +1763,59 @@ export class Matrix extends MemoryObject{
         zb = Vector.Max_mem(za, zb);
         min = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xa, ya), za),t);
         max = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xb, yb), zb),t);
-        let ptr = c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        let ptr = c?c:Box.initInstance(unsafe.alloc(12,4));
         return Box.Init_mem(ptr, min, max);
     }
 
     static Transpose(a:number, c?:number):number {
-        let ptr = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let ptr = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         return Matrix.init(ptr,
-            turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 40) >> 3], turbo.Runtime._mem_float64[(a + 72) >> 3], turbo.Runtime._mem_float64[(a + 104) >> 3],
-            turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 48) >> 3], turbo.Runtime._mem_float64[(a + 80) >> 3], turbo.Runtime._mem_float64[(a + 112) >> 3],
-            turbo.Runtime._mem_float64[(a + 24) >> 3], turbo.Runtime._mem_float64[(a + 56) >> 3], turbo.Runtime._mem_float64[(a + 88) >> 3], turbo.Runtime._mem_float64[(a + 120) >> 3],
-            turbo.Runtime._mem_float64[(a + 32) >> 3], turbo.Runtime._mem_float64[(a + 64) >> 3], turbo.Runtime._mem_float64[(a + 96) >> 3], turbo.Runtime._mem_float64[(a + 128) >> 3]
+            unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 40) >> 3], unsafe._mem_f64[(a + 72) >> 3], unsafe._mem_f64[(a + 104) >> 3],
+            unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 48) >> 3], unsafe._mem_f64[(a + 80) >> 3], unsafe._mem_f64[(a + 112) >> 3],
+            unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(a + 56) >> 3], unsafe._mem_f64[(a + 88) >> 3], unsafe._mem_f64[(a + 120) >> 3],
+            unsafe._mem_f64[(a + 32) >> 3], unsafe._mem_f64[(a + 64) >> 3], unsafe._mem_f64[(a + 96) >> 3], unsafe._mem_f64[(a + 128) >> 3]
         );
     }
 
     static Determinant(SELF:number):number {
-        return (turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] +
-        turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] +
-        turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] +
-        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] +
-        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] +
-        turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] -
-        turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3])
+        return (unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] +
+        unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] +
+        unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] -
+        unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] -
+        unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] -
+        unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] +
+        unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] +
+        unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] +
+        unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] -
+        unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] -
+        unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] -
+        unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3])
     }
 
     static Inverse(SELF:number, c?:number):number {
-        let m:number = c?c:Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+        let m:number = c?c:Matrix.initInstance(unsafe.alloc(136,8));
         let d:number = Matrix.Determinant(SELF);
-        turbo.Runtime._mem_float64[(m + 8) >> 3] = (turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 16) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 24) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 32) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 40) >> 3] = (turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 48) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 56) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 64) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 72) >> 3] = (turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 80) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 88) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 128) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 96) >> 3] = (turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 32) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 64) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 96) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 104) >> 3] = (turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 112) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 120) >> 3] = (turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 104) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 112) >> 3] + turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 120) >> 3]) / d
-        turbo.Runtime._mem_float64[(m + 128) >> 3] = (turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] - turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 72) >> 3] + turbo.Runtime._mem_float64[(SELF + 24) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 56) >> 3]*turbo.Runtime._mem_float64[(SELF + 80) >> 3] - turbo.Runtime._mem_float64[(SELF + 16) >> 3]*turbo.Runtime._mem_float64[(SELF + 40) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3] + turbo.Runtime._mem_float64[(SELF + 8) >> 3]*turbo.Runtime._mem_float64[(SELF + 48) >> 3]*turbo.Runtime._mem_float64[(SELF + 88) >> 3]) / d
+        unsafe._mem_f64[(m + 8) >> 3] = (unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 16) >> 3] = (unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 24) >> 3] = (unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 32) >> 3] = (unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3] + unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]) / d
+        unsafe._mem_f64[(m + 40) >> 3] = (unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 48) >> 3] = (unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 56) >> 3] = (unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 64) >> 3] = (unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]) / d
+        unsafe._mem_f64[(m + 72) >> 3] = (unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 80) >> 3] = (unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 88) >> 3] = (unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 128) >> 3]) / d
+        unsafe._mem_f64[(m + 96) >> 3] = (unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] - unsafe._mem_f64[(SELF + 32) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 64) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 96) >> 3]) / d
+        unsafe._mem_f64[(m + 104) >> 3] = (unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3]) / d
+        unsafe._mem_f64[(m + 112) >> 3] = (unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] + unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3]) / d
+        unsafe._mem_f64[(m + 120) >> 3] = (unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 104) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 112) >> 3] + unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 120) >> 3]) / d
+        unsafe._mem_f64[(m + 128) >> 3] = (unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] - unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 72) >> 3] + unsafe._mem_f64[(SELF + 24) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] - unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 56) >> 3]*unsafe._mem_f64[(SELF + 80) >> 3] - unsafe._mem_f64[(SELF + 16) >> 3]*unsafe._mem_f64[(SELF + 40) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3] + unsafe._mem_f64[(SELF + 8) >> 3]*unsafe._mem_f64[(SELF + 48) >> 3]*unsafe._mem_f64[(SELF + 88) >> 3]) / d
         return m
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=2093537; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=2093537; return SELF; }
 }
-turbo.Runtime._idToType[2093537] = Matrix;
+unsafe._idToType[2093537] = Matrix;
 
 export class Texture extends MemoryObject{
    static NAME:string = "Texture";
@@ -1827,9 +1832,9 @@ export class Texture extends MemoryObject{
    }
 
     static init(SELF, width:number, height:number, data:number){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = width; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = height; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = data; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = width; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = height; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = data; 
     }
 
     static textures:any = [];
@@ -1855,65 +1860,65 @@ export class Texture extends MemoryObject{
     }
 
     static NewTexture(im:number /*Image*/):number /*Texture*/{
-        let size:number = turbo.Runtime._mem_int32[((Image.Bounds(im)) + 8) >> 2];
-        let data:number = turbo.Runtime.allocOrThrow( 4 + ( 4 * (turbo.Runtime._mem_float64[(size + 8) >> 3] * turbo.Runtime._mem_float64[(size + 16) >> 3]) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[number >> 2] = (turbo.Runtime._mem_float64[(size + 8) >> 3] * turbo.Runtime._mem_float64[(size + 16) >> 3]);
-        for (let y:number = 0; y < turbo.Runtime._mem_float64[(size + 16) >> 3]; y++) {
-            for (let x:number = 0; x < turbo.Runtime._mem_float64[(size + 8) >> 3]; x++) {
-                let index = y * turbo.Runtime._mem_float64[(size + 8) >> 3] + x;
-                turbo.Runtime._mem_int32[(  data + 4 + (4 * index)  ) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
+        let size:number = unsafe._mem_i32[((Image.Bounds(im)) + 8) >> 2];
+        let data:number = unsafe.alloc( 4 + ( 4 * (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3]) ), 4 ) /*Array*/;
+        unsafe._mem_i32[number >> 2] = (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3]);
+        for (let y:number = 0; y < unsafe._mem_f64[(size + 16) >> 3]; y++) {
+            for (let x:number = 0; x < unsafe._mem_f64[(size + 8) >> 3]; x++) {
+                let index = y * unsafe._mem_f64[(size + 8) >> 3] + x;
+                unsafe._mem_i32[(  data + 4 + (4 * index)  ) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
             }
         }
-        let ptr:number = Texture.initInstance(turbo.Runtime.allocOrThrow(20,4));
-        return Texture.init(ptr, turbo.Runtime._mem_float64[(size + 8) >> 3], turbo.Runtime._mem_float64[(size + 16) >> 3], data);
+        let ptr:number = Texture.initInstance(unsafe.alloc(20,4));
+        return Texture.init(ptr, unsafe._mem_f64[(size + 8) >> 3], unsafe._mem_f64[(size + 16) >> 3], data);
     }
 
     Pow(t:number, a:number):number {
-        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
-        let len:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let data:number = unsafe._mem_i32[(t + 16) >> 2];
+        let len:number = unsafe._mem_i32[(t + 12) >> 2];
 
         for (let i:number = 0; i < len; i++) {
-            let d = turbo.Runtime._mem_int32[(  data + 4 + (4 * i)  ) >> 2];
+            let d = unsafe._mem_i32[(  data + 4 + (4 * i)  ) >> 2];
             Color.Pow_mem(d, a, d);
         }
         return t;
     }
 
     static MulScalar(t:number, a:number):number{
-        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
-        let len:number = turbo.Runtime._mem_int32[(t + 12) >> 2];
+        let data:number = unsafe._mem_i32[(t + 16) >> 2];
+        let len:number = unsafe._mem_i32[(t + 12) >> 2];
 
         for (let i:number = 0; i < len; i++) {
-            let d = turbo.Runtime._mem_int32[(  data + 4 + (4 * i)  ) >> 2];
+            let d = unsafe._mem_i32[(  data + 4 + (4 * i)  ) >> 2];
             Color.MulScalar_mem(d, a, d);
         }
         return t;
     }
 
     static bilinearSample(t:number, u:number, v:number):number{
-        let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
-        let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
-        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
+        let Width:number = unsafe._mem_i32[(t + 4) >> 2];
+        let Height:number = unsafe._mem_i32[(t + 8) >> 2];
+        let data:number = unsafe._mem_i32[(t + 16) >> 2];
 
         let w:number = Width - 1;
         let h:number = Height - 1;
         
         let _ = Utils.Modf(u * w);
         
-        let X = _.int;
+        let x = _.int;
         let x = _.frac;
         _ = Utils.Modf(v * h);
-        let Y = _.int;
+        let y = _.int;
         let y = _.frac;
 
-        let x0:number = parseInt(X);
-        let y0:number = parseInt(Y);
+        let x0:number = parseInt(x);
+        let y0:number = parseInt(y);
         let x1:number = x0 + 1;
         let y1:number = y0 + 1;
-        let c00:number = turbo.Runtime._mem_int32[(  data + 4 + (4 * (y0 * Width + x0))  ) >> 2];
-        let c01:number = turbo.Runtime._mem_int32[(  data + 4 + (4 * (y1 * Width + x0))  ) >> 2];
-        let c10:number = turbo.Runtime._mem_int32[(  data + 4 + (4 * (y0 * Width + x1))  ) >> 2];
-        let c11:number = turbo.Runtime._mem_int32[(  data + 4 + (4 * (y1 * Width + x1))  ) >> 2];
+        let c00:number = unsafe._mem_i32[(  data + 4 + (4 * (y0 * Width + x0))  ) >> 2];
+        let c01:number = unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x0))  ) >> 2];
+        let c10:number = unsafe._mem_i32[(  data + 4 + (4 * (y0 * Width + x1))  ) >> 2];
+        let c11:number = unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x1))  ) >> 2];
         let c:number = Color.BLACK;
         c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
         c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
@@ -1931,13 +1936,13 @@ export class Texture extends MemoryObject{
 
     static NormalSample(t:number, u:number, v:number, c?:number):Vector3 {
         let c = Texture.Sample(t, u, v);
-        return new Vector3(turbo.Runtime._mem_float64[(c + 8) >> 3] * 2 - 1, turbo.Runtime._mem_float64[(c + 16) >> 3] * 2 - 1, turbo.Runtime._mem_float64[(c + 24) >> 3] * 2 - 1).normalize();
+        return new Vector3(unsafe._mem_f64[(c + 8) >> 3] * 2 - 1, unsafe._mem_f64[(c + 16) >> 3] * 2 - 1, unsafe._mem_f64[(c + 24) >> 3] * 2 - 1).normalize();
     }
 
     static BumpSample(t:number, u:number, v:number, c?:number):Vector3 {
-        let Width:number = turbo.Runtime._mem_int32[(t + 4) >> 2];
-        let Height:number = turbo.Runtime._mem_int32[(t + 8) >> 2];
-        let data:number = turbo.Runtime._mem_int32[(t + 16) >> 2];
+        let Width:number = unsafe._mem_i32[(t + 4) >> 2];
+        let Height:number = unsafe._mem_i32[(t + 8) >> 2];
+        let data:number = unsafe._mem_i32[(t + 16) >> 2];
         u = Utils.FractAddOne(u);
         v = Utils.FractAddOne(v);
         v = 1 - v;
@@ -1947,13 +1952,13 @@ export class Texture extends MemoryObject{
         let x2 = Utils.ClampInt(x+1, 0, Width-1);
         let y1 = Utils.ClampInt(y-1, 0, Height-1);
         let y2 = Utils.ClampInt(y+1, 0, Height-1);
-        let cx = Color.Sub_mem(turbo.Runtime._mem_int32[(  data + 4 + (4 * (y * Width + x1))  ) >> 2], turbo.Runtime._mem_int32[(  data + 4 + (4 * (y * Width + x2))  ) >> 2]);
-        let cy = Color.Sub_mem(turbo.Runtime._mem_int32[(  data + 4 + (4 * (y1 * Width + x))  ) >> 2], turbo.Runtime._mem_int32[(  data + 4 + (4 * (y2 * Width + x))  ) >> 2]);
-        return new Vector3(turbo.Runtime._mem_float64[(cx + 8) >> 3], turbo.Runtime._mem_float64[(cy + 8) >> 3], 0);
+        let cx = Color.Sub_mem(unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x1))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x2))  ) >> 2]);
+        let cy = Color.Sub_mem(unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y2 * Width + x))  ) >> 2]);
+        return new Vector3(unsafe._mem_f64[(cx + 8) >> 3], unsafe._mem_f64[(cy + 8) >> 3], 0);
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=10502342; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=10502342; return SELF; }
 }
-turbo.Runtime._idToType[10502342] = Texture;
+unsafe._idToType[10502342] = Texture;
 
 
 export class Material extends MemoryObject{
@@ -1971,132 +1976,132 @@ export class Material extends MemoryObject{
    }
 
     static init(SELF, Color, Texture, NormalTexture, BumpTexture, GlossTexture, BumpMultiplier, Emittance, Index, Gloss, Tint, Reflectivity, Transparent){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = Color; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = Texture; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = NormalTexture; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = BumpTexture; 
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = GlossTexture; 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = BumpMultiplier; 
-         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = Emittance; 
-         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = Index; 
-         turbo.Runtime._mem_float64[(SELF + 48) >> 3] = Gloss; 
-         turbo.Runtime._mem_float64[(SELF + 56) >> 3] = Tint; 
-         turbo.Runtime._mem_float64[(SELF + 64) >> 3] = Reflectivity; 
-         turbo.Runtime._mem_uint8[(SELF + 72) >> 0] = Transparent; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = Color; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = Texture; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = NormalTexture; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = BumpTexture; 
+         unsafe._mem_i32[(SELF + 20) >> 2] = GlossTexture; 
+         unsafe._mem_f64[(SELF + 24) >> 3] = BumpMultiplier; 
+         unsafe._mem_f64[(SELF + 32) >> 3] = Emittance; 
+         unsafe._mem_f64[(SELF + 40) >> 3] = Index; 
+         unsafe._mem_f64[(SELF + 48) >> 3] = Gloss; 
+         unsafe._mem_f64[(SELF + 56) >> 3] = Tint; 
+         unsafe._mem_f64[(SELF + 64) >> 3] = Reflectivity; 
+         unsafe._mem_u8[(SELF + 72) >> 0] = Transparent; 
         return SELF;
     }
     static IsLight(SELF):boolean {
-        return turbo.Runtime._mem_float64[(SELF + 32) >> 3] > 0;
+        return unsafe._mem_f64[(SELF + 32) >> 3] > 0;
     }
     static Clone(SELF, c?:number):number {
-        let ptr:number = c?c:Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = c?c:Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr,
-            Color.Clone(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
-            turbo.Runtime._mem_int32[(SELF + 8) >> 2],
-            turbo.Runtime._mem_int32[(SELF + 12) >> 2],
-            turbo.Runtime._mem_int32[(SELF + 16) >> 2],
-            turbo.Runtime._mem_int32[(SELF + 20) >> 2],
-            turbo.Runtime._mem_float64[(SELF + 24) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 32) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 40) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 48) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 56) >> 3],
-            turbo.Runtime._mem_float64[(SELF + 64) >> 3],
-            turbo.Runtime._mem_uint8[(SELF + 72) >> 0]
+            Color.Clone(unsafe._mem_i32[(SELF + 4) >> 2]),
+            unsafe._mem_i32[(SELF + 8) >> 2],
+            unsafe._mem_i32[(SELF + 12) >> 2],
+            unsafe._mem_i32[(SELF + 16) >> 2],
+            unsafe._mem_i32[(SELF + 20) >> 2],
+            unsafe._mem_f64[(SELF + 24) >> 3],
+            unsafe._mem_f64[(SELF + 32) >> 3],
+            unsafe._mem_f64[(SELF + 40) >> 3],
+            unsafe._mem_f64[(SELF + 48) >> 3],
+            unsafe._mem_f64[(SELF + 56) >> 3],
+            unsafe._mem_f64[(SELF + 64) >> 3],
+            unsafe._mem_u8[(SELF + 72) >> 0]
         );
     }
     static ToJSON(SELF){
         return {
             ptr:SELF,
-            color:Color.RGBA(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
-            texture:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
-            normalTexture:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
-            bumpTexture:turbo.Runtime._mem_int32[(SELF + 16) >> 2],
-            glossTexture:turbo.Runtime._mem_int32[(SELF + 20) >> 2],
-            bumpMultiplier:turbo.Runtime._mem_float64[(SELF + 24) >> 3],
-            emittance:turbo.Runtime._mem_float64[(SELF + 32) >> 3],
-            index:turbo.Runtime._mem_float64[(SELF + 40) >> 3],
-            gloss:turbo.Runtime._mem_float64[(SELF + 48) >> 3],
-            tint:turbo.Runtime._mem_float64[(SELF + 56) >> 3],
-            reflectivity:turbo.Runtime._mem_float64[(SELF + 64) >> 3],
-            transparent:turbo.Runtime._mem_uint8[(SELF + 72) >> 0]
+            color:Color.RGBA(unsafe._mem_i32[(SELF + 4) >> 2]),
+            texture:unsafe._mem_i32[(SELF + 8) >> 2],
+            normalTexture:unsafe._mem_i32[(SELF + 12) >> 2],
+            bumpTexture:unsafe._mem_i32[(SELF + 16) >> 2],
+            glossTexture:unsafe._mem_i32[(SELF + 20) >> 2],
+            bumpMultiplier:unsafe._mem_f64[(SELF + 24) >> 3],
+            emittance:unsafe._mem_f64[(SELF + 32) >> 3],
+            index:unsafe._mem_f64[(SELF + 40) >> 3],
+            gloss:unsafe._mem_f64[(SELF + 48) >> 3],
+            tint:unsafe._mem_f64[(SELF + 56) >> 3],
+            reflectivity:unsafe._mem_f64[(SELF + 64) >> 3],
+            transparent:unsafe._mem_u8[(SELF + 72) >> 0]
         }
     }
 
     static setEmittance(SELF, Emittance) {
-         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = Emittance; 
+         unsafe._mem_f64[(SELF + 32) >> 3] = Emittance; 
     }
 
     static setIndex(SELF, Index) {
-         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = Index; 
+         unsafe._mem_f64[(SELF + 40) >> 3] = Index; 
     }
 
     static setGloss(SELF, Gloss) {
-         turbo.Runtime._mem_float64[(SELF + 48) >> 3] = Gloss; 
+         unsafe._mem_f64[(SELF + 48) >> 3] = Gloss; 
     }
 
     static setTint(SELF, Tint) {
-         turbo.Runtime._mem_float64[(SELF + 56) >> 3] = Tint; 
+         unsafe._mem_f64[(SELF + 56) >> 3] = Tint; 
     }
 
     static setReflectivity(SELF, Reflectivity) {
-         turbo.Runtime._mem_float64[(SELF + 64) >> 3] = Reflectivity; 
+         unsafe._mem_f64[(SELF + 64) >> 3] = Reflectivity; 
     }
 
     static setTransparent(SELF, Transparent) {
-         turbo.Runtime._mem_uint8[(SELF + 72) >> 0] = Transparent; 
+         unsafe._mem_u8[(SELF + 72) >> 0] = Transparent; 
     }
 
     static DiffuseMaterial(color:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
     }
 
     static SpecularMaterial(color:number, index:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, 0, 0, -1, false);
     }
 
     static GlossyMaterial(color:number, index:number, gloss:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, gloss, 0, -1, false);
     }
 
     static ClearMaterial(index:number, gloss:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, Color.BLACK, 0, 0, 0, 0, 1, 0, index, gloss, 0, -1, true);
     }
 
     static TransparentMaterial(color:number, index:number, gloss:number, tint:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, index, gloss, tint, -1, true);
     }
 
     static MetallicMaterial(color:number, gloss:number, tint:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, gloss, tint, -1, false);
     }
 
     static LightMaterial(color:number, emittance:number):number{
-        let ptr:number = Material.initInstance(turbo.Runtime.allocOrThrow(73,8));
+        let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, emittance, 1, 0, 0, -1, false);
     }
 
     static MaterialAt(shape:number, point:Vector3):number{
         let material:number = Shape.MaterialAt(shape, point);
         // let uv:Vector3 = Shape.UV(shape, point);
-        // if (turbo.Runtime._mem_int32[(material + 8) >> 2]) {
-        //     turbo.Runtime._mem_int32[(material + 4) >> 2] = Texture.Sample(turbo.Runtime._mem_int32[(material + 8) >> 2], uv.x, uv.y);
+        // if (unsafe._mem_i32[(material + 8) >> 2]) {
+        //     unsafe._mem_i32[(material + 4) >> 2] = Texture.Sample(unsafe._mem_i32[(material + 8) >> 2], uv.x, uv.y);
         // }
-        // if (turbo.Runtime._mem_int32[(material + 20) >> 2]) {
-        //     let c:number = Texture.Sample(turbo.Runtime._mem_int32[(material + 20) >> 2], uv.x, uv.y);
-        //     turbo.Runtime._mem_float64[(material + 48) >> 3] = (turbo.Runtime._mem_float64[(c + 8) >> 3] + turbo.Runtime._mem_float64[(c + 16) >> 3] + turbo.Runtime._mem_float64[(c + 24) >> 3]) / 3;
+        // if (unsafe._mem_i32[(material + 20) >> 2]) {
+        //     let c:number = Texture.Sample(unsafe._mem_i32[(material + 20) >> 2], uv.x, uv.y);
+        //     unsafe._mem_f64[(material + 48) >> 3] = (unsafe._mem_f64[(c + 8) >> 3] + unsafe._mem_f64[(c + 16) >> 3] + unsafe._mem_f64[(c + 24) >> 3]) / 3;
         // }
         return material;
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=167722613; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=167722613; return SELF; }
 }
-turbo.Runtime._idToType[167722613] = Material;
+unsafe._idToType[167722613] = Material;
 
 export class Ray{
 
@@ -2137,11 +2142,39 @@ export class Ray{
         return new Ray(this.origin, Utils.Cone(this.direction, theta, u, v));
     }
 
+
+    bounce2(info:HitInfo, p:number, u:number, v:number):{ray:Ray,reflected:boolean} {
+        var n:Ray = info.Ray;F
+        let material = info.Material;
+        let n1 = 1.0;
+        let n2 = unsafe._mem_f64[(material + 40) >> 3];
+        let gloss = unsafe._mem_f64[(material + 48) >> 3];
+        let transparent = unsafe._mem_u8[(material + 72) >> 0];
+
+        if (info.Inside) {
+            var _n1 = n1;
+            n1 = n2;
+            n2 = _n1;
+        }
+        if (p < n.reflectance(this, n1, n2)) {
+            var reflected:Ray = n.reflect(this);
+            var ray:Ray = reflected.coneBounce(gloss, u, v);
+            return {ray: ray, reflected: true};
+        } else if (transparent) {
+            var refracted = n.Refract(this, n1, n2);
+            var ray = refracted.coneBounce(gloss, u, v);
+            return {ray: ray, reflected: true};
+        } else {
+            var ray:Ray = n.weightedBounce(u, v);
+            return {ray: ray, reflected: false};
+        }
+    }
+
     bounce(info:HitInfo, u:number, v:number, bounceType:BounceType):{ray:Ray, reflected:boolean, coefficient:number} {
         let n:Ray = info.Ray;
         let material = info.Material;
         let n1 = 1.0;
-        let n2 = turbo.Runtime._mem_float64[(material + 40) >> 3];
+        let n2 = unsafe._mem_f64[(material + 40) >> 3];
 
         if(info.Inside){
             let tmp = n1;
@@ -2151,8 +2184,8 @@ export class Ray{
 
         let p:number;
 
-        if(turbo.Runtime._mem_float64[(material + 64) >> 3] >= 0) {
-            p = turbo.Runtime._mem_float64[(material + 64) >> 3];
+        if(unsafe._mem_f64[(material + 64) >> 3] >= 0) {
+            p = unsafe._mem_f64[(material + 64) >> 3];
         }else{
             p = n.reflectance(this, n1, n2);
         }
@@ -2172,11 +2205,11 @@ export class Ray{
         }
         if(reflect) {
             let reflected:Ray = n.reflect(this);
-            return { ray: reflected.coneBounce(turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected:true, coefficient:p };
-        } else if (turbo.Runtime._mem_uint8[(material + 72) >> 0]) {
+            return { ray: reflected.coneBounce(unsafe._mem_f64[(material + 48) >> 3], u, v), reflected:true, coefficient:p };
+        } else if (unsafe._mem_u8[(material + 72) >> 0]) {
             let refracted:Ray = n.refract(this, n1, n2);
             refracted.origin = refracted.origin.add(refracted.direction.mulScalar(1e-4));
-            return { ray: refracted.coneBounce(turbo.Runtime._mem_float64[(material + 48) >> 3], u, v), reflected: true, coefficient: 1 - p };
+            return { ray: refracted.coneBounce(unsafe._mem_f64[(material + 48) >> 3], u, v), reflected: true, coefficient: 1 - p };
         } else {
             return { ray: n.weightedBounce(u, v), reflected: false, coefficient: 1 - p };
         }
@@ -2216,7 +2249,7 @@ export class Shape extends MemoryObject{
    }
 
     static init(SELF:number, id):number{
-         turbo.Runtime._mem_uint32[(SELF + 4) >> 2] = id; 
+         unsafe._mem_u32[(SELF + 4) >> 2] = id; 
 		return SELF;
 	}
     static Type_impl(SELF:number){
@@ -2244,7 +2277,7 @@ export class Shape extends MemoryObject{
 		throw "Pure: Shape.MaterialAt()";
 	}
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.Type_impl(SELF );
             case 124486674:
@@ -2258,11 +2291,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.ToJSON_impl(SELF );
             case 124486674:
@@ -2276,11 +2309,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF , c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.Compile_impl(SELF , c);
             case 124486674:
@@ -2294,11 +2327,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.Compile_impl(SELF , c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static BoundingBox(SELF , c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.BoundingBox_impl(SELF , c);
             case 124486674:
@@ -2312,11 +2345,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.BoundingBox_impl(SELF , c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , ray,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.Intersect_impl(SELF , ray,c);
             case 124486674:
@@ -2330,11 +2363,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.Intersect_impl(SELF , ray,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.UV_impl(SELF , p,c);
             case 124486674:
@@ -2348,11 +2381,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.UV_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.NormalAt_impl(SELF , p,c);
             case 124486674:
@@ -2366,11 +2399,11 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.NormalAt_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 255446:
                 return Shape.MaterialAt_impl(SELF , p,c);
             case 124486674:
@@ -2384,12 +2417,12 @@ export class Shape extends MemoryObject{
             case 48819938:
                 return Mesh.MaterialAt_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=255446; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=255446; return SELF; }
 }
-turbo.Runtime._idToType[255446] = Shape;
+unsafe._idToType[255446] = Shape;
 
 export class TransformedShape extends Shape{
    static NAME:string = "TransformedShape";
@@ -2406,35 +2439,35 @@ export class TransformedShape extends Shape{
    }
 
     static init(SELF, shape:number, matrix){
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = shape; 
-		 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = matrix; 
-		 turbo.Runtime._mem_int32[(SELF + 20) >> 2] = (Matrix.Inverse(matrix)); 
-		 turbo.Runtime._mem_int32[(SELF + 24) >> 2] = (Matrix.Transpose(turbo.Runtime._mem_int32[(SELF + 20) >> 2])); 
+         unsafe._mem_i32[(SELF + 12) >> 2] = shape; 
+		 unsafe._mem_i32[(SELF + 16) >> 2] = matrix; 
+		 unsafe._mem_i32[(SELF + 20) >> 2] = (Matrix.Inverse(matrix)); 
+		 unsafe._mem_i32[(SELF + 24) >> 2] = (Matrix.Transpose(unsafe._mem_i32[(SELF + 20) >> 2])); 
 		return SELF;
 	}
 
 	static NewTransformedShape(s:number, m:number):number {
-		return TransformedShape.init(TransformedShape.initInstance(turbo.Runtime.allocOrThrow(28,4)), s, m);
+		return TransformedShape.init(TransformedShape.initInstance(unsafe.alloc(28,4)), s, m);
 	}
     static BoundingBox_impl(SELF) {
-        if(!turbo.Runtime._mem_int32[(SELF + 8) >> 2]){
-             turbo.Runtime._mem_int32[(SELF + 8) >> 2] = (Matrix.MulBox(turbo.Runtime._mem_int32[(SELF + 16) >> 2], Shape.BoundingBox(turbo.Runtime._mem_int32[(SELF + 12) >> 2]))); 
+        if(!unsafe._mem_i32[(SELF + 8) >> 2]){
+             unsafe._mem_i32[(SELF + 8) >> 2] = (Matrix.MulBox(unsafe._mem_i32[(SELF + 16) >> 2], Shape.BoundingBox(unsafe._mem_i32[(SELF + 12) >> 2]))); 
         }
-        return turbo.Runtime._mem_int32[(SELF + 8) >> 2];
+        return unsafe._mem_i32[(SELF + 8) >> 2];
 	}
     static Intersect_impl(SELF, r:Ray):Hit {
 
-        let invMat = turbo.Runtime._mem_int32[(SELF + 20) >> 2];
+        let invMat = unsafe._mem_i32[(SELF + 20) >> 2];
 		let shapeRay:Ray = Matrix.MulRay(invMat, r);
-		let hit = Shape.Intersect(turbo.Runtime._mem_int32[(SELF + 12) >> 2], shapeRay);
+		let hit = Shape.Intersect(unsafe._mem_i32[(SELF + 12) >> 2], shapeRay);
 		if (!hit.Ok()) {
 			return hit;
 		}
-        let transMat = turbo.Runtime._mem_int32[(SELF + 24) >> 2];
+        let transMat = unsafe._mem_i32[(SELF + 24) >> 2];
 		let shape:number = hit.Shape;
 		let shapePosition:Vector3 = shapeRay.position(hit.T);
 		let shapeNormal:Vector3 = Shape.NormalAt(shape, shapePosition);
-		let position:Vector3 = Matrix.MulPosition_vec3(turbo.Runtime._mem_int32[(SELF + 16) >> 2], shapePosition);
+		let position:Vector3 = Matrix.MulPosition_vec3(unsafe._mem_i32[(SELF + 16) >> 2], shapePosition);
 		let normal:Vector3 = Matrix.MulDirection_vec3(transMat, shapeNormal);
 		let material = Material.MaterialAt(shape, shapePosition);
 		let inside = false;
@@ -2449,90 +2482,90 @@ export class TransformedShape extends Shape{
 		return hit;
 	}
     static Type_impl(SELF){
-        return Shape.Type(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        return Shape.Type(unsafe._mem_i32[(SELF + 12) >> 2]);
     }
     static ToJSON_impl(SELF){
-        return Shape.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        return Shape.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]);
     }
     static Compile_impl(SELF, c?:number){
-        return Shape.Compile(turbo.Runtime._mem_int32[(SELF + 12) >> 2], c);
+        return Shape.Compile(unsafe._mem_i32[(SELF + 12) >> 2], c);
     }
     static UV_impl(SELF:number, p:Vector3, c?:number):number{
-        return Shape.UV(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+        return Shape.UV(unsafe._mem_i32[(SELF + 12) >> 2], p, c);
     }
     static NormalAt_impl(SELF:number, p:Vector3, c?:number):number{
-        return Shape.NormalAt(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+        return Shape.NormalAt(unsafe._mem_i32[(SELF + 12) >> 2], p, c);
     }
     static MaterialAt_impl(SELF:number, p:Vector3, c?:number):number{
-        return Shape.MaterialAt(turbo.Runtime._mem_int32[(SELF + 12) >> 2], p, c);
+        return Shape.MaterialAt(unsafe._mem_i32[(SELF + 12) >> 2], p, c);
     }
     static BoundingBox(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.BoundingBox_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , r) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.Intersect_impl(SELF , r);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF , c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.Compile_impl(SELF , c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.UV_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.NormalAt_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , p,c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 124486674:
                 return TransformedShape.MaterialAt_impl(SELF , p,c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=124486674; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=124486674; return SELF; }
 }
-turbo.Runtime._idToType[124486674] = TransformedShape;
+unsafe._idToType[124486674] = TransformedShape;
 
 export class Cube extends Shape{
    static NAME:string = "Cube";
@@ -2549,35 +2582,35 @@ export class Cube extends Shape{
    }
 
     static init(SELF, min, max, material, box){
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = min; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = max; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = material; 
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = box; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = min; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = max; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = material; 
+         unsafe._mem_i32[(SELF + 20) >> 2] = box; 
         return SELF;
     }
     static NewCube(min, max, material):number {
-        let box = Box.Init_mem(Box.initInstance(turbo.Runtime.allocOrThrow(12,4)), min, max);
-        return Cube.init(Cube.initInstance(turbo.Runtime.allocOrThrow(24,4)), min, max, material, box);
+        let box = Box.Init_mem(Box.initInstance(unsafe.alloc(12,4)), min, max);
+        return Cube.init(Cube.initInstance(unsafe.alloc(24,4)), min, max, material, box);
     }
     static Type_impl(SELF:number){
         throw ShapeType.CUBE;
     }
     static ToJSON_impl(SELF){
         return {
-            min:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
-            max:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
-            material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2]),
-            box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 20) >> 2]),
+            min:Vector.ToJSON(unsafe._mem_i32[(SELF + 8) >> 2]),
+            max:Vector.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]),
+            material:Material.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2]),
+            box:Box.ToJSON(unsafe._mem_i32[(SELF + 20) >> 2]),
         }
     }
     static Compile_impl(SELF){
     }
     static BoundingBox_impl(SELF):number {
-        return turbo.Runtime._mem_int32[(SELF + 20) >> 2];
+        return unsafe._mem_i32[(SELF + 20) >> 2];
     }
     static Intersect_impl(SELF, r:Ray):Hit {
-        let min = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        let max = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        let min = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let max = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
 
         let n:Vector3 = min.sub(r.origin).div(r.direction);
         let f:Vector3 = max.sub(r.origin).div(r.direction);
@@ -2593,20 +2626,20 @@ export class Cube extends Shape{
         return Hit.NoHit;
     }
     static UV_impl(SELF, p:Vector3):Vector3 {
-        let min = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        let max = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        let min = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let max = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
         let uv = p.sub(min).div(max.sub(min));
         min = null;
         max = null;
         return new Vector3(uv.x, uv.z, 0);
     }
     static MaterialAt_impl(SELF, p:Vector3):number {
-        return turbo.Runtime._mem_int32[(SELF + 16) >> 2];
+        return unsafe._mem_i32[(SELF + 16) >> 2];
     }
     static NormalAt_impl(SELF, p:Vector3):Vector3 {
 
-        let min = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        let max = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
+        let min = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let max = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
 
         if(p.x < min.x + EPS){
             return new Vector3(-1, 0, 0);
@@ -2627,18 +2660,18 @@ export class Cube extends Shape{
     }
 
     static Mesh(SELF):number {
-        let a = turbo.Runtime._mem_int32[(SELF + 8) >> 2];
-        let b = turbo.Runtime._mem_int32[(SELF + 12) >> 2];
+        let a = unsafe._mem_i32[(SELF + 8) >> 2];
+        let b = unsafe._mem_i32[(SELF + 12) >> 2];
         let z = Vector.NewVector();
-        let m = turbo.Runtime._mem_int32[(SELF + 16) >> 2];
-        let v000 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
-        let v001 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
-        let v010 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
-        let v011 = Vector.NewVector(turbo.Runtime._mem_float64[(a + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
-        let v100 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
-        let v101 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(a + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
-        let v110 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(a + 24) >> 3]);
-        let v111 = Vector.NewVector(turbo.Runtime._mem_float64[(b + 8) >> 3], turbo.Runtime._mem_float64[(b + 16) >> 3], turbo.Runtime._mem_float64[(b + 24) >> 3]);
+        let m = unsafe._mem_i32[(SELF + 16) >> 2];
+        let v000 = Vector.NewVector(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
+        let v001 = Vector.NewVector(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
+        let v010 = Vector.NewVector(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
+        let v011 = Vector.NewVector(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
+        let v100 = Vector.NewVector(unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
+        let v101 = Vector.NewVector(unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
+        let v110 = Vector.NewVector(unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3]);
+        let v111 = Vector.NewVector(unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
         let triangles = [
             Triangle.NewTriangle(v000, v100, v110, z, z, z, m),
             Triangle.NewTriangle(v000, v110, v010, z, z, z, m),
@@ -2656,72 +2689,72 @@ export class Cube extends Shape{
         return Mesh.NewMesh(Triangle.Pack(triangles));
     }
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.Compile_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static BoundingBox(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.BoundingBox_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , r) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.Intersect_impl(SELF , r);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.UV_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.MaterialAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48824165:
                 return Cube.NormalAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=48824165; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=48824165; return SELF; }
 }
-turbo.Runtime._idToType[48824165] = Cube;
+unsafe._idToType[48824165] = Cube;
 
 
 export class Sphere extends Shape{
@@ -2739,21 +2772,21 @@ export class Sphere extends Shape{
    }
 
     static init(SELF, center:number, radius:number, material:number, box:number):number{
-		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = center; 
-		 turbo.Runtime._mem_float64[(SELF + 16) >> 3] = radius; 
-		 turbo.Runtime._mem_int32[(SELF + 24) >> 2] = material; 
-		 turbo.Runtime._mem_int32[(SELF + 28) >> 2] = box; 
+		 unsafe._mem_i32[(SELF + 8) >> 2] = center; 
+		 unsafe._mem_f64[(SELF + 16) >> 3] = radius; 
+		 unsafe._mem_i32[(SELF + 24) >> 2] = material; 
+		 unsafe._mem_i32[(SELF + 28) >> 2] = box; 
 		return SELF;
 	}
 
 	static NewSphere(center:number, radius:number, material:number):number {
-		let min = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-		let max = Vector.initInstance(turbo.Runtime.allocOrThrow(32,8));
-		Vector.Init_mem(min, turbo.Runtime._mem_float64[(center + 8) >> 3] - radius, turbo.Runtime._mem_float64[(center + 16) >> 3] - radius, turbo.Runtime._mem_float64[(center + 24) >> 3] - radius);
-		Vector.Init_mem(max, turbo.Runtime._mem_float64[(center + 8) >> 3] + radius, turbo.Runtime._mem_float64[(center + 16) >> 3] + radius, turbo.Runtime._mem_float64[(center + 24) >> 3] + radius);
-		let box = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
+		let min = Vector.initInstance(unsafe.alloc(32,8));
+		let max = Vector.initInstance(unsafe.alloc(32,8));
+		Vector.Init_mem(min, unsafe._mem_f64[(center + 8) >> 3] - radius, unsafe._mem_f64[(center + 16) >> 3] - radius, unsafe._mem_f64[(center + 24) >> 3] - radius);
+		Vector.Init_mem(max, unsafe._mem_f64[(center + 8) >> 3] + radius, unsafe._mem_f64[(center + 16) >> 3] + radius, unsafe._mem_f64[(center + 24) >> 3] + radius);
+		let box = Box.initInstance(unsafe.alloc(12,4));
 		Box.Init_mem(box , min, max);
-		let ptr:number = Sphere.initInstance(turbo.Runtime.allocOrThrow(32,8));
+		let ptr:number = Sphere.initInstance(unsafe.alloc(32,8));
 		return Sphere.init(ptr, center, radius, material, box);
 	}
     static Type_impl(SELF){
@@ -2761,23 +2794,23 @@ export class Sphere extends Shape{
 	}
     static ToJSON_impl(SELF){
 		return {
-			center:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
-			radius:turbo.Runtime._mem_float64[(SELF + 16) >> 3],
-			material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 24) >> 2]),
-			box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 28) >> 2]),
+			center:Vector.ToJSON(unsafe._mem_i32[(SELF + 8) >> 2]),
+			radius:unsafe._mem_f64[(SELF + 16) >> 3],
+			material:Material.ToJSON(unsafe._mem_i32[(SELF + 24) >> 2]),
+			box:Box.ToJSON(unsafe._mem_i32[(SELF + 28) >> 2]),
 		}
 	}
     static Compile_impl(SELF) {
 	}
     static BoundingBox_impl(SELF):number {
-		return turbo.Runtime._mem_int32[(SELF + 28) >> 2];
+		return unsafe._mem_i32[(SELF + 28) >> 2];
 	}
     static Intersect_impl(SELF, r:Ray):Hit {
 
-        let center:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+        let center:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
 		let to:Vector3 = r.origin.sub(center);
 		let b:number = to.dot(r.direction);
-		let c:number = to.dot(to) - turbo.Runtime._mem_float64[(SELF + 16) >> 3] * turbo.Runtime._mem_float64[(SELF + 16) >> 3];
+		let c:number = to.dot(to) - unsafe._mem_f64[(SELF + 16) >> 3] * unsafe._mem_f64[(SELF + 16) >> 3];
 		let d = b * b - c;
         center = null;
 		if (d > 0) {
@@ -2794,7 +2827,7 @@ export class Sphere extends Shape{
 		return Hit.NoHit;
 	}
     static UV_impl(SELF, p:Vector3):Vector3 {
-        let center:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+        let center:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
         p = p.sub(center);
         u = Math.atan2(p.z, p.x);
         v = Math.atan2(p.y, new Vector3(p.x, 0, p.z).length());
@@ -2804,81 +2837,81 @@ export class Sphere extends Shape{
         return new Vector3(u, v, 0);
 	}
     static MaterialAt_impl(SELF, _p:Vector3):number {
-		return turbo.Runtime._mem_int32[(SELF + 24) >> 2];
+		return unsafe._mem_i32[(SELF + 24) >> 2];
 	}
     static NormalAt_impl(SELF, p:Vector3):Vector3 {
-        let center:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+        let center:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
         let p = p.sub(center).normalize();
         center = null;
         return p;
 	}
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.Compile_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static BoundingBox(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.BoundingBox_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , r) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.Intersect_impl(SELF , r);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.UV_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , _p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.MaterialAt_impl(SELF , _p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 171432461:
                 return Sphere.NormalAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=171432461; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=171432461; return SELF; }
 }
-turbo.Runtime._idToType[171432461] = Sphere;
+unsafe._idToType[171432461] = Sphere;
 
 export class Triangle extends Shape{
    static NAME:string = "Triangle";
@@ -2895,60 +2928,60 @@ export class Triangle extends Shape{
    }
 
     static init(SELF, v1:number=-1, v2:number=-1, v3:number=-1, n1:number=-1, n2:number=-1, n3:number=-1, t1:number=-1, t2:number=-1, t3:number=-1, material:number=-1){
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = v1; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v2; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = v3; 
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = n1; 
-         turbo.Runtime._mem_int32[(SELF + 24) >> 2] = n2; 
-         turbo.Runtime._mem_int32[(SELF + 28) >> 2] = n3; 
-         turbo.Runtime._mem_int32[(SELF + 32) >> 2] = t1; 
-         turbo.Runtime._mem_int32[(SELF + 36) >> 2] = t2; 
-         turbo.Runtime._mem_int32[(SELF + 40) >> 2] = t3; 
-         turbo.Runtime._mem_int32[(SELF + 44) >> 2] = material; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = v1; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = v2; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = v3; 
+         unsafe._mem_i32[(SELF + 20) >> 2] = n1; 
+         unsafe._mem_i32[(SELF + 24) >> 2] = n2; 
+         unsafe._mem_i32[(SELF + 28) >> 2] = n3; 
+         unsafe._mem_i32[(SELF + 32) >> 2] = t1; 
+         unsafe._mem_i32[(SELF + 36) >> 2] = t2; 
+         unsafe._mem_i32[(SELF + 40) >> 2] = t3; 
+         unsafe._mem_i32[(SELF + 44) >> 2] = material; 
 		return SELF;
 	}
 
 	static NewTriangle(v1:number, v2:number, v3:number, t1:number, t2:number, t3:number, material:number):number {
-		let SELF = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
-		 turbo.Runtime._mem_int32[(SELF + 8) >> 2] = v1; 
-		 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v2; 
-		 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = v3; 
-		 turbo.Runtime._mem_int32[(SELF + 32) >> 2] = t1; 
-		 turbo.Runtime._mem_int32[(SELF + 36) >> 2] = t2; 
-		 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = t3; 
-		 turbo.Runtime._mem_int32[(SELF + 44) >> 2] = material; 
+		let SELF = Triangle.initInstance(unsafe.alloc(53,4));
+		 unsafe._mem_i32[(SELF + 8) >> 2] = v1; 
+		 unsafe._mem_i32[(SELF + 12) >> 2] = v2; 
+		 unsafe._mem_i32[(SELF + 16) >> 2] = v3; 
+		 unsafe._mem_i32[(SELF + 32) >> 2] = t1; 
+		 unsafe._mem_i32[(SELF + 36) >> 2] = t2; 
+		 unsafe._mem_i32[(SELF + 40) >> 2] = t3; 
+		 unsafe._mem_i32[(SELF + 44) >> 2] = material; 
 		//Triangle.FixNormals(SELF );
 		return SELF;
 	}
 
     static Pack(triangles:number[]):number {
-        let packed = turbo.Runtime.allocOrThrow( 4 + ( 4 * (triangles.length) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[packed >> 2] = (triangles.length);
+        let packed = unsafe.alloc( 4 + ( 4 * (triangles.length) ), 4 ) /*Array*/;
+        unsafe._mem_i32[packed >> 2] = (triangles.length);
         triangles.forEach((triangle, i) =>{
-            turbo.Runtime._mem_int32[(  packed + 4 + (4 * i)  ) >> 2] = triangle;
+            unsafe._mem_i32[(  packed + 4 + (4 * i)  ) >> 2] = triangle;
         });
         return packed;
     }
 
     static Copy(a:number, b:number):number{
-        turbo.Runtime._mem_int32[(b + 8) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 8) >> 2]);
-        turbo.Runtime._mem_int32[(b + 12) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 12) >> 2]);
-        turbo.Runtime._mem_int32[(b + 16) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 16) >> 2]);
-        turbo.Runtime._mem_int32[(b + 20) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 20) >> 2]);
-        turbo.Runtime._mem_int32[(b + 24) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 24) >> 2]);
-        turbo.Runtime._mem_int32[(b + 28) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 28) >> 2]);
-        turbo.Runtime._mem_int32[(b + 32) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 32) >> 2]);
-        turbo.Runtime._mem_int32[(b + 36) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 36) >> 2]);
-        turbo.Runtime._mem_int32[(b + 40) >> 2] = Vector.Clone(turbo.Runtime._mem_int32[(a + 40) >> 2]);
-        turbo.Runtime._mem_int32[(b + 44) >> 2] = Material.Clone(turbo.Runtime._mem_int32[(a + 44) >> 2]);
+        unsafe._mem_i32[(b + 8) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 8) >> 2]);
+        unsafe._mem_i32[(b + 12) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 12) >> 2]);
+        unsafe._mem_i32[(b + 16) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 16) >> 2]);
+        unsafe._mem_i32[(b + 20) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 20) >> 2]);
+        unsafe._mem_i32[(b + 24) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 24) >> 2]);
+        unsafe._mem_i32[(b + 28) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 28) >> 2]);
+        unsafe._mem_i32[(b + 32) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 32) >> 2]);
+        unsafe._mem_i32[(b + 36) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 36) >> 2]);
+        unsafe._mem_i32[(b + 40) >> 2] = Vector.Clone(unsafe._mem_i32[(a + 40) >> 2]);
+        unsafe._mem_i32[(b + 44) >> 2] = Material.Clone(unsafe._mem_i32[(a + 44) >> 2]);
         return b;
     }
 
     // static Vertices(SELF){
 	// 	return {
-     //        V1:turbo.Runtime._mem_int32[(SELF + 8) >> 2],
-     //        V2:turbo.Runtime._mem_int32[(SELF + 12) >> 2],
-     //        V3:turbo.Runtime._mem_int32[(SELF + 16) >> 2]
+     //        V1:unsafe._mem_i32[(SELF + 8) >> 2],
+     //        V2:unsafe._mem_i32[(SELF + 12) >> 2],
+     //        V3:unsafe._mem_i32[(SELF + 16) >> 2]
      //    }
 	// }
     static Type_impl(SELF:number){
@@ -2957,42 +2990,42 @@ export class Triangle extends Shape{
     static ToJSON_impl(SELF){
 		return {
 			vertex:{
-				v1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
-				v2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
-				v3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2])
+				v1:Vector.ToJSON(unsafe._mem_i32[(SELF + 8) >> 2]),
+				v2:Vector.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]),
+				v3:Vector.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2])
 			},
 			normal:{
-				n1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 20) >> 2]),
-				n2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 24) >> 2]),
-				n3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 28) >> 2])
+				n1:Vector.ToJSON(unsafe._mem_i32[(SELF + 20) >> 2]),
+				n2:Vector.ToJSON(unsafe._mem_i32[(SELF + 24) >> 2]),
+				n3:Vector.ToJSON(unsafe._mem_i32[(SELF + 28) >> 2])
 			},
 			uv:{
-				t1:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 32) >> 2]),
-				t2:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 36) >> 2]),
-				t3:Vector.ToJSON(turbo.Runtime._mem_int32[(SELF + 40) >> 2])
+				t1:Vector.ToJSON(unsafe._mem_i32[(SELF + 32) >> 2]),
+				t2:Vector.ToJSON(unsafe._mem_i32[(SELF + 36) >> 2]),
+				t3:Vector.ToJSON(unsafe._mem_i32[(SELF + 40) >> 2])
 			},
-			material:Material.ToJSON(turbo.Runtime._mem_int32[(SELF + 44) >> 2]),
-			box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 48) >> 2]),
+			material:Material.ToJSON(unsafe._mem_i32[(SELF + 44) >> 2]),
+			box:Box.ToJSON(unsafe._mem_i32[(SELF + 48) >> 2]),
 		}
 	}
     static Compile_impl(SELF) {
 	}
     static BoundingBox_impl(SELF, c?:number):number{
-        if(turbo.Runtime._mem_uint8[(SELF + 52) >> 0]){
-            return turbo.Runtime._mem_int32[(SELF + 48) >> 2];
+        if(unsafe._mem_u8[(SELF + 52) >> 0]){
+            return unsafe._mem_i32[(SELF + 48) >> 2];
         }else {
-            var min = Vector.Min_mem(Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-            var max = Vector.Max_mem(Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-             turbo.Runtime._mem_int32[(SELF + 48) >> 2] = (c?c:Box.initInstance(turbo.Runtime.allocOrThrow(12,4))); 
-             turbo.Runtime._mem_uint8[(SELF + 52) >> 0] = 1; 
+            var min = Vector.Min_mem(Vector.Min_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 12) >> 2]), unsafe._mem_i32[(SELF + 16) >> 2]);
+            var max = Vector.Max_mem(Vector.Max_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 12) >> 2]), unsafe._mem_i32[(SELF + 16) >> 2]);
+             unsafe._mem_i32[(SELF + 48) >> 2] = (c?c:Box.initInstance(unsafe.alloc(12,4))); 
+             unsafe._mem_u8[(SELF + 52) >> 0] = 1; 
         }
-		return Box.Init_mem(turbo.Runtime._mem_int32[(SELF + 48) >> 2], min, max);
+		return Box.Init_mem(unsafe._mem_i32[(SELF + 48) >> 2], min, max);
 	}
     /*Intersect(SELF, r:Ray):Hit {
         //Möller–Trumbore intersection algorithm
-        let V1 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        let V2 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
-        let V3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+        let V1 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let V2 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+        let V3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
 
         //Edge1
         var e1:Vector3 = V2.sub(V1);
@@ -3039,12 +3072,12 @@ export class Triangle extends Shape{
     }*/
     static Intersect_impl(SELF, r:Ray):Hit {
 
-		let e1x = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 8) >> 3];
-        let e1y = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 16) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 16) >> 3];
-        let e1z = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 12) >> 2]) + 24) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 24) >> 3];
-        let e2x = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 8) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 8) >> 3];
-        let e2y = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 16) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 16) >> 3];
-        let e2z = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 24) >> 3] - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 24) >> 3];
+		let e1x = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 12) >> 2]) + 8) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 8) >> 3];
+        let e1y = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 12) >> 2]) + 16) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 16) >> 3];
+        let e1z = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 12) >> 2]) + 24) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 24) >> 3];
+        let e2x = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 16) >> 2]) + 8) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 8) >> 3];
+        let e2y = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 16) >> 2]) + 16) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 16) >> 3];
+        let e2z = unsafe._mem_f64[((unsafe._mem_i32[(SELF + 16) >> 2]) + 24) >> 3] - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 24) >> 3];
         let px = r.direction.y * e2z - r.direction.z * e2y;
         let py = r.direction.z * e2x - r.direction.x * e2z;
         let pz = r.direction.x * e2y - r.direction.y * e2x;
@@ -3053,9 +3086,9 @@ export class Triangle extends Shape{
 			return Hit.NoHit;
 		}
 		let inv = 1 / det;
-        let tx = r.origin.x - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 8) >> 3];
-        let ty = r.origin.y - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 16) >> 3];
-        let tz = r.origin.z - turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 24) >> 3];
+        let tx = r.origin.x - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 8) >> 3];
+        let ty = r.origin.y - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 16) >> 3];
+        let tz = r.origin.z - unsafe._mem_f64[((unsafe._mem_i32[(SELF + 8) >> 2]) + 24) >> 3];
         let u = (tx * px + ty * py + tz * pz) * inv;
 		if (u < 0 || u > 1) {
 			return Hit.NoHit;
@@ -3075,9 +3108,9 @@ export class Triangle extends Shape{
 	}
     static UV_impl(SELF, p:Vector3):Vector3 {
 
-        let T1:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 32) >> 2]);
-        let T2:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 36) >> 2]);
-        let T3:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 40) >> 2]);
+        let T1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 32) >> 2]);
+        let T2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 36) >> 2]);
+        let T3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 40) >> 2]);
 
         let uvw = Triangle.Barycentric(SELF, p);
         let n = new Vector3();
@@ -3088,21 +3121,21 @@ export class Triangle extends Shape{
 		return n
 	}
     static MaterialAt_impl(SELF, p:Vector3):Vector3 {
-		return turbo.Runtime._mem_int32[(SELF + 44) >> 2];
+		return unsafe._mem_i32[(SELF + 44) >> 2];
 	}
     static NormalAt_impl(SELF, p:Vector3):Vector3 {
 
-        // let V1:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        // let V2:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
-        // let V3:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+        // let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        // let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+        // let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
 
-        let n1:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 20) >> 2]);
-        let n2:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 24) >> 2]);
-        let n3:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 28) >> 2]);
+        let n1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 20) >> 2]);
+        let n2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 24) >> 2]);
+        let n3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 28) >> 2]);
 
-        // let T1:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 32) >> 2]);
-        // let T2:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 36) >> 2]);
-        // let T3:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 40) >> 2]);
+        // let T1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 32) >> 2]);
+        // let T2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 36) >> 2]);
+        // let T3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 40) >> 2]);
 
 		let uvw = Triangle.Barycentric(SELF, p);
 		let n = new Vector3();
@@ -3110,58 +3143,58 @@ export class Triangle extends Shape{
         n = n.add(n2.mulScalar(uvw.v));
         n = n.add(n3.mulScalar(uvw.w));
 
-		/*if (turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 12) >> 2]) {
+		/*if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2]) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
             b = b.add(T3.mulScalar(uvw.w));
-			let ns:Vector3 = Texture.NormalSample(turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 12) >> 2], b.x, b.y);
+			let ns:Vector3 = Texture.NormalSample(unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2], b.x, b.y);
 			let dv1 = V2.sub(V1);
             let dv2 = V3.sub(V1);
             let dt1 = T2.sub(T1);
             let dt2 = T3.sub(T1);
 
 			let T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
-			let B = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
-            let N = T.cross(B);
-			let matrix = Matrix.initInstance(turbo.Runtime.allocOrThrow(136,8));
+			let b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
+            let N = T.cross(b);
+			let matrix = Matrix.initInstance(unsafe.alloc(136,8));
 			Matrix.init(matrix,
-					T.x, B.x, N.x, 0,
-					T.y, B.y, N.y, 0,
-					T.z, B.z, N.z, 0,
+					T.x, b.x, N.x, 0,
+					T.y, b.y, N.y, 0,
+					T.z, b.z, N.z, 0,
 					0, 0, 0, 1);
 			n = Matrix.MulDirection2(matrix, ns);
 		}
-		if (turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 16) >> 2]) {
+		if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 16) >> 2]) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
             b = b.add(T3.mulScalar(uvw.w));
-			let bump = Texture.BumpSample(turbo.Runtime._mem_int32[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 16) >> 2], b.x, b.y);
+			let bump = Texture.BumpSample(unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 16) >> 2], b.x, b.y);
             let dv1 = V2.sub(V1);
             let dv2 = V3.sub(V1);
             let dt1 = T2.sub(T1);
             let dt2 = T3.sub(T1);
 			let tangent = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
 			let bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
-			n = n.add(tangent.mulScalar(bump.x * turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 24) >> 3]));
-			n = n.add(bitangent.mulScalar(bump.y * turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(SELF + 44) >> 2]) + 24) >> 3]));
+			n = n.add(tangent.mulScalar(bump.x * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
+			n = n.add(bitangent.mulScalar(bump.y * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
 		}*/
 		n = n.normalize();
 		return n;
 	}
 
 	static Area(SELF):number {
-		let e1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-		let e2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 16) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+		let e1 = Vector.Sub_mem(unsafe._mem_i32[(SELF + 12) >> 2], unsafe._mem_i32[(SELF + 8) >> 2]);
+		let e2 = Vector.Sub_mem(unsafe._mem_i32[(SELF + 16) >> 2], unsafe._mem_i32[(SELF + 8) >> 2]);
 		let n = Vector.Cross_mem(e1, e2);
 		return Vector.Length_mem(n) / 2;
 	}
 
 	static Barycentric(SELF, p:Vector3):{u:number, v:number, w:number} {
-        let V1:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-        let V2:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 12) >> 2]);
-        let V3:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
+        let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+        let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
         let v0 = V2.sub(V1);
         let V1 = V3.sub(V1);
         let V2 = p.sub(V1);
@@ -3178,98 +3211,98 @@ export class Triangle extends Shape{
 	}
 
     static UpdateBox(SELF) {
-        var min = Vector.Min_mem(Vector.Min_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-        var max = Vector.Max_mem(Vector.Max_mem(turbo.Runtime._mem_int32[(SELF + 8) >> 2], turbo.Runtime._mem_int32[(SELF + 12) >> 2]), turbo.Runtime._mem_int32[(SELF + 16) >> 2]);
-         turbo.Runtime._mem_int32[(SELF + 48) >> 2] = (Box.initInstance(turbo.Runtime.allocOrThrow(12,4))); 
-         turbo.Runtime._mem_uint8[(SELF + 52) >> 0] = 1; 
-        return Box.Init_mem(turbo.Runtime._mem_int32[(SELF + 48) >> 2], min, max);
+        var min = Vector.Min_mem(Vector.Min_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 12) >> 2]), unsafe._mem_i32[(SELF + 16) >> 2]);
+        var max = Vector.Max_mem(Vector.Max_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 12) >> 2]), unsafe._mem_i32[(SELF + 16) >> 2]);
+         unsafe._mem_i32[(SELF + 48) >> 2] = (Box.initInstance(unsafe.alloc(12,4))); 
+         unsafe._mem_u8[(SELF + 52) >> 0] = 1; 
+        return Box.Init_mem(unsafe._mem_i32[(SELF + 48) >> 2], min, max);
     }
 
 	static FixNormals(SELF) {
-		let e1 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 12) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
-		let e2 = Vector.Sub_mem(turbo.Runtime._mem_int32[(SELF + 16) >> 2], turbo.Runtime._mem_int32[(SELF + 8) >> 2]);
+		let e1 = Vector.Sub_mem(unsafe._mem_i32[(SELF + 12) >> 2], unsafe._mem_i32[(SELF + 8) >> 2]);
+		let e2 = Vector.Sub_mem(unsafe._mem_i32[(SELF + 16) >> 2], unsafe._mem_i32[(SELF + 8) >> 2]);
 		let n = Vector.Normalize_mem(Vector.Cross_mem(e1, e2));
 
-        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 20) >> 2])) {
-            Vector.Copy(turbo.Runtime._mem_int32[(SELF + 20) >> 2], n);
+        if(Vector.IsZero(unsafe._mem_i32[(SELF + 20) >> 2])) {
+            Vector.Copy(unsafe._mem_i32[(SELF + 20) >> 2], n);
         }
-        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 24) >> 2])) {
-            Vector.Copy(turbo.Runtime._mem_int32[(SELF + 24) >> 2], n);
+        if(Vector.IsZero(unsafe._mem_i32[(SELF + 24) >> 2])) {
+            Vector.Copy(unsafe._mem_i32[(SELF + 24) >> 2], n);
         }
-        if(Vector.IsZero(turbo.Runtime._mem_int32[(SELF + 28) >> 2])) {
-            Vector.Copy(turbo.Runtime._mem_int32[(SELF + 28) >> 2], n);
+        if(Vector.IsZero(unsafe._mem_i32[(SELF + 28) >> 2])) {
+            Vector.Copy(unsafe._mem_i32[(SELF + 28) >> 2], n);
         }
         free(e1);
         free(e2);
         free(n);
 	}
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.Compile_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static BoundingBox(SELF , c) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.BoundingBox_impl(SELF , c);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , r) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.Intersect_impl(SELF , r);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.UV_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.MaterialAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 232773086:
                 return Triangle.NormalAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=232773086; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=232773086; return SELF; }
 }
-turbo.Runtime._idToType[232773086] = Triangle;
+unsafe._idToType[232773086] = Triangle;
 
 
 export class Mesh extends Shape{
@@ -3287,49 +3320,49 @@ export class Mesh extends Shape{
    }
 
     static init(SELF, triangles:number){
-        console.log(`numTriangles:${turbo.Runtime._mem_int32[triangles >> 2]}`);
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = triangles; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = 0; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = 0; 
+        console.log(`numTriangles:${unsafe._mem_i32[triangles >> 2]}`);
+         unsafe._mem_i32[(SELF + 8) >> 2] = triangles; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = 0; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = 0; 
         return SELF;
 	}
 	static NewMesh(triangles:number):number{
-		let ptr:number = Mesh.initInstance(turbo.Runtime.allocOrThrow(20,4));
+		let ptr:number = Mesh.initInstance(unsafe.alloc(20,4));
 		return Mesh.init(ptr, triangles);
 	}
 
 	static dirty(SELF) {
-		 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = null; 
-		 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = null; 
+		 unsafe._mem_i32[(SELF + 12) >> 2] = null; 
+		 unsafe._mem_i32[(SELF + 16) >> 2] = null; 
 	}
 
 	Copy(SELF):number {
-		let numTriangles:number = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
-		let triangles = turbo.Runtime.allocOrThrow( 4 + ( 4 * numTriangles ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[triangles >> 2] = numTriangles;
+		let numTriangles:number = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
+		let triangles = unsafe.alloc( 4 + ( 4 * numTriangles ), 4 ) /*Array*/;
+        unsafe._mem_i32[triangles >> 2] = numTriangles;
 		for (let i=0; i < numTriangles;i++) {
-			let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			let a = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
+			let t = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			let a = Triangle.initInstance(unsafe.alloc(53,4));
 			Triangle.Copy(t, a);
-			turbo.Runtime._mem_int32[(  triangles + 4 + (4 * i)  ) >> 2] = a;
+			unsafe._mem_i32[(  triangles + 4 + (4 * i)  ) >> 2] = a;
 		}
 		return Mesh.NewMesh(triangles);
 	}
     static Type_impl(SELF:number){
-        throw ShapeType.MESH;
+        return ShapeType.MESH;
     }
     static ToJSON_impl(SELF){
         return {
-            numTriangles:turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2],
-            box:Box.ToJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
-            tree:turbo.Runtime._mem_int32[(SELF + 16) >> 2]
+            numTriangles:unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2],
+            box:Box.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]),
+            tree:unsafe._mem_i32[(SELF + 16) >> 2]
         }
     }
     static Compile_impl(SELF) {
-		if (!turbo.Runtime._mem_int32[(SELF + 16) >> 2]) {
-			 turbo.Runtime._mem_int32[(SELF + 16) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 8) >> 2])); 
+		if (!unsafe._mem_i32[(SELF + 16) >> 2]) {
+			 unsafe._mem_i32[(SELF + 16) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 8) >> 2])); 
 		}
-        return turbo.Runtime._mem_int32[(SELF + 16) >> 2];
+        return unsafe._mem_i32[(SELF + 16) >> 2];
 	}
 
 	static Add(SELF, mesh:Mesh) {
@@ -3337,24 +3370,24 @@ export class Mesh extends Shape{
         Mesh.dirty(SELF);
 	}
     static BoundingBox_impl(SELF):number {
-		if (!turbo.Runtime._mem_int32[(SELF + 12) >> 2]) {
+		if (!unsafe._mem_i32[(SELF + 12) >> 2]) {
 
-			let t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
-			let min = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
-			let max = Vector.Clone(turbo.Runtime._mem_int32[(t + 8) >> 2]);
-			let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+			let t = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
+			let min = Vector.Clone(unsafe._mem_i32[(t + 8) >> 2]);
+			let max = Vector.Clone(unsafe._mem_i32[(t + 8) >> 2]);
+			let NumTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
 			for (let i=1;i < NumTriangles;i++) {
-				t = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, turbo.Runtime._mem_int32[(t + 8) >> 2], min), turbo.Runtime._mem_int32[(t + 12) >> 2], min), turbo.Runtime._mem_int32[(t + 16) >> 2], min);
-				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, turbo.Runtime._mem_int32[(t + 8) >> 2], max), turbo.Runtime._mem_int32[(t + 12) >> 2], max), turbo.Runtime._mem_int32[(t + 16) >> 2], max);
+				t = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+				Vector.Min_mem(Vector.Min_mem(Vector.Min_mem(min, unsafe._mem_i32[(t + 8) >> 2], min), unsafe._mem_i32[(t + 12) >> 2], min), unsafe._mem_i32[(t + 16) >> 2], min);
+				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, unsafe._mem_i32[(t + 8) >> 2], max), unsafe._mem_i32[(t + 12) >> 2], max), unsafe._mem_i32[(t + 16) >> 2], max);
 			}
-			let ptr:number = Box.initInstance(turbo.Runtime.allocOrThrow(12,4));
-			 turbo.Runtime._mem_int32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max)); 
+			let ptr:number = Box.initInstance(unsafe.alloc(12,4));
+			 unsafe._mem_i32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max)); 
 		}
-		return turbo.Runtime._mem_int32[(SELF + 12) >> 2];
+		return unsafe._mem_i32[(SELF + 12) >> 2];
 	}
     static Intersect_impl(SELF, r:number):Hit {
-		return Tree.Intersect(turbo.Runtime._mem_int32[(SELF + 16) >> 2], r);
+		return Tree.Intersect(unsafe._mem_i32[(SELF + 16) >> 2], r);
 	}
     static UV_impl(SELF, p:number):number {
 		return null; // not implemented
@@ -3380,38 +3413,38 @@ export class Mesh extends Shape{
 	static SmoothNormalsThreshold(SELF, radians:number) {
 		let threshold:number = Math.cos(radians);
 		let lookup:number[] = [];
-		let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+		let NumTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
 		for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]] = Utils.append(lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]], turbo.Runtime._mem_int32[(t + 20) >> 2]);
-			lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]] = Utils.append(lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]], turbo.Runtime._mem_int32[(t + 24) >> 2]);
-			lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]] = Utils.append(lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]], turbo.Runtime._mem_int32[(t + 28) >> 2]);
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			lookup[unsafe._mem_i32[(t + 8) >> 2]] = Utils.append(lookup[unsafe._mem_i32[(t + 8) >> 2]], unsafe._mem_i32[(t + 20) >> 2]);
+			lookup[unsafe._mem_i32[(t + 12) >> 2]] = Utils.append(lookup[unsafe._mem_i32[(t + 12) >> 2]], unsafe._mem_i32[(t + 24) >> 2]);
+			lookup[unsafe._mem_i32[(t + 16) >> 2]] = Utils.append(lookup[unsafe._mem_i32[(t + 16) >> 2]], unsafe._mem_i32[(t + 28) >> 2]);
 		}
         for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			turbo.Runtime._mem_int32[(t + 20) >> 2] = Mesh._SmoothNormalsThreshold(SELF, turbo.Runtime._mem_int32[(t + 20) >> 2], lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]], threshold);
-			turbo.Runtime._mem_int32[(t + 24) >> 2] = Mesh._SmoothNormalsThreshold(SELF, turbo.Runtime._mem_int32[(t + 24) >> 2], lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]], threshold);
-			turbo.Runtime._mem_int32[(t + 28) >> 2] = Mesh._SmoothNormalsThreshold(SELF, turbo.Runtime._mem_int32[(t + 28) >> 2], lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]], threshold);
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			unsafe._mem_i32[(t + 20) >> 2] = Mesh._SmoothNormalsThreshold(SELF, unsafe._mem_i32[(t + 20) >> 2], lookup[unsafe._mem_i32[(t + 8) >> 2]], threshold);
+			unsafe._mem_i32[(t + 24) >> 2] = Mesh._SmoothNormalsThreshold(SELF, unsafe._mem_i32[(t + 24) >> 2], lookup[unsafe._mem_i32[(t + 12) >> 2]], threshold);
+			unsafe._mem_i32[(t + 28) >> 2] = Mesh._SmoothNormalsThreshold(SELF, unsafe._mem_i32[(t + 28) >> 2], lookup[unsafe._mem_i32[(t + 16) >> 2]], threshold);
 		}
 	}
 
 	static SmoothNormals(SELF) {
 		let lookup:number[] = [];
-		let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+		let NumTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
         for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			Vector.Add_mem(lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]], turbo.Runtime._mem_int32[(t + 20) >> 2], lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]]);
-			Vector.Add_mem(lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]], turbo.Runtime._mem_int32[(t + 24) >> 2], lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]]);
-			Vector.Add_mem(lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]], turbo.Runtime._mem_int32[(t + 28) >> 2], lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]]);
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			Vector.Add_mem(lookup[unsafe._mem_i32[(t + 8) >> 2]], unsafe._mem_i32[(t + 20) >> 2], lookup[unsafe._mem_i32[(t + 8) >> 2]]);
+			Vector.Add_mem(lookup[unsafe._mem_i32[(t + 12) >> 2]], unsafe._mem_i32[(t + 24) >> 2], lookup[unsafe._mem_i32[(t + 12) >> 2]]);
+			Vector.Add_mem(lookup[unsafe._mem_i32[(t + 16) >> 2]], unsafe._mem_i32[(t + 28) >> 2], lookup[unsafe._mem_i32[(t + 16) >> 2]]);
 		}
 		for (let i=0;i < lookup.length;i++) {
 			 Vector.Normalize_mem(lookup[i], lookup[i]);
 		}
         for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-            turbo.Runtime._mem_int32[(t + 20) >> 2] = lookup[turbo.Runtime._mem_int32[(t + 8) >> 2]];
-			turbo.Runtime._mem_int32[(t + 24) >> 2] = lookup[turbo.Runtime._mem_int32[(t + 12) >> 2]];
-			turbo.Runtime._mem_int32[(t + 28) >> 2] = lookup[turbo.Runtime._mem_int32[(t + 16) >> 2]];
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+            unsafe._mem_i32[(t + 20) >> 2] = lookup[unsafe._mem_i32[(t + 8) >> 2]];
+			unsafe._mem_i32[(t + 24) >> 2] = lookup[unsafe._mem_i32[(t + 12) >> 2]];
+			unsafe._mem_i32[(t + 28) >> 2] = lookup[unsafe._mem_i32[(t + 16) >> 2]];
 		}
 	}
 
@@ -3432,31 +3465,31 @@ export class Mesh extends Shape{
 		let scale:number = Vector.MinComponent_mem(Vector.Div_mem(bsize, mbsize));
 		let extra:number = Vector.MulScalar_mem(Vector.Sub_mem(bsize, mbsize), scale);
 		let matrix:number = Matrix.Identity();
-		Matrix.Translate(matrix, Vector.Negate_mem(turbo.Runtime._mem_int32[(mbox + 4) >> 2]), matrix);
+		Matrix.Translate(matrix, Vector.Negate_mem(unsafe._mem_i32[(mbox + 4) >> 2]), matrix);
 		Matrix.Scale(matrix, Vector.NewVector(scale, scale, scale), matrix);
-		Matrix.Translate(matrix, Vector.Add_mem(turbo.Runtime._mem_int32[(mbox + 4) >> 2], Vector.Mul_mem(extra, anchor)));
+		Matrix.Translate(matrix, Vector.Add_mem(unsafe._mem_i32[(mbox + 4) >> 2], Vector.Mul_mem(extra, anchor)));
 		Mesh.Transform(SELF, matrix);
 	}
 
 	static Transform(SELF, matrix:number) {
-		let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+		let NumTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
         for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			turbo.Runtime._mem_int32[(t + 8) >> 2] = Matrix.MulPosition(matrix, turbo.Runtime._mem_int32[(t + 8) >> 2]);
-			turbo.Runtime._mem_int32[(t + 12) >> 2] = Matrix.MulPosition(matrix, turbo.Runtime._mem_int32[(t + 12) >> 2]);
-			turbo.Runtime._mem_int32[(t + 16) >> 2] = Matrix.MulPosition(matrix, turbo.Runtime._mem_int32[(t + 16) >> 2]);
-			turbo.Runtime._mem_int32[(t + 20) >> 2] = Matrix.MulDirection(matrix, turbo.Runtime._mem_int32[(t + 20) >> 2]);
-			turbo.Runtime._mem_int32[(t + 24) >> 2] = Matrix.MulDirection(matrix, turbo.Runtime._mem_int32[(t + 24) >> 2]);
-			turbo.Runtime._mem_int32[(t + 28) >> 2] = Matrix.MulDirection(matrix, turbo.Runtime._mem_int32[(t + 28) >> 2]);
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			unsafe._mem_i32[(t + 8) >> 2] = Matrix.MulPosition(matrix, unsafe._mem_i32[(t + 8) >> 2]);
+			unsafe._mem_i32[(t + 12) >> 2] = Matrix.MulPosition(matrix, unsafe._mem_i32[(t + 12) >> 2]);
+			unsafe._mem_i32[(t + 16) >> 2] = Matrix.MulPosition(matrix, unsafe._mem_i32[(t + 16) >> 2]);
+			unsafe._mem_i32[(t + 20) >> 2] = Matrix.MulDirection(matrix, unsafe._mem_i32[(t + 20) >> 2]);
+			unsafe._mem_i32[(t + 24) >> 2] = Matrix.MulDirection(matrix, unsafe._mem_i32[(t + 24) >> 2]);
+			unsafe._mem_i32[(t + 28) >> 2] = Matrix.MulDirection(matrix, unsafe._mem_i32[(t + 28) >> 2]);
 		}
 		Mesh.dirty(SELF);
 	}
 
 	static SetMaterial(material:number) {
-		let NumTriangles = turbo.Runtime._mem_int32[(turbo.Runtime._mem_int32[(SELF + 8) >> 2]) >> 2];
+		let NumTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
         for (let i=0; i < NumTriangles; i++) {
-            let t:number = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
-			turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
+            let t:number = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * i)  ) >> 2];
+			unsafe._mem_i32[(t + 44) >> 2] = material;
 		}
 	}
 
@@ -3465,72 +3498,72 @@ export class Mesh extends Shape{
         //TODO: Implement
 	}
     static Type(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.Type_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static ToJSON(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.ToJSON_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Compile(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.Compile_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static BoundingBox(SELF ) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.BoundingBox_impl(SELF );
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static Intersect(SELF , r) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.Intersect_impl(SELF , r);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static UV(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.UV_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static MaterialAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.MaterialAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
     static NormalAt(SELF , p) {
-        switch (turbo.Runtime._mem_int32[SELF>>2]) {
+        switch (unsafe._mem_i32[SELF>>2]) {
             case 48819938:
                 return Mesh.NormalAt_impl(SELF , p);
             default:
-              throw turbo.Runtime._badType(SELF);
+              throw unsafe._badType(SELF);
         }
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=48819938; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=48819938; return SELF; }
 }
-turbo.Runtime._idToType[48819938] = Mesh;
+unsafe._idToType[48819938] = Mesh;
 
 export class Node extends MemoryObject{
    static NAME:string = "Node";
@@ -3547,27 +3580,27 @@ export class Node extends MemoryObject{
    }
 
     static init(SELF, axis:number, point:number, shapes:number, numShapes:number, left:number, right:number):number{
-         turbo.Runtime._mem_uint8[(SELF + 4) >> 0] = axis; 
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = point; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = shapes; 
-         turbo.Runtime._mem_int32[(SELF + 20) >> 2] = numShapes; 
-         turbo.Runtime._mem_int32[(SELF + 24) >> 2] = left; 
-         turbo.Runtime._mem_int32[(SELF + 28) >> 2] = right; 
+         unsafe._mem_u8[(SELF + 4) >> 0] = axis; 
+         unsafe._mem_f64[(SELF + 8) >> 3] = point; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = shapes; 
+         unsafe._mem_i32[(SELF + 20) >> 2] = numShapes; 
+         unsafe._mem_i32[(SELF + 24) >> 2] = left; 
+         unsafe._mem_i32[(SELF + 28) >> 2] = right; 
         return SELF;
     }
 
     static NewNode(shapes:number, numShapes:number):number {
-        let ptr:number = Node.initInstance(turbo.Runtime.allocOrThrow(32,8));
+        let ptr:number = Node.initInstance(unsafe.alloc(32,8));
         return Node.init(ptr, Axis.AxisNone, 0, shapes, numShapes, null, null);
     }
 
     static ToJSON(SELF){
         return{
-            axis:Axis[turbo.Runtime._mem_uint8[(SELF + 4) >> 0]],
-            point:turbo.Runtime._mem_float64[(SELF + 8) >> 3],
-            numShapes:turbo.Runtime._mem_int32[(SELF + 20) >> 2],
-            left:turbo.Runtime._mem_int32[(SELF + 24) >> 2],
-            right:turbo.Runtime._mem_int32[(SELF + 28) >> 2]
+            axis:Axis[unsafe._mem_u8[(SELF + 4) >> 0]],
+            point:unsafe._mem_f64[(SELF + 8) >> 3],
+            numShapes:unsafe._mem_i32[(SELF + 20) >> 2],
+            left:unsafe._mem_i32[(SELF + 24) >> 2],
+            right:unsafe._mem_i32[(SELF + 28) >> 2]
         }
     }
 
@@ -3575,20 +3608,20 @@ export class Node extends MemoryObject{
         let tsplit:number;
         let leftFirst:boolean;
 
-        switch (turbo.Runtime._mem_uint8[(SELF + 4) >> 0]) {
+        switch (unsafe._mem_u8[(SELF + 4) >> 0]) {
             case Axis.AxisNone:
                 return Node.IntersectShapes(SELF, r);
             case Axis.AxisX:
-                tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - r.origin.x) / r.direction.x;
-                leftFirst = (r.origin.x < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (r.origin.x == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && r.direction.x <= 0);
+                tsplit = (unsafe._mem_f64[(SELF + 8) >> 3] - r.origin.x) / r.direction.x;
+                leftFirst = (r.origin.x < unsafe._mem_f64[(SELF + 8) >> 3]) || (r.origin.x == unsafe._mem_f64[(SELF + 8) >> 3] && r.direction.x <= 0);
                 break;
             case Axis.AxisY:
-                tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - r.origin.y) / r.direction.y;
-                leftFirst = (r.origin.y < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (r.origin.y == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && r.direction.y <= 0);
+                tsplit = (unsafe._mem_f64[(SELF + 8) >> 3] - r.origin.y) / r.direction.y;
+                leftFirst = (r.origin.y < unsafe._mem_f64[(SELF + 8) >> 3]) || (r.origin.y == unsafe._mem_f64[(SELF + 8) >> 3] && r.direction.y <= 0);
                 break;
             case Axis.AxisZ:
-                tsplit = (turbo.Runtime._mem_float64[(SELF + 8) >> 3] - r.origin.z) / r.direction.z;
-                leftFirst = (r.origin.z < turbo.Runtime._mem_float64[(SELF + 8) >> 3]) || (r.origin.z == turbo.Runtime._mem_float64[(SELF + 8) >> 3] && r.direction.z <= 0);
+                tsplit = (unsafe._mem_f64[(SELF + 8) >> 3] - r.origin.z) / r.direction.z;
+                leftFirst = (r.origin.z < unsafe._mem_f64[(SELF + 8) >> 3]) || (r.origin.z == unsafe._mem_f64[(SELF + 8) >> 3] && r.direction.z <= 0);
                 break;
         }
 
@@ -3596,11 +3629,11 @@ export class Node extends MemoryObject{
         let second:number;
 
         if (leftFirst) {
-            first = turbo.Runtime._mem_int32[(SELF + 24) >> 2];
-            second = turbo.Runtime._mem_int32[(SELF + 28) >> 2];
+            first = unsafe._mem_i32[(SELF + 24) >> 2];
+            second = unsafe._mem_i32[(SELF + 28) >> 2];
         } else {
-            first = turbo.Runtime._mem_int32[(SELF + 28) >> 2];
-            second = turbo.Runtime._mem_int32[(SELF + 24) >> 2];
+            first = unsafe._mem_i32[(SELF + 28) >> 2];
+            second = unsafe._mem_i32[(SELF + 24) >> 2];
         }
 
         if (tsplit > tmax || tsplit <= 0) {
@@ -3623,8 +3656,8 @@ export class Node extends MemoryObject{
 
     static IntersectShapes(SELF, r:Ray):Hit{
         let hit = Hit.NoHit;
-        for(let i=0;i < turbo.Runtime._mem_int32[(SELF + 20) >> 2];i++) {
-            let shape:number  = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
+        for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
+            let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
             let h:Hit = Shape.Intersect(shape, r);
             if (h.T < hit.T) {
                 hit = h;
@@ -3636,10 +3669,10 @@ export class Node extends MemoryObject{
     static PartitionScore(SELF, axis:Axis, point:number):number {
         let left = 0;
         let right = 0;
-        for(let i=0;i < turbo.Runtime._mem_int32[(SELF + 20) >> 2];i++) {
-            let shape:number  = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
+        for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
+            let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
             // let box = Shape.BoundingBox(shape);
-            let box = turbo.Runtime._mem_int32[(shape + 48) >> 2];
+            let box = unsafe._mem_i32[(shape + 48) >> 2];
             let lr = Box.Partition(box, axis, point);
             if (lr.left) {
                 left++
@@ -3658,8 +3691,8 @@ export class Node extends MemoryObject{
     static Partition(SELF, size:number, axis:Axis, point:number):{left:number, numLeft:number, right:number, numRight:number} {/*Shape[]*/
         let left = [];
         let right = [];
-        for(let i=0;i < turbo.Runtime._mem_int32[(SELF + 20) >> 2];i++) {
-            let shape:number  = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
+        for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
+            let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
             let box = Shape.BoundingBox(shape);
             let lr = Box.Partition(box, axis, point);
             if (lr.left) {
@@ -3670,17 +3703,17 @@ export class Node extends MemoryObject{
             }
         }
 
-        let left_ptr = turbo.Runtime.allocOrThrow( 4 + ( 4 * (left.length) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[left_ptr >> 2] = (left.length);
-        let right_ptr = turbo.Runtime.allocOrThrow( 4 + ( 4 * (right.length) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[right_ptr >> 2] = (right.length);
+        let left_ptr = unsafe.alloc( 4 + ( 4 * (left.length) ), 4 ) /*Array*/;
+        unsafe._mem_i32[left_ptr >> 2] = (left.length);
+        let right_ptr = unsafe.alloc( 4 + ( 4 * (right.length) ), 4 ) /*Array*/;
+        unsafe._mem_i32[right_ptr >> 2] = (right.length);
 
         left.forEach((item, index) => {
-           turbo.Runtime._mem_int32[(  (left_ptr) + 4 + (4 * index)  ) >> 2] = item;
+           unsafe._mem_i32[(  (left_ptr) + 4 + (4 * index)  ) >> 2] = item;
         });
 
         right.forEach((item, index) => {
-           turbo.Runtime._mem_int32[(  (right_ptr) + 4 + (4 * index)  ) >> 2] = item;
+           unsafe._mem_i32[(  (right_ptr) + 4 + (4 * index)  ) >> 2] = item;
         });
 
         return {
@@ -3690,30 +3723,30 @@ export class Node extends MemoryObject{
     }
 
     static Split(SELF, depth:number) {
-        if ( turbo.Runtime._mem_int32[(SELF + 20) >> 2] < 8) {
+        if ( unsafe._mem_i32[(SELF + 20) >> 2] < 8) {
             return;
         }
 
-        let size:number = turbo.Runtime._mem_int32[(SELF + 20) >> 2] * 2;
+        let size:number = unsafe._mem_i32[(SELF + 20) >> 2] * 2;
 
         let _xs = new Float64Array(size);
         let _ys = new Float64Array(size);
         let _zs = new Float64Array(size);
 
         let count = 0;
-        for(let i=0;i < turbo.Runtime._mem_int32[(SELF + 20) >> 2];i++) {
-            let shape:number  = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
+        for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
+            let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
             // let box = Shape.BoundingBox(shape);
-            let box = turbo.Runtime._mem_int32[(shape + 48) >> 2];
+            let box = unsafe._mem_i32[(shape + 48) >> 2];
 
-            _xs[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 4) >> 2]) + 8) >> 3];
-            _ys[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 4) >> 2]) + 16) >> 3];
-            _zs[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 4) >> 2]) + 24) >> 3];
+            _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 8) >> 3];
+            _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 16) >> 3];
+            _zs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 24) >> 3];
             count++;
 
-            _xs[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 8) >> 2]) + 8) >> 3];
-            _ys[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 8) >> 2]) + 16) >> 3];
-            _zs[count] = turbo.Runtime._mem_float64[((turbo.Runtime._mem_int32[(box + 8) >> 2]) + 24) >> 3];
+            _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 8) >> 2]) + 8) >> 3];
+            _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 8) >> 2]) + 16) >> 3];
+            _zs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 8) >> 2]) + 24) >> 3];
             count++;
         }
 
@@ -3724,7 +3757,7 @@ export class Node extends MemoryObject{
         let mx = Utils.Median(_xs);
         let my = Utils.Median(_ys);
         let mz = Utils.Median(_zs);
-        let best = Math.round(turbo.Runtime._mem_int32[(SELF + 20) >> 2] * 0.85);
+        let best = Math.round(unsafe._mem_i32[(SELF + 20) >> 2] * 0.85);
         let bestAxis = Axis.AxisNone;
         let bestPoint = 0.0;
 
@@ -3752,17 +3785,17 @@ export class Node extends MemoryObject{
             return;
         }
         let lr = Node.Partition(SELF, best, bestAxis, bestPoint);
-         turbo.Runtime._mem_uint8[(SELF + 4) >> 0] = bestAxis; 
-         turbo.Runtime._mem_float64[(SELF + 8) >> 3] = bestPoint; 
-         turbo.Runtime._mem_int32[(SELF + 24) >> 2] = (Node.NewNode(lr.left, lr.numLeft)); 
-         turbo.Runtime._mem_int32[(SELF + 28) >> 2] = (Node.NewNode(lr.right, lr.numRight)); 
-        Node.Split(turbo.Runtime._mem_int32[(SELF + 24) >> 2], depth + 1);
-        Node.Split(turbo.Runtime._mem_int32[(SELF + 28) >> 2], depth + 1);
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = 0;  // only needed at leaf nodes
+         unsafe._mem_u8[(SELF + 4) >> 0] = bestAxis; 
+         unsafe._mem_f64[(SELF + 8) >> 3] = bestPoint; 
+         unsafe._mem_i32[(SELF + 24) >> 2] = (Node.NewNode(lr.left, lr.numLeft)); 
+         unsafe._mem_i32[(SELF + 28) >> 2] = (Node.NewNode(lr.right, lr.numRight)); 
+        Node.Split(unsafe._mem_i32[(SELF + 24) >> 2], depth + 1);
+        Node.Split(unsafe._mem_i32[(SELF + 28) >> 2], depth + 1);
+         unsafe._mem_i32[(SELF + 16) >> 2] = 0;  // only needed at leaf nodes
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=20726; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=20726; return SELF; }
 }
-turbo.Runtime._idToType[20726] = Node;
+unsafe._idToType[20726] = Node;
 
 export class Tree extends MemoryObject{
    static NAME:string = "Tree";
@@ -3779,13 +3812,13 @@ export class Tree extends MemoryObject{
    }
 
     static init(SELF, box:number, root:number):number{
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = box; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = root; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = box; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = root; 
         return SELF;
     }
 
     static NewTree(shapes:number):number {
-        let numShapes = turbo.Runtime._mem_int32[shapes >> 2];
+        let numShapes = unsafe._mem_i32[shapes >> 2];
         console.log(`Building k-d tree (${numShapes} shapes)... `);
         // console.time("Tree:BuildingBox");
         let box = Box.BoxForShapes(shapes, numShapes);
@@ -3794,20 +3827,20 @@ export class Tree extends MemoryObject{
         // console.time("Node:Split");
         Node.Split(node, 0);
         // console.timeEnd("Node:Split");
-        let ptr:number = Tree.initInstance(turbo.Runtime.allocOrThrow(12,4));
+        let ptr:number = Tree.initInstance(unsafe.alloc(12,4));
         return Tree.init(ptr, box, node);
     }
 
     static Intersect(tree:number, r:number):Hit {
-        let hit = Box.Intersect(turbo.Runtime._mem_int32[(tree + 4) >> 2], r);
+        let hit = Box.Intersect(unsafe._mem_i32[(tree + 4) >> 2], r);
         if (hit.tmax < hit.tmin || hit.tmax <= 0) {
             return Hit.NoHit;
         }
-        return Node.Intersect(turbo.Runtime._mem_int32[(tree + 8) >> 2], r, hit.tmin, hit.tmax);
+        return Node.Intersect(unsafe._mem_i32[(tree + 8) >> 2], r, hit.tmin, hit.tmax);
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=27694; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=27694; return SELF; }
 }
-turbo.Runtime._idToType[27694] = Tree;
+unsafe._idToType[27694] = Tree;
 
 
 
@@ -3877,20 +3910,20 @@ export class Camera extends MemoryObject{
    }
 
     static init(SELF, p:number, u:number, v:number, w:number, m:number, focalDistance:number=0, apertureRadius:number=0){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = p; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = u; 
-         turbo.Runtime._mem_int32[(SELF + 12) >> 2] = v; 
-         turbo.Runtime._mem_int32[(SELF + 16) >> 2] = w; 
-         turbo.Runtime._mem_float64[(SELF + 24) >> 3] = m; 
-         turbo.Runtime._mem_float64[(SELF + 32) >> 3] = focalDistance; 
-         turbo.Runtime._mem_float64[(SELF + 40) >> 3] = apertureRadius; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = p; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = u; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = v; 
+         unsafe._mem_i32[(SELF + 16) >> 2] = w; 
+         unsafe._mem_f64[(SELF + 24) >> 3] = m; 
+         unsafe._mem_f64[(SELF + 32) >> 3] = focalDistance; 
+         unsafe._mem_f64[(SELF + 40) >> 3] = apertureRadius; 
         return SELF;
     }
 
     static cache;
 
     static NewCamera(p:number, u?:number, v?:number, w?:number, m?:number, focalDistance?:number, apertureRadius?:number){
-        let ptr:number = Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        let ptr:number = Camera.initInstance(unsafe.alloc(48,8));
         p = p?p:Vector.NewVector();
         u = u?u:Vector.NewVector();
         v = v?v:Vector.NewVector();
@@ -3901,46 +3934,46 @@ export class Camera extends MemoryObject{
 
     static ToJSON(SELF){
         return {
-            p:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 4) >> 2]),
-            u:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 8) >> 2]),
-            v:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 12) >> 2]),
-            w:Vector.XYZ(turbo.Runtime._mem_int32[(SELF + 16) >> 2]),
-            m:turbo.Runtime._mem_float64[(SELF + 24) >> 3],
-            focalDistance:turbo.Runtime._mem_float64[(SELF + 32) >> 3],
-            apertureRadius:turbo.Runtime._mem_float64[(SELF + 40) >> 3]
+            p:Vector.XYZ(unsafe._mem_i32[(SELF + 4) >> 2]),
+            u:Vector.XYZ(unsafe._mem_i32[(SELF + 8) >> 2]),
+            v:Vector.XYZ(unsafe._mem_i32[(SELF + 12) >> 2]),
+            w:Vector.XYZ(unsafe._mem_i32[(SELF + 16) >> 2]),
+            m:unsafe._mem_f64[(SELF + 24) >> 3],
+            focalDistance:unsafe._mem_f64[(SELF + 32) >> 3],
+            apertureRadius:unsafe._mem_f64[(SELF + 40) >> 3]
         };
     }
 
     static SetFromJSON(SELF, data){
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 4) >> 2], data.p);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 8) >> 2], data.u);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 12) >> 2], data.v);
-        Vector.SetFromJSON(turbo.Runtime._mem_int32[(SELF + 16) >> 2], data.w);
+        Vector.SetFromJSON(unsafe._mem_i32[(SELF + 4) >> 2], data.p);
+        Vector.SetFromJSON(unsafe._mem_i32[(SELF + 8) >> 2], data.u);
+        Vector.SetFromJSON(unsafe._mem_i32[(SELF + 12) >> 2], data.v);
+        Vector.SetFromJSON(unsafe._mem_i32[(SELF + 16) >> 2], data.w);
 
         if(typeof data.m === "number")
-             turbo.Runtime._mem_float64[(SELF + 24) >> 3] = (data.m); 
+             unsafe._mem_f64[(SELF + 24) >> 3] = (data.m); 
         if(typeof data.focalDistance === "number")
-             turbo.Runtime._mem_float64[(SELF + 32) >> 3] = (data.focalDistance); 
+             unsafe._mem_f64[(SELF + 32) >> 3] = (data.focalDistance); 
         if(typeof data.apertureRadius === "number")
-             turbo.Runtime._mem_float64[(SELF + 40) >> 3] = (data.apertureRadius); 
+             unsafe._mem_f64[(SELF + 40) >> 3] = (data.apertureRadius); 
     }
 
     static LookAt(eye, center, up, fovy:number, c?:number):number {
-        c = c?c:Camera.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        c = c?c:Camera.initInstance(unsafe.alloc(48,8));
         Camera.init(c);
-        turbo.Runtime._mem_int32[(c + 4) >> 2] = eye;
+        unsafe._mem_i32[(c + 4) >> 2] = eye;
         let w:number = Vector.Normalize_mem(Vector.Sub_mem(center, eye));
-        turbo.Runtime._mem_int32[(c + 16) >> 2] = w;
+        unsafe._mem_i32[(c + 16) >> 2] = w;
         let u:number = Vector.Normalize_mem(Vector.Cross_mem(up, w));
-        turbo.Runtime._mem_int32[(c + 8) >> 2] = u;
-        turbo.Runtime._mem_int32[(c + 12) >> 2] = Vector.Normalize_mem(Vector.Cross_mem(w, u));
-        turbo.Runtime._mem_float64[(c + 24) >> 3] = 1 / Math.tan(fovy*Math.PI/360);
+        unsafe._mem_i32[(c + 8) >> 2] = u;
+        unsafe._mem_i32[(c + 12) >> 2] = Vector.Normalize_mem(Vector.Cross_mem(w, u));
+        unsafe._mem_f64[(c + 24) >> 3] = 1 / Math.tan(fovy*Math.PI/360);
         return c;
     }
 
     static SetFocus(c:number, focalPoint:number, apertureRadius:number) {
-        turbo.Runtime._mem_float64[(c + 32) >> 3] = Vector.Length_mem(Vector.Sub_mem(focalPoint, turbo.Runtime._mem_int32[(c + 4) >> 2]));
-        turbo.Runtime._mem_float64[(c + 40) >> 3] = apertureRadius;
+        unsafe._mem_f64[(c + 32) >> 3] = Vector.Length_mem(Vector.Sub_mem(focalPoint, unsafe._mem_i32[(c + 4) >> 2]));
+        unsafe._mem_f64[(c + 40) >> 3] = apertureRadius;
     }
 
     /* cached camera */
@@ -3948,13 +3981,13 @@ export class Camera extends MemoryObject{
 
         if(!Camera.cache){
             Camera.cache = {
-                apertureRadius: turbo.Runtime._mem_float64[(c + 40) >> 3],
-                focalDistance: turbo.Runtime._mem_float64[(c + 32) >> 3],
-                u: new Vector3().read(turbo.Runtime._mem_int32[(c + 8) >> 2]),
-                v: new Vector3().read(turbo.Runtime._mem_int32[(c + 12) >> 2]),
-                p: new Vector3().read(turbo.Runtime._mem_int32[(c + 4) >> 2]),
-                w: new Vector3().read(turbo.Runtime._mem_int32[(c + 16) >> 2]),
-                m: turbo.Runtime._mem_float64[(c + 24) >> 3]
+                apertureRadius: unsafe._mem_f64[(c + 40) >> 3],
+                focalDistance: unsafe._mem_f64[(c + 32) >> 3],
+                u: new Vector3().read(unsafe._mem_i32[(c + 8) >> 2]),
+                v: new Vector3().read(unsafe._mem_i32[(c + 12) >> 2]),
+                p: new Vector3().read(unsafe._mem_i32[(c + 4) >> 2]),
+                w: new Vector3().read(unsafe._mem_i32[(c + 16) >> 2]),
+                m: unsafe._mem_f64[(c + 24) >> 3]
             }
         }
         c = Camera.cache;
@@ -3988,21 +4021,21 @@ export class Camera extends MemoryObject{
         let px = ((x+u-0.5)/(w-1))*2 - 1;
         let py = ((y+v-0.5)/(h-1))*2 - 1;
 
-        let cu:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(c + 8) >> 2]);
-        let cv:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(c + 12) >> 2]);
-        let cp:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(c + 4) >> 2]);
-        let cw:Vector3 = new Vector3().read(turbo.Runtime._mem_int32[(c + 16) >> 2]);
+        let cu:Vector3 = new Vector3().read(unsafe._mem_i32[(c + 8) >> 2]);
+        let cv:Vector3 = new Vector3().read(unsafe._mem_i32[(c + 12) >> 2]);
+        let cp:Vector3 = new Vector3().read(unsafe._mem_i32[(c + 4) >> 2]);
+        let cw:Vector3 = new Vector3().read(unsafe._mem_i32[(c + 16) >> 2]);
 
         let d = new Vector3();
         d = d.add(cu.mulScalar(-px * aspect));
         d = d.add(cv.mulScalar(-py));
-        d = d.add(cw.mulScalar(turbo.Runtime._mem_float64[(c + 24) >> 3]));
+        d = d.add(cw.mulScalar(unsafe._mem_f64[(c + 24) >> 3]));
         d = d.normalize();
 
-        if (turbo.Runtime._mem_float64[(c + 40) >> 3] > 0) {
-            let focalPoint = cp.add(d.mulScalar(turbo.Runtime._mem_float64[(c + 32) >> 3]));
+        if (unsafe._mem_f64[(c + 40) >> 3] > 0) {
+            let focalPoint = cp.add(d.mulScalar(unsafe._mem_f64[(c + 32) >> 3]));
             let angle = Math.random() * 2 * Math.PI;
-            let radius = Math.random() * turbo.Runtime._mem_float64[(c + 40) >> 3];
+            let radius = Math.random() * unsafe._mem_f64[(c + 40) >> 3];
 
             cp = cp.add(cu.mulScalar(Math.cos(angle) * radius));
             cp = cp.add(cv.mulScalar(Math.sin(angle) * radius));
@@ -4010,9 +4043,9 @@ export class Camera extends MemoryObject{
         }
         return new Ray(cp, d);
     }
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=1632962; return SELF; }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=1632962; return SELF; }
 }
-turbo.Runtime._idToType[1632962] = Camera;
+unsafe._idToType[1632962] = Camera;
 
 export class Scene extends MemoryObject{
    static NAME:string = "Scene";
@@ -4029,46 +4062,146 @@ export class Scene extends MemoryObject{
    }
 
     static init(SELF, color){
-         turbo.Runtime._mem_int32[(SELF + 4) >> 2] = color; 
-         turbo.Runtime._mem_int32[(SELF + 8) >> 2] = 0; 
-         turbo.Runtime._mem_float64[(SELF + 16) >> 3] = 0; 
-         turbo.Runtime._mem_int32[(SELF + 44) >> 2] = 0; 
+         unsafe._mem_i32[(SELF + 4) >> 2] = color; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = 0; 
+         unsafe._mem_f64[(SELF + 16) >> 3] = 0; 
+         unsafe._mem_i32[(SELF + 44) >> 2] = 0; 
 		return SELF;
 	}
 
     static NewScene(color:number){
-        let ptr = Scene.initInstance(turbo.Runtime.allocOrThrow(48,8));
+        let ptr = Scene.initInstance(unsafe.alloc(48,8));
         return Scene.init(ptr, Color.HexColor(color));
     }
 
 	static Compile(SELF) {
-		for (let i=0; i < turbo.Runtime._mem_int32[(SELF + 28) >> 2];i++) {
-			let shape = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(SELF + 24) >> 2]) + 4 + (4 * i)  ) >> 2];
+		for (let i=0; i < unsafe._mem_i32[(SELF + 28) >> 2];i++) {
+			let shape = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 24) >> 2]) + 4 + (4 * i)  ) >> 2];
 			Shape.Compile(shape);
 		}
-		if (!turbo.Runtime._mem_int32[(SELF + 40) >> 2]) {
-			 turbo.Runtime._mem_int32[(SELF + 40) >> 2] = (Tree.NewTree(turbo.Runtime._mem_int32[(SELF + 24) >> 2])); 
+		if (!unsafe._mem_i32[(SELF + 40) >> 2]) {
+			 unsafe._mem_i32[(SELF + 40) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 24) >> 2])); 
 		}
-		return turbo.Runtime._mem_int32[(SELF + 40) >> 2];
+		return unsafe._mem_i32[(SELF + 40) >> 2];
 	}
 
 	static RayCount(SELF):number {
-		// return Atomics.load(turbo.Runtime._mem_int32, turbo.Runtime._mem_int32[(SELF + 44) >> 2]);
-        return turbo.Runtime._mem_int32[(SELF + 44) >> 2];
+		// return Atomics.load(turbo.Runtime._mem_int32, unsafe._mem_i32[(SELF + 44) >> 2]);
+        return unsafe._mem_i32[(SELF + 44) >> 2];
 	}
 
 	static Intersect(SELF, r:number):Hit {
-		// Atomics.add(turbo.Runtime._mem_int32, turbo.Runtime._mem_int32[(SELF + 44) >> 2], 1);
-         turbo.Runtime._mem_int32[(SELF + 44) >> 2] = (turbo.Runtime._mem_int32[(SELF + 44) >> 2] + 1); 
-		return Tree.Intersect(turbo.Runtime._mem_int32[(SELF + 40) >> 2], r);
+		// Atomics.add(turbo.Runtime._mem_int32, unsafe._mem_i32[(SELF + 44) >> 2], 1);
+         unsafe._mem_i32[(SELF + 44) >> 2] = (unsafe._mem_i32[(SELF + 44) >> 2] + 1); 
+		return Tree.Intersect(unsafe._mem_i32[(SELF + 40) >> 2], r);
 	}
-    static initInstance(SELF) { turbo.Runtime._mem_int32[SELF>>2]=237222; return SELF; }
+
+	static Sample(SELF, r:Ray, emission:boolean, samples:number, depth:number):Color3 {
+        if (depth > this.MaxBounces) {
+            return new Color3();
+        }
+        var hit = Scene.Intersect(SELF, r);
+        if (!hit.Ok()) {
+            return new Color3(0,0,0);
+        }
+        var info = hit.Info(r);
+        var result:Color3 = new Color3();
+        let material = info.Material
+        let color:Color3 = Color.toColor3(unsafe._mem_i32[(material + 4) >> 2]);
+        let tint = unsafe._mem_f64[(material + 56) >> 3];
+        if (emission) {
+            var emittance = unsafe._mem_f64[(material + 32) >> 3];
+            if (emittance > 0) {
+                let __f = unsafe._mem_f64[(material + 32) >> 3] * samples;
+				let tmp = color.mulScalar(__f);
+				result = result.add(tmp);
+            }
+        }
+        var n:number = Math.round(Math.sqrt(samples));
+        for (var u = 0; u < n; u++) {
+            for (var v = 0; v < n; v++) {
+                var p = Math.random();
+                var fu = (u + Math.random()) / n;
+                var fv = (v + Math.random()) / n;
+                var bounce = r.bounce2(info, p, fu, fv);
+                var indirect = Scene.Sample(SELF, bounce.ray, bounce.reflected, 1, depth + 1);
+                if (bounce.reflected) {
+                    var tinted = indirect.mix(color.mul(indirect), tint);
+                    result = result.add(tinted);
+                } else {
+                    var direct = Scene.DirectLight(info.ray);
+                    result = result.add(color.mul(direct.add(indirect)));
+                }
+            }
+        }
+        return result.divScalar(n * n);
+    }
+
+	static Shadow(SELF, r:Ray, light:Shape, max:number):boolean {
+        var hit = Scene.Intersect(SELF, r);
+        return hit.shape != light && hit.T < max;
+    }
+
+    static DirectLight(SELF, n:Ray):Color3 {
+        let nLights = unsafe._mem_i32[(SELF + 36) >> 2] | 0;
+        if (nLights == 0) {
+            return new Color3();
+        }
+        var color = new Color3();
+        var self = this;
+
+        var i:number = 0;
+        let lights = unsafe._mem_i32[(SELF + 32) >> 2];
+
+        for (; i < nLights; i++) {
+            let light = unsafe._mem_i32[(  lights + 4 + (4 * i)  ) >> 2];
+            var p = Vector3.RandomUnitVector()
+            var d = p.sub(n.origin);
+            var lr = new Ray(n.origin, d.normalize());
+            var diffuse = lr.direction.dot(n.direction);
+            if (diffuse <= 0) {
+                continue
+            }
+            var distance = d.length();
+            if (Scene.Shadow(lr, light, distance)) {
+                continue;
+            }
+            let material = Material.MaterialAt(light, p);
+            //var emittance = material.emittance;
+            //var attenuation = 1;//material.attenuation.compute(distance);
+            //color = color.add(light.getColor(p).mulScalar(diffuse * emittance * attenuation));
+            let m = unsafe._mem_f64[(material + 32) >> 3] * diffuse;
+            color = color.add(Color.MulScalar2(unsafe._mem_i32[(material + 4) >> 2], m));
+        }
+
+        /*this.lights.forEach(function (light:Shape) {
+         var p = light.getRandomPoint();
+         var d = p.sub(n.origin);
+         var lr = new Ray(n.origin, d.normalize());
+         var diffuse = lr.direction.dot(n.direction);
+         if (diffuse <= 0) {
+         return
+         }
+         var distance = d.length();
+         if (self.shadow(lr, light, distance)) {
+         return;
+         }
+         var material = light.getMaterial(p);
+         var emittance = material.emittance;
+         var attenuation = material.attenuation.compute(distance);
+         color = color.add(light.getColor(p).mulScalar(diffuse * emittance * attenuation));
+         });*/
+
+        return color.divScalar(this.lights.length);
+    }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=237222; return SELF; }
 }
-turbo.Runtime._idToType[237222] = Scene;
+unsafe._idToType[237222] = Scene;
 
 
 export class MasterScene{
 
+	color;
 	shapes:IShape[];
 	lights:IShape[];
 	scenePtr:number;
@@ -4076,14 +4209,24 @@ export class MasterScene{
 	static defaultMaterial;
 
 	constructor(color){
+		this.color = color;
 		this.scenePtr = Scene.NewScene(color);
         this.shapes = [];
         this.lights = [];
 
 		// MasterScene.defaultMaterial = Material.GlossyMaterial(Color.HexColor(0xFF0000), 1.5, Utils.Radians(30));
         // MasterScene.defaultMaterial = Material.LightMaterial(Color.HexColor(0x00FF00), 5);
-		MasterScene.defaultMaterial = Material.DiffuseMaterial(Color.HexColor(0xFF0000));
+		//MasterScene.defaultMaterial = Material.DiffuseMaterial(Color.HexColor(0xFF0000));
 
+	}
+	setClearColor(color) {
+		Color.HexColor(color, unsafe._mem_i32[((this.scenePtr) + 4) >> 2]);
+    }
+	Clear(){
+		this.scenePtr = Scene.NewScene(this.color);
+		unsafe._mem_i32[((this.scenePtr) + 40) >> 2] = 0;
+        this.shapes = [];
+        this.lights = [];
 	}
     AddDebugScene(){
         let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));
@@ -4097,26 +4240,26 @@ export class MasterScene{
 	Add(shape) {
 		this.shapes.push(shape);
 
-		if (turbo.Runtime._mem_float64[((Shape.MaterialAt(shape, Vector.ZERO)) + 32) >> 3] > 0) {
+		if (unsafe._mem_f64[((Shape.MaterialAt(shape, Vector.ZERO)) + 32) >> 3] > 0) {
 			this.lights.push(shape);
 		}
 	}
 	Commit(){
-		turbo.Runtime._mem_int32[((this.scenePtr) + 28) >> 2] = this.shapes.length;
-		let shapeList = turbo.Runtime.allocOrThrow( 4 + ( 4 * (this.shapes.length) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[shapeList >> 2] = (this.shapes.length);
-        turbo.Runtime._mem_int32[((this.scenePtr) + 24) >> 2] = shapeList;
-		turbo.Runtime._mem_int32[((this.scenePtr) + 36) >> 2] = this.lights.length;
-		let lightList = turbo.Runtime.allocOrThrow( 4 + ( 4 * (this.lights.length) ), 4 ) /*Array*/;
-        turbo.Runtime._mem_int32[lightList >> 2] = (this.lights.length);
-        turbo.Runtime._mem_int32[((this.scenePtr) + 32) >> 2] = lightList;
+		unsafe._mem_i32[((this.scenePtr) + 28) >> 2] = this.shapes.length;
+		let shapeList = unsafe.alloc( 4 + ( 4 * (this.shapes.length) ), 4 ) /*Array*/;
+        unsafe._mem_i32[shapeList >> 2] = (this.shapes.length);
+        unsafe._mem_i32[((this.scenePtr) + 24) >> 2] = shapeList;
+		unsafe._mem_i32[((this.scenePtr) + 36) >> 2] = this.lights.length;
+		let lightList = unsafe.alloc( 4 + ( 4 * (this.lights.length) ), 4 ) /*Array*/;
+        unsafe._mem_i32[lightList >> 2] = (this.lights.length);
+        unsafe._mem_i32[((this.scenePtr) + 32) >> 2] = lightList;
 
 		this.shapes.forEach((shape, index) => {
-            turbo.Runtime._mem_int32[(  shapeList + 4 + (4 * index)  ) >> 2] = shape;
+            unsafe._mem_i32[(  shapeList + 4 + (4 * index)  ) >> 2] = shape;
 		});
 
 		this.lights.forEach((shape, index) => {
-            turbo.Runtime._mem_int32[(  lightList + 4 + (4 * index)  ) >> 2] = shape;
+            unsafe._mem_i32[(  lightList + 4 + (4 * index)  ) >> 2] = shape;
 		});
 
         // Scene.Compile(this.scenePtr);
@@ -4190,15 +4333,15 @@ export class BufferGeometry {
             if (vertices && faces) {
                 for (var i = 0; i < faces.length; i++) {
                     var face = faces[i];
-                    var t:number = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
+                    var t:number = Triangle.initInstance(unsafe.alloc(53,4));
 
-                    turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
-                    turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(vertices[face.a].x, vertices[face.a].y, vertices[face.a].z);
-                    turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(vertices[face.b].x, vertices[face.b].y, vertices[face.b].z);
-                    turbo.Runtime._mem_int32[(t + 16) >> 2] = Vector.NewVector(vertices[face.c].x, vertices[face.c].y, vertices[face.c].z);
-                    turbo.Runtime._mem_int32[(t + 20) >> 2] = Vector.NewVector();
-                    turbo.Runtime._mem_int32[(t + 24) >> 2] = Vector.NewVector();
-                    turbo.Runtime._mem_int32[(t + 28) >> 2] = Vector.NewVector();
+                    unsafe._mem_i32[(t + 44) >> 2] = material;
+                    unsafe._mem_i32[(t + 8) >> 2] = Vector.NewVector(vertices[face.a].x, vertices[face.a].y, vertices[face.a].z);
+                    unsafe._mem_i32[(t + 12) >> 2] = Vector.NewVector(vertices[face.b].x, vertices[face.b].y, vertices[face.b].z);
+                    unsafe._mem_i32[(t + 16) >> 2] = Vector.NewVector(vertices[face.c].x, vertices[face.c].y, vertices[face.c].z);
+                    unsafe._mem_i32[(t + 20) >> 2] = Vector.NewVector();
+                    unsafe._mem_i32[(t + 24) >> 2] = Vector.NewVector();
+                    unsafe._mem_i32[(t + 28) >> 2] = Vector.NewVector();
 
                     Triangle.FixNormals(t);
                     triangles.push(t);
@@ -4272,20 +4415,20 @@ export class BufferGeometry {
                     let cu = c * 2;
                     let cv = (c * 2) + 1;
 
-                    let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
-                    turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
-                    turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(positions[ax], positions[ay], positions[az]);
-                    turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(positions[bx], positions[by], positions[bz]);
-                    turbo.Runtime._mem_int32[(t + 16) >> 2] = Vector.NewVector(positions[cx], positions[cy], positions[cz]);
+                    let t = Triangle.initInstance(unsafe.alloc(53,4));
+                    unsafe._mem_i32[(t + 44) >> 2] = material;
+                    unsafe._mem_i32[(t + 8) >> 2] = Vector.NewVector(positions[ax], positions[ay], positions[az]);
+                    unsafe._mem_i32[(t + 12) >> 2] = Vector.NewVector(positions[bx], positions[by], positions[bz]);
+                    unsafe._mem_i32[(t + 16) >> 2] = Vector.NewVector(positions[cx], positions[cy], positions[cz]);
 
-                    turbo.Runtime._mem_int32[(t + 20) >> 2] = Vector.NewVector(normals[ax], normals[ay], normals[az]);
-                    turbo.Runtime._mem_int32[(t + 24) >> 2] = Vector.NewVector(normals[bx], normals[by], normals[bz]);
-                    turbo.Runtime._mem_int32[(t + 28) >> 2] = Vector.NewVector(normals[cx], normals[cy], normals[cz]);
+                    unsafe._mem_i32[(t + 20) >> 2] = Vector.NewVector(normals[ax], normals[ay], normals[az]);
+                    unsafe._mem_i32[(t + 24) >> 2] = Vector.NewVector(normals[bx], normals[by], normals[bz]);
+                    unsafe._mem_i32[(t + 28) >> 2] = Vector.NewVector(normals[cx], normals[cy], normals[cz]);
 
                     if(uv){
-                        turbo.Runtime._mem_int32[(t + 32) >> 2] = Vector.NewVector(uv[au], uv[av], 0);
-                        turbo.Runtime._mem_int32[(t + 36) >> 2] = Vector.NewVector(uv[bu], uv[bv], 0);
-                        turbo.Runtime._mem_int32[(t + 40) >> 2] = Vector.NewVector(uv[cu], uv[cv], 0);
+                        unsafe._mem_i32[(t + 32) >> 2] = Vector.NewVector(uv[au], uv[av], 0);
+                        unsafe._mem_i32[(t + 36) >> 2] = Vector.NewVector(uv[bu], uv[bv], 0);
+                        unsafe._mem_i32[(t + 40) >> 2] = Vector.NewVector(uv[cu], uv[cv], 0);
                     }
 
                     Triangle.FixNormals(t);
@@ -4354,37 +4497,37 @@ export class BufferGeometry {
                     // //[....,ax,ay,az, bx,by,bz, cx,xy,xz,....]
                     //
                     //
-                    // let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
-                    // turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
-                    // turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(positions[ax], positions[ay], positions[az]);
-                    // turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(positions[bx], positions[by], positions[bz]);
-                    // turbo.Runtime._mem_int32[(t + 16) >> 2] = Vector.NewVector(positions[cx], positions[cy], positions[cz]);
+                    // let t = Triangle.initInstance(unsafe.alloc(53,4));
+                    // unsafe._mem_i32[(t + 44) >> 2] = material;
+                    // unsafe._mem_i32[(t + 8) >> 2] = Vector.NewVector(positions[ax], positions[ay], positions[az]);
+                    // unsafe._mem_i32[(t + 12) >> 2] = Vector.NewVector(positions[bx], positions[by], positions[bz]);
+                    // unsafe._mem_i32[(t + 16) >> 2] = Vector.NewVector(positions[cx], positions[cy], positions[cz]);
                     //
-                    // turbo.Runtime._mem_int32[(t + 20) >> 2] = Vector.NewVector(normals[ax], normals[ay], normals[az]);
-                    // turbo.Runtime._mem_int32[(t + 24) >> 2] = Vector.NewVector(normals[bx], normals[by], normals[bz]);
-                    // turbo.Runtime._mem_int32[(t + 28) >> 2] = Vector.NewVector(normals[cx], normals[cy], normals[cz]);
+                    // unsafe._mem_i32[(t + 20) >> 2] = Vector.NewVector(normals[ax], normals[ay], normals[az]);
+                    // unsafe._mem_i32[(t + 24) >> 2] = Vector.NewVector(normals[bx], normals[by], normals[bz]);
+                    // unsafe._mem_i32[(t + 28) >> 2] = Vector.NewVector(normals[cx], normals[cy], normals[cz]);
                     //
                     // if(uv){
-                    //     turbo.Runtime._mem_int32[(t + 32) >> 2] = Vector.NewVector(uv[au], uv[av], 0);
-                    //     turbo.Runtime._mem_int32[(t + 36) >> 2] = Vector.NewVector(uv[bu], uv[bv], 0);
-                    //     turbo.Runtime._mem_int32[(t + 40) >> 2] = Vector.NewVector(uv[cu], uv[cv], 0);
+                    //     unsafe._mem_i32[(t + 32) >> 2] = Vector.NewVector(uv[au], uv[av], 0);
+                    //     unsafe._mem_i32[(t + 36) >> 2] = Vector.NewVector(uv[bu], uv[bv], 0);
+                    //     unsafe._mem_i32[(t + 40) >> 2] = Vector.NewVector(uv[cu], uv[cv], 0);
                     // }
 
-                    let t = Triangle.initInstance(turbo.Runtime.allocOrThrow(53,4));
-                    turbo.Runtime._mem_int32[(t + 44) >> 2] = material;
+                    let t = Triangle.initInstance(unsafe.alloc(53,4));
+                    unsafe._mem_i32[(t + 44) >> 2] = material;
 
-                    turbo.Runtime._mem_int32[(t + 8) >> 2] = Vector.NewVector(positions[i], positions[i + 1], positions[i + 2]);
-                    turbo.Runtime._mem_int32[(t + 12) >> 2] = Vector.NewVector(positions[i + 3], positions[i + 4], positions[i + 5]);
-                    turbo.Runtime._mem_int32[(t + 16) >> 2] = Vector.NewVector(positions[i + 6], positions[i + 7], positions[i + 8]);
+                    unsafe._mem_i32[(t + 8) >> 2] = Vector.NewVector(positions[i], positions[i + 1], positions[i + 2]);
+                    unsafe._mem_i32[(t + 12) >> 2] = Vector.NewVector(positions[i + 3], positions[i + 4], positions[i + 5]);
+                    unsafe._mem_i32[(t + 16) >> 2] = Vector.NewVector(positions[i + 6], positions[i + 7], positions[i + 8]);
 
-                    turbo.Runtime._mem_int32[(t + 20) >> 2] = Vector.NewVector(normals[i], normals[i + 1], normals[i + 2]);
-                    turbo.Runtime._mem_int32[(t + 24) >> 2] = Vector.NewVector(normals[i + 3], normals[i + 4], normals[i + 5]);
-                    turbo.Runtime._mem_int32[(t + 28) >> 2] = Vector.NewVector(normals[i + 6], normals[i + 7], normals[i + 8]);
+                    unsafe._mem_i32[(t + 20) >> 2] = Vector.NewVector(normals[i], normals[i + 1], normals[i + 2]);
+                    unsafe._mem_i32[(t + 24) >> 2] = Vector.NewVector(normals[i + 3], normals[i + 4], normals[i + 5]);
+                    unsafe._mem_i32[(t + 28) >> 2] = Vector.NewVector(normals[i + 6], normals[i + 7], normals[i + 8]);
 
                     if(uv){
-                        turbo.Runtime._mem_int32[(t + 32) >> 2] = Vector.NewVector(uv[uvIndex], uv[uvIndex + 1], 0);
-                        turbo.Runtime._mem_int32[(t + 36) >> 2] = Vector.NewVector(uv[uvIndex + 2], uv[uvIndex + 3], 0);
-                        turbo.Runtime._mem_int32[(t + 40) >> 2] = Vector.NewVector(uv[uvIndex + 4], uv[uvIndex + 5], 0);
+                        unsafe._mem_i32[(t + 32) >> 2] = Vector.NewVector(uv[uvIndex], uv[uvIndex + 1], 0);
+                        unsafe._mem_i32[(t + 36) >> 2] = Vector.NewVector(uv[uvIndex + 2], uv[uvIndex + 3], 0);
+                        unsafe._mem_i32[(t + 40) >> 2] = Vector.NewVector(uv[uvIndex + 4], uv[uvIndex + 5], 0);
                     }
 
                     Triangle.FixNormals(t);
@@ -4466,12 +4609,12 @@ export class DefaultSampler {
         let info = hit.Info(ray);
         let material = info.Material;
         let result:Color3 = new Color3();
-        if (turbo.Runtime._mem_float64[(material + 32) >> 3] > 0) {
+        if (unsafe._mem_f64[(material + 32) >> 3] > 0) {
             if (this.DirectLighting && !emission) {
                 return result;
             }
-            let __f = turbo.Runtime._mem_float64[(material + 32) >> 3] * samples;
-            let tmp = Color.MulScalar2(turbo.Runtime._mem_int32[(material + 4) >> 2], __f);
+            let __f = unsafe._mem_f64[(material + 32) >> 3] * samples;
+            let tmp = Color.MulScalar2(unsafe._mem_i32[(material + 4) >> 2], __f);
             result = result.add(tmp);
         }
         let n:number = Math.sqrt(samples);
@@ -4498,8 +4641,8 @@ export class DefaultSampler {
                     if (bounce.coefficient > 0 && bounce.reflected) {
                         // specular
                         let indirect:Color3 = this.sample(scene, bounce.ray, bounce.reflected, 1, depth+1);
-                        let xindirect:Color3 = Color.Mul2(turbo.Runtime._mem_int32[(material + 4) >> 2], indirect);
-                        let tinted:Color3 = indirect.mix(xindirect, turbo.Runtime._mem_float64[(material + 56) >> 3]);
+                        let xindirect:Color3 = Color.Mul2(unsafe._mem_i32[(material + 4) >> 2], indirect);
+                        let tinted:Color3 = indirect.mix(xindirect, unsafe._mem_f64[(material + 56) >> 3]);
                         result = result.add(tinted.mulScalar(bounce.coefficient));
                     }
                     if (bounce.coefficient > 0 && !bounce.reflected) {
@@ -4509,7 +4652,7 @@ export class DefaultSampler {
                         if (this.DirectLighting) {
                             direct = this.sampleLights(scene, info.Ray);
                         }
-                        result = result.add(Color.Mul2(turbo.Runtime._mem_int32[(material + 4) >> 2], direct.add(indirect)).mulScalar(bounce.coefficient));
+                        result = result.add(Color.Mul2(unsafe._mem_i32[(material + 4) >> 2], direct.add(indirect)).mulScalar(bounce.coefficient));
                     }
                 }
             }
@@ -4518,37 +4661,36 @@ export class DefaultSampler {
     }
 
     sampleEnvironment(scene:number, ray:Ray):Color3{
-        if (turbo.Runtime._mem_int32[(scene + 8) >> 2]) {
+        if (unsafe._mem_i32[(scene + 8) >> 2]) {
             let d:Vector3 = ray.direction;
-            let u:number = Math.atan2(d.z, d.x) + turbo.Runtime._mem_float64[(scene + 16) >> 3];
+            let u:number = Math.atan2(d.z, d.x) + unsafe._mem_f64[(scene + 16) >> 3];
             let v:number = Math.atan2(d.y, new Vector3(d.x, 0, d.z).length());
             u = (u + Math.PI) / (2 * Math.PI);
             v = (v + Math.PI/2) / Math.PI;
-            return Texture.Sample(turbo.Runtime._mem_int32[(scene + 8) >> 2], u, v);
+            return Texture.Sample(unsafe._mem_i32[(scene + 8) >> 2], u, v);
         }
-        return new Color3().read(turbo.Runtime._mem_int32[(scene + 4) >> 2]);
+        return new Color3().read(unsafe._mem_i32[(scene + 4) >> 2]);
     }
 
     sampleLights(scene:number, n:Ray):Color3 {
-        let nLights = turbo.Runtime._mem_int32[(scene + 36) >> 2];
+        let nLights = unsafe._mem_i32[(scene + 36) >> 2];
         if (nLights == 0) {
             return new Color3();
         }
 
-        let shapes = turbo.Runtime._mem_int32[(scene + 24) >> 2];
+        let lights = unsafe._mem_i32[(scene + 32) >> 2];
 
         if (this.LightMode == LightMode.LightModeAll) {
             var result:Color3 =  new Color3();
             for (let i=0; i < nLights;i++) {
-                let light = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(scene + 32) >> 2]) + 4 + (4 * i)  ) >> 2];
-                //let light = turbo.Runtime._mem_int32[(  shapes + 4 + (4 * lightIndex)  ) >> 2];
+                let light = unsafe._mem_i32[(  lights + 4 + (4 * i)  ) >> 2];
                 result.add(this.sampleLight(scene, n, light));
             }
             return result;
         } else {
             // pick a random light
             let rndLight:number = Math.round(Math.random() * (nLights - 1));
-            let light = turbo.Runtime._mem_int32[(  (turbo.Runtime._mem_int32[(scene + 32) >> 2]) + 4 + (4 * rndLight)  ) >> 2];
+            let light = unsafe._mem_i32[(  (unsafe._mem_i32[(scene + 32) >> 2]) + 4 + (4 * rndLight)  ) >> 2];
             let lightColor = this.sampleLight(scene, n, light);
             return lightColor.mulScalar(nLights);
         }
@@ -4561,8 +4703,8 @@ export class DefaultSampler {
 
         switch(Shape.Type(light)){
             case ShapeType.SPHERE:
-                radius = turbo.Runtime._mem_float64[(light + 16) >> 3];
-                center = turbo.Runtime._mem_int32[(light + 8) >> 2];
+                radius = unsafe._mem_f64[(light + 16) >> 3];
+                center = unsafe._mem_i32[(light + 8) >> 2];
                 break;
 
             default:
@@ -4604,7 +4746,7 @@ export class DefaultSampler {
         }
 
         // construct ray toward light point
-        let ray = new Ray(n.origin, point.sub(n.origin));
+        let ray = new Ray(n.origin, point.sub(n.origin).normalize());
 
         // get cosine term
         let diffuse = ray.direction.dot(n.direction);
@@ -4637,8 +4779,8 @@ export class DefaultSampler {
         let material = Material.MaterialAt(light, point);
 
         // combine factors
-        let m = turbo.Runtime._mem_float64[(material + 32) >> 3] * diffuse * coverage;
-        return Color.MulScalar2(turbo.Runtime._mem_int32[(material + 4) >> 2], m);
+        let m = unsafe._mem_f64[(material + 32) >> 3] * diffuse * coverage;
+        return Color.MulScalar2(unsafe._mem_i32[(material + 4) >> 2], m);
     }
 
 }
@@ -4684,16 +4826,16 @@ export class Vector3 {
     }
 
     read(memory:number):Vector3 {
-        this.x = turbo.Runtime._mem_float64[(memory + 8) >> 3];
-        this.y = turbo.Runtime._mem_float64[(memory + 16) >> 3];
-        this.z = turbo.Runtime._mem_float64[(memory + 24) >> 3];
+        this.x = unsafe._mem_f64[(memory + 8) >> 3];
+        this.y = unsafe._mem_f64[(memory + 16) >> 3];
+        this.z = unsafe._mem_f64[(memory + 24) >> 3];
         return this;
     }
 
     write(memory:number):number {
-        turbo.Runtime._mem_float64[(memory + 8) >> 3] = this.x;
-        turbo.Runtime._mem_float64[(memory + 16) >> 3] = this.y;
-        turbo.Runtime._mem_float64[(memory + 24) >> 3] = this.z;
+        unsafe._mem_f64[(memory + 8) >> 3] = this.x;
+        unsafe._mem_f64[(memory + 16) >> 3] = this.y;
+        unsafe._mem_f64[(memory + 24) >> 3] = this.z;
         return memory;
     }
 
@@ -4865,38 +5007,38 @@ export class Vector3 {
  */
 
 export interface RGBA {
-    R:number,
-    G:number,
-    B:number,
+    r:number,
+    g:number,
+    b:number,
     a:number
 }
 export class Color3 {
 
-    constructor(public R:number = 0,
-                public G:number = 0,
-                public B:number = 0) {
+    constructor(public r:number = 0,
+                public g:number = 0,
+                public b:number = 0) {
     }
 
     read(memory:number):Color3 {
-        this.R = turbo.Runtime._mem_float64[(memory + 8) >> 3];
-        this.G = turbo.Runtime._mem_float64[(memory + 16) >> 3];
-        this.B = turbo.Runtime._mem_float64[(memory + 24) >> 3];
+        this.r = unsafe._mem_f64[(memory + 8) >> 3];
+        this.g = unsafe._mem_f64[(memory + 16) >> 3];
+        this.b = unsafe._mem_f64[(memory + 24) >> 3];
         return this;
     }
 
     write(memory:number):number {
-        turbo.Runtime._mem_float64[(memory + 8) >> 3] = this.R;
-        turbo.Runtime._mem_float64[(memory + 16) >> 3] = this.G;
-        turbo.Runtime._mem_float64[(memory + 24) >> 3] = this.B;
+        unsafe._mem_f64[(memory + 8) >> 3] = this.r;
+        unsafe._mem_f64[(memory + 16) >> 3] = this.g;
+        unsafe._mem_f64[(memory + 24) >> 3] = this.b;
         return memory;
     }
 
     static fromJson(color:Color3):Color3 {
         if (color) {
             return new Color3(
-                color.R,
-                color.G,
-                color.B
+                color.r,
+                color.g,
+                color.b
             );
         } else {
             return null;
@@ -4911,76 +5053,76 @@ export class Color3 {
     }
 
     static newColor(c:RGBA):Color3 {
-        return new Color3(c.R / 65535, c.G / 65535, c.B / 65535);
+        return new Color3(c.r / 65535, c.g / 65535, c.b / 65535);
     }
 
     RGBA():RGBA {
         let a:Color3 = this;
         let _c:Uint8Array = new Uint8Array(3);
-        _c[0] = Math.max(0, Math.min(255, a.R * 255));
-        _c[1] = Math.max(0, Math.min(255, a.G * 255));
-        _c[2] = Math.max(0, Math.min(255, a.B * 255));
-        return {R: _c[0], G: _c[1], B: _c[2], a: 255};
+        _c[0] = Math.max(0, Math.min(255, a.r * 255));
+        _c[1] = Math.max(0, Math.min(255, a.g * 255));
+        _c[2] = Math.max(0, Math.min(255, a.b * 255));
+        return {r: _c[0], g: _c[1], b: _c[2], a: 255};
     }
 
     isBlack():boolean {
-        return this.R === 0 && this.G === 0 && this.B === 0;
+        return this.r === 0 && this.g === 0 && this.b === 0;
     }
 
     isWhite():boolean {
-        return this.R === 1 && this.G === 1 && this.B === 1;
+        return this.r === 1 && this.g === 1 && this.b === 1;
     }
 
-    add(B:Color3):Color3 {
-        return new Color3(this.R + B.R, this.G + B.G, this.B + B.B);
+    add(b:Color3):Color3 {
+        return new Color3(this.r + b.r, this.g + b.g, this.b + b.b);
     }
 
-    sub(B:Color3):Color3 {
-        return new Color3(this.R - B.R, this.G - B.G, this.B - B.B);
+    sub(b:Color3):Color3 {
+        return new Color3(this.r - b.r, this.g - b.g, this.b - b.b);
     }
 
-    mul(B:Color3):Color3 {
-        return new Color3(this.R * B.R, this.G * B.G, this.B * B.B);
+    mul(b:Color3):Color3 {
+        return new Color3(this.r * b.r, this.g * b.g, this.b * b.b);
     }
 
-    mulScalar(B:number):Color3 {
-        return new Color3(this.R * B, this.G * B, this.B * B)
+    mulScalar(b:number):Color3 {
+        return new Color3(this.r * b, this.g * b, this.b * b)
     }
 
-    divScalar(B:number):Color3 {
-        return new Color3(this.R / B, this.G / B, this.B / B);
+    divScalar(b:number):Color3 {
+        return new Color3(this.r / b, this.g / b, this.b / b);
     }
 
-    min(B:Color3):Color3 {
-        return new Color3(Math.min(this.R, B.R), Math.min(this.G, B.G), Math.min(this.B, B.B));
+    min(b:Color3):Color3 {
+        return new Color3(Math.min(this.r, b.r), Math.min(this.g, b.g), Math.min(this.b, b.b));
     }
 
-    max(B:Color3):Color3 {
-        return new Color3(Math.max(this.R, B.R), Math.max(this.G, B.G), Math.max(this.B, B.B));
+    max(b:Color3):Color3 {
+        return new Color3(Math.max(this.r, b.r), Math.max(this.g, b.g), Math.max(this.b, b.b));
     }
 
-    pow(B:number):Color3 {
-        return new Color3(Math.pow(this.R, B), Math.pow(this.G, B), Math.pow(this.B, B));
+    pow(b:number):Color3 {
+        return new Color3(Math.pow(this.r, b), Math.pow(this.g, b), Math.pow(this.b, b));
     }
 
-    mix(B:Color3, pct:number):Color3 {
+    mix(b:Color3, pct:number):Color3 {
         let a = this.mulScalar(1 - pct);
-        B = B.mulScalar(pct);
-        return a.add(B);
+        b = b.mulScalar(pct);
+        return a.add(b);
     }
 
-    set(R:number, G:number, B:number):Color3 {
-        this.R = R;
-        this.G = G;
-        this.B = B;
+    set(r:number, g:number, b:number):Color3 {
+        this.r = r;
+        this.g = g;
+        this.b = b;
         return this;
     }
 
     clone():Color3 {
         return new Color3(
-            this.R,
-            this.G,
-            this.B
+            this.r,
+            this.g,
+            this.b
         );
     }
 
