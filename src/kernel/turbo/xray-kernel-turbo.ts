@@ -734,6 +734,10 @@ export class Vector extends MemoryObject{
         }
     }
 
+    static Add_12(a:number, b:Vector3):Vector3 {
+        return new Vector3(unsafe._mem_f64[(a + 8) >> 3] + b.x, unsafe._mem_f64[(a + 16) >> 3] + b.y, unsafe._mem_f64[(a + 24) >> 3] + b.z);
+    }
+
     static Sub_12(a:number, b:Vector3):Vector3 {
         return new Vector3(unsafe._mem_f64[(a + 8) >> 3] - b.x, unsafe._mem_f64[(a + 16) >> 3] - b.y, unsafe._mem_f64[(a + 24) >> 3] - b.z);
     }
@@ -1332,8 +1336,8 @@ export class Box extends MemoryObject{
         return box
 	}
 
-	static Anchor(SELF, anchor:number, c?:number):number {
-        let size = Box.Size(SELF);
+	static Anchor_mem(SELF, anchor:number, c?:number):number {
+        let size = Box.Size_mem(SELF);
         let tmp = Vector.Mul_mem(size, anchor);
         free(size);
         if(c){
@@ -1343,31 +1347,35 @@ export class Box extends MemoryObject{
         }
 		return Vector.Add_mem(unsafe._mem_i32[(SELF + 4) >> 2], c, c);
     }
+	static Anchor(SELF, anchor:Vector3):number {
+        let size:Vector3 = Box.Size(SELF);
+		return Vector.Add_12(unsafe._mem_i32[(SELF + 4) >> 2], size.mul(anchor));
+    }
 
-	static Center(SELF):number {
+	static Center_mem(SELF):number {
         let anchor = Vector.NewVector(0.5, 0.5, 0.5);
 		return Box.Anchor(SELF, anchor, anchor);
 	}
+	static Center(SELF):Vector3 {
+        let anchor = new Vector3(0.5, 0.5, 0.5);
+		return Box.Anchor(SELF, anchor);
+	}
 
 	static OuterRadius(SELF):number {
-        let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(unsafe._mem_i32[(SELF + 4) >> 2], center);
-		let len = Vector.Length_mem(tmp);
-        free(center);
-        free(tmp);
-        return len;
+        let center:Vector3 = Box.Center(SELF);
+        return Vector.Sub_12(unsafe._mem_i32[(SELF + 4) >> 2], center).length();
 	}
 
 	static InnerRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(center, unsafe._mem_i32[(SELF + 4) >> 2]);
-		let result = Vector.MaxComponent_mem(tmp);
-        free(tmp);
-        return result;
+        return Vector.Sub_21(center, unsafe._mem_i32[(SELF + 4) >> 2]).maxComponent();
     }
 
-	static Size(SELF):number {
+	static Size_mem(SELF):number {
 		return Vector.Sub_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
+	}
+	static Size(SELF):Vector3 {
+		return Vector.Sub_mem_2(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
 	}
 
 	static Extend(SELF, b:number):number{
@@ -3307,7 +3315,7 @@ unsafe._idToType[232773086] = Triangle;
 
 export class Mesh extends Shape{
    static NAME:string = "Mesh";
-   static SIZE:number = 20;
+   static SIZE:number = 24;
    static ALIGN:number = 4;
    static CLSID:number = 48819938;
 
@@ -3319,21 +3327,22 @@ export class Mesh extends Shape{
        super(p);
    }
 
-    static init(SELF, triangles:number){
+    static init(SELF, triangles:number, material:number){
         console.log(`numTriangles:${unsafe._mem_i32[triangles >> 2]}`);
          unsafe._mem_i32[(SELF + 8) >> 2] = triangles; 
-         unsafe._mem_i32[(SELF + 12) >> 2] = 0; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = material; 
          unsafe._mem_i32[(SELF + 16) >> 2] = 0; 
+         unsafe._mem_i32[(SELF + 20) >> 2] = 0; 
         return SELF;
 	}
-	static NewMesh(triangles:number):number{
-		let ptr:number = Mesh.initInstance(unsafe.alloc(20,4));
-		return Mesh.init(ptr, triangles);
+	static NewMesh(triangles:number, material:number):number{
+		let ptr:number = Mesh.initInstance(unsafe.alloc(24,4));
+		return Mesh.init(ptr, triangles, material);
 	}
 
 	static dirty(SELF) {
-		 unsafe._mem_i32[(SELF + 12) >> 2] = null; 
 		 unsafe._mem_i32[(SELF + 16) >> 2] = null; 
+		 unsafe._mem_i32[(SELF + 20) >> 2] = null; 
 	}
 
 	Copy(SELF):number {
@@ -3354,15 +3363,15 @@ export class Mesh extends Shape{
     static ToJSON_impl(SELF){
         return {
             numTriangles:unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2],
-            box:Box.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]),
-            tree:unsafe._mem_i32[(SELF + 16) >> 2]
+            box:Box.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2]),
+            tree:unsafe._mem_i32[(SELF + 20) >> 2]
         }
     }
     static Compile_impl(SELF) {
-		if (!unsafe._mem_i32[(SELF + 16) >> 2]) {
-			 unsafe._mem_i32[(SELF + 16) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 8) >> 2])); 
+		if (!unsafe._mem_i32[(SELF + 20) >> 2]) {
+			 unsafe._mem_i32[(SELF + 20) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 8) >> 2])); 
 		}
-        return unsafe._mem_i32[(SELF + 16) >> 2];
+        return unsafe._mem_i32[(SELF + 20) >> 2];
 	}
 
 	static Add(SELF, mesh:Mesh) {
@@ -3370,7 +3379,7 @@ export class Mesh extends Shape{
         Mesh.dirty(SELF);
 	}
     static BoundingBox_impl(SELF):number {
-		if (!unsafe._mem_i32[(SELF + 12) >> 2]) {
+		if (!unsafe._mem_i32[(SELF + 16) >> 2]) {
 
 			let t = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * 0)  ) >> 2];
 			let min = Vector.Clone(unsafe._mem_i32[(t + 8) >> 2]);
@@ -3382,18 +3391,18 @@ export class Mesh extends Shape{
 				Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, unsafe._mem_i32[(t + 8) >> 2], max), unsafe._mem_i32[(t + 12) >> 2], max), unsafe._mem_i32[(t + 16) >> 2], max);
 			}
 			let ptr:number = Box.initInstance(unsafe.alloc(12,4));
-			 unsafe._mem_i32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max)); 
+			 unsafe._mem_i32[(SELF + 16) >> 2] = (Box.Init_mem(ptr, min, max)); 
 		}
-		return unsafe._mem_i32[(SELF + 12) >> 2];
+		return unsafe._mem_i32[(SELF + 16) >> 2];
 	}
     static Intersect_impl(SELF, r:number):Hit {
-		return Tree.Intersect(unsafe._mem_i32[(SELF + 16) >> 2], r);
+		return Tree.Intersect(unsafe._mem_i32[(SELF + 20) >> 2], r);
 	}
     static UV_impl(SELF, p:number):number {
 		return null; // not implemented
 	}
     static MaterialAt_impl(SELF, p:number):number {
-		return null; // not implemented
+		return unsafe._mem_i32[(SELF + 12) >> 2]; // not implemented
 	}
     static NormalAt_impl(SELF, p:number):number {
 		return null; // not implemented
@@ -3454,14 +3463,14 @@ export class Mesh extends Shape{
 	}
 
 	static MoveTo(SELF, position:number, anchor:number):number {
-		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
+		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor_mem(Mesh.BoundingBox(SELF), anchor)) );
 		return Matrix.Transform(SELF, matrix);
 	}
 
 	static FitInside(SELF, box:number, anchor:number) {
-        let bsize:number = Box.Size(box);
+        let bsize:number = Box.Size_mem(box);
         let mbox:number = Mesh.BoundingBox(SELF);
-        let mbsize:number = Box.Size(mbox);
+        let mbsize:number = Box.Size_mem(mbox);
 		let scale:number = Vector.MinComponent_mem(Vector.Div_mem(bsize, mbsize));
 		let extra:number = Vector.MulScalar_mem(Vector.Sub_mem(bsize, mbsize), scale);
 		let matrix:number = Matrix.Identity();
@@ -3736,8 +3745,8 @@ export class Node extends MemoryObject{
         let count = 0;
         for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
             let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
-            // let box = Shape.BoundingBox(shape);
-            let box = unsafe._mem_i32[(shape + 48) >> 2];
+            let box = Shape.BoundingBox(shape);
+            //let box = unsafe._mem_i32[(shape + 48) >> 2];
 
             _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 8) >> 3];
             _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 16) >> 3];
@@ -4698,13 +4707,13 @@ export class DefaultSampler {
 
     sampleLight(scene:number, n:Ray, light:number):Color3 {
         // get bounding sphere center and radius
-        var center:number;
+        var center:Vector3;
         var radius:number;
 
         switch(Shape.Type(light)){
             case ShapeType.SPHERE:
                 radius = unsafe._mem_f64[(light + 16) >> 3];
-                center = unsafe._mem_i32[(light + 8) >> 2];
+                center = new Vector3().read(unsafe._mem_i32[(light + 8) >> 2]);
                 break;
 
             default:
@@ -4715,11 +4724,8 @@ export class DefaultSampler {
                 break;
         }
 
-        let _center  = new Vector3().read(center);
-        free(center);
-
         // get random point in disk
-        let point:Vector3 = _center;
+        let point:Vector3 = center.clone();
         if (this.SoftShadows) {
 
             let x;
@@ -4732,13 +4738,13 @@ export class DefaultSampler {
 
                 if(x*x+y*y <= 1) {
 
-                    let l = _center.sub(n.origin).normalize();
+                    let l = center.sub(n.origin).normalize();
                     let u = l.cross(Vector3.RandomUnitVector()).normalize();
                     let v = l.cross(u);
                     point = new Vector3();
                     point = point.add(u.mulScalar(x * radius));
                     point = point.add(v.mulScalar(y * radius));
-                    point = point.add(_center);
+                    point = point.add(center);
                     break;
                 }
 
@@ -4756,12 +4762,21 @@ export class DefaultSampler {
 
         // check for light visibility
         let hit = Scene.Intersect(scene, ray);
-        if (!hit.Ok() || hit.Shape != light) {
+
+        if (!hit.Ok()) {
+            return new Color3();
+        }
+
+        // get material properties from light
+        let material = Material.MaterialAt(hit.Shape, point);
+        let emittance = unsafe._mem_f64[(material + 32) >> 3];
+
+        if(emittance == 0){
             return new Color3();
         }
 
         // compute solid angle (hemisphere coverage)
-        let hyp = _center.sub(n.origin).length();
+        let hyp = center.sub(n.origin).length();
         let opp = radius;
         let theta = Math.asin(opp / hyp);
         let adj = opp / Math.tan(theta);
@@ -4775,11 +4790,8 @@ export class DefaultSampler {
         }
         coverage = Math.min(coverage, 1);
 
-        // get material properties from light
-        let material = Material.MaterialAt(light, point);
-
         // combine factors
-        let m = unsafe._mem_f64[(material + 32) >> 3] * diffuse * coverage;
+        let m = emittance * diffuse * coverage;
         return Color.MulScalar2(unsafe._mem_i32[(material + 4) >> 2], m);
     }
 
@@ -4939,7 +4951,11 @@ export class Vector3 {
     }
 
     minComponent() {
-        return Math.min(Math.min(this.x, this.y), this.z)
+        return Math.min(Math.min(this.x, this.y), this.z);
+    }
+
+    maxComponent() {
+        return Math.max(Math.max(this.x, this.y), this.z);
     }
 
     reflect(i:Vector3):Vector3 {

@@ -1,18 +1,20 @@
 @turbo class Mesh extends Shape{
 	Triangles:Triangle.Array
+	Material:Material
 	box:Box
 	tree:Tree
 
-	@method init(SELF, triangles:number){
+	@method init(SELF, triangles:number, material:number){
         console.log(`numTriangles:${Triangle.Array.len(triangles)}`);
         SELF.Triangles = triangles;
+        SELF.Material = material;
         SELF.box = 0;
         SELF.tree = 0;
         return SELF;
 	}
-	static NewMesh(triangles:number):number{
+	static NewMesh(triangles:number, material:number):number{
 		let ptr:number = @new Mesh;
-		return Mesh.init(ptr, triangles);
+		return Mesh.init(ptr, triangles, material);
 	}
 
 	static dirty(SELF) {
@@ -82,7 +84,7 @@
 	}
 
     @virtual MaterialAt(SELF, p:number):number {
-		return null; // not implemented
+		return SELF.Material; // not implemented
 	}
 
     @virtual NormalAt(SELF, p:number):number {
@@ -144,14 +146,14 @@
 	}
 
 	static MoveTo(SELF, position:number, anchor:number):number {
-		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)) );
+		let matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor_mem(Mesh.BoundingBox(SELF), anchor)) );
 		return Matrix.Transform(SELF, matrix);
 	}
 
 	static FitInside(SELF, box:number, anchor:number) {
-        let bsize:number = Box.Size(box);
+        let bsize:number = Box.Size_mem(box);
         let mbox:number = Mesh.BoundingBox(SELF);
-        let mbsize:number = Box.Size(mbox);
+        let mbsize:number = Box.Size_mem(mbox);
 		let scale:number = Vector.MinComponent_mem(Vector.Div_mem(bsize, mbsize));
 		let extra:number = Vector.MulScalar_mem(Vector.Sub_mem(bsize, mbsize), scale);
 		let matrix:number = Matrix.Identity();

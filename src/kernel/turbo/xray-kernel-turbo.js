@@ -568,6 +568,9 @@ var XRAY;
                 return Vector.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]);
             }
         };
+        Vector.Add_12 = function (a, b) {
+            return new Vector3(unsafe._mem_f64[(a + 8) >> 3] + b.x, unsafe._mem_f64[(a + 16) >> 3] + b.y, unsafe._mem_f64[(a + 24) >> 3] + b.z);
+        };
         Vector.Sub_12 = function (a, b) {
             return new Vector3(unsafe._mem_f64[(a + 8) >> 3] - b.x, unsafe._mem_f64[(a + 16) >> 3] - b.y, unsafe._mem_f64[(a + 24) >> 3] - b.z);
         };
@@ -1064,8 +1067,8 @@ var XRAY;
             }
             return box;
         };
-        Box.Anchor = function (SELF, anchor, c) {
-            var size = Box.Size(SELF);
+        Box.Anchor_mem = function (SELF, anchor, c) {
+            var size = Box.Size_mem(SELF);
             var tmp = Vector.Mul_mem(size, anchor);
             free(size);
             if (c) {
@@ -1076,27 +1079,31 @@ var XRAY;
             }
             return Vector.Add_mem(unsafe._mem_i32[(SELF + 4) >> 2], c, c);
         };
-        Box.Center = function (SELF) {
+        Box.Anchor = function (SELF, anchor) {
+            var size = Box.Size(SELF);
+            return Vector.Add_12(unsafe._mem_i32[(SELF + 4) >> 2], size.mul(anchor));
+        };
+        Box.Center_mem = function (SELF) {
             var anchor = Vector.NewVector(0.5, 0.5, 0.5);
             return Box.Anchor(SELF, anchor, anchor);
         };
+        Box.Center = function (SELF) {
+            var anchor = new Vector3(0.5, 0.5, 0.5);
+            return Box.Anchor(SELF, anchor);
+        };
         Box.OuterRadius = function (SELF) {
             var center = Box.Center(SELF);
-            var tmp = Vector.Sub_mem(unsafe._mem_i32[(SELF + 4) >> 2], center);
-            var len = Vector.Length_mem(tmp);
-            free(center);
-            free(tmp);
-            return len;
+            return Vector.Sub_12(unsafe._mem_i32[(SELF + 4) >> 2], center).length();
         };
         Box.InnerRadius = function (SELF) {
             var center = Box.Center(SELF);
-            var tmp = Vector.Sub_mem(center, unsafe._mem_i32[(SELF + 4) >> 2]);
-            var result = Vector.MaxComponent_mem(tmp);
-            free(tmp);
-            return result;
+            return Vector.Sub_21(center, unsafe._mem_i32[(SELF + 4) >> 2]).maxComponent();
+        };
+        Box.Size_mem = function (SELF) {
+            return Vector.Sub_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
         };
         Box.Size = function (SELF) {
-            return Vector.Sub_mem(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
+            return Vector.Sub_mem_2(unsafe._mem_i32[(SELF + 8) >> 2], unsafe._mem_i32[(SELF + 4) >> 2]);
         };
         Box.Extend = function (SELF, b) {
             var min = unsafe._mem_i32[(SELF + 4) >> 2];
@@ -2781,20 +2788,21 @@ var XRAY;
             enumerable: true,
             configurable: true
         });
-        Mesh.init = function (SELF, triangles) {
+        Mesh.init = function (SELF, triangles, material) {
             console.log("numTriangles:" + unsafe._mem_i32[triangles >> 2]);
             unsafe._mem_i32[(SELF + 8) >> 2] = triangles;
-            unsafe._mem_i32[(SELF + 12) >> 2] = 0;
+            unsafe._mem_i32[(SELF + 12) >> 2] = material;
             unsafe._mem_i32[(SELF + 16) >> 2] = 0;
+            unsafe._mem_i32[(SELF + 20) >> 2] = 0;
             return SELF;
         };
-        Mesh.NewMesh = function (triangles) {
-            var ptr = Mesh.initInstance(unsafe.alloc(20, 4));
-            return Mesh.init(ptr, triangles);
+        Mesh.NewMesh = function (triangles, material) {
+            var ptr = Mesh.initInstance(unsafe.alloc(24, 4));
+            return Mesh.init(ptr, triangles, material);
         };
         Mesh.dirty = function (SELF) {
-            unsafe._mem_i32[(SELF + 12) >> 2] = null;
             unsafe._mem_i32[(SELF + 16) >> 2] = null;
+            unsafe._mem_i32[(SELF + 20) >> 2] = null;
         };
         Mesh.prototype.Copy = function (SELF) {
             var numTriangles = unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2];
@@ -2814,21 +2822,21 @@ var XRAY;
         Mesh.ToJSON_impl = function (SELF) {
             return {
                 numTriangles: unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2],
-                box: Box.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]),
-                tree: unsafe._mem_i32[(SELF + 16) >> 2]
+                box: Box.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2]),
+                tree: unsafe._mem_i32[(SELF + 20) >> 2]
             };
         };
         Mesh.Compile_impl = function (SELF) {
-            if (!unsafe._mem_i32[(SELF + 16) >> 2]) {
-                unsafe._mem_i32[(SELF + 16) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 8) >> 2]));
+            if (!unsafe._mem_i32[(SELF + 20) >> 2]) {
+                unsafe._mem_i32[(SELF + 20) >> 2] = (Tree.NewTree(unsafe._mem_i32[(SELF + 8) >> 2]));
             }
-            return unsafe._mem_i32[(SELF + 16) >> 2];
+            return unsafe._mem_i32[(SELF + 20) >> 2];
         };
         Mesh.Add = function (SELF, mesh) {
             Mesh.dirty(SELF);
         };
         Mesh.BoundingBox_impl = function (SELF) {
-            if (!unsafe._mem_i32[(SELF + 12) >> 2]) {
+            if (!unsafe._mem_i32[(SELF + 16) >> 2]) {
                 var t = unsafe._mem_i32[((unsafe._mem_i32[(SELF + 8) >> 2]) + 4 + (4 * 0)) >> 2];
                 var min = Vector.Clone(unsafe._mem_i32[(t + 8) >> 2]);
                 var max = Vector.Clone(unsafe._mem_i32[(t + 8) >> 2]);
@@ -2839,18 +2847,18 @@ var XRAY;
                     Vector.Max_mem(Vector.Max_mem(Vector.Max_mem(max, unsafe._mem_i32[(t + 8) >> 2], max), unsafe._mem_i32[(t + 12) >> 2], max), unsafe._mem_i32[(t + 16) >> 2], max);
                 }
                 var ptr = Box.initInstance(unsafe.alloc(12, 4));
-                unsafe._mem_i32[(SELF + 12) >> 2] = (Box.Init_mem(ptr, min, max));
+                unsafe._mem_i32[(SELF + 16) >> 2] = (Box.Init_mem(ptr, min, max));
             }
-            return unsafe._mem_i32[(SELF + 12) >> 2];
+            return unsafe._mem_i32[(SELF + 16) >> 2];
         };
         Mesh.Intersect_impl = function (SELF, r) {
-            return Tree.Intersect(unsafe._mem_i32[(SELF + 16) >> 2], r);
+            return Tree.Intersect(unsafe._mem_i32[(SELF + 20) >> 2], r);
         };
         Mesh.UV_impl = function (SELF, p) {
             return null;
         };
         Mesh.MaterialAt_impl = function (SELF, p) {
-            return null;
+            return unsafe._mem_i32[(SELF + 12) >> 2];
         };
         Mesh.NormalAt_impl = function (SELF, p) {
             return null;
@@ -2906,13 +2914,13 @@ var XRAY;
             Mesh.MoveTo(SELF, Vector.NewVector(), Vector.NewVector(0.5, 0.5, 0.5));
         };
         Mesh.MoveTo = function (SELF, position, anchor) {
-            var matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor(Mesh.BoundingBox(SELF), anchor)));
+            var matrix = Matrix.TranslateUnitMatrix(Vector.Sub_mem(position, Box.Anchor_mem(Mesh.BoundingBox(SELF), anchor)));
             return Matrix.Transform(SELF, matrix);
         };
         Mesh.FitInside = function (SELF, box, anchor) {
-            var bsize = Box.Size(box);
+            var bsize = Box.Size_mem(box);
             var mbox = Mesh.BoundingBox(SELF);
-            var mbsize = Box.Size(mbox);
+            var mbsize = Box.Size_mem(mbox);
             var scale = Vector.MinComponent_mem(Vector.Div_mem(bsize, mbsize));
             var extra = Vector.MulScalar_mem(Vector.Sub_mem(bsize, mbsize), scale);
             var matrix = Matrix.Identity();
@@ -3009,7 +3017,7 @@ var XRAY;
         };
         Mesh.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 48819938; return SELF; };
         Mesh.NAME = "Mesh";
-        Mesh.SIZE = 20;
+        Mesh.SIZE = 24;
         Mesh.ALIGN = 4;
         Mesh.CLSID = 48819938;
         return Mesh;
@@ -3171,7 +3179,7 @@ var XRAY;
             var count = 0;
             for (var i = 0; i < unsafe._mem_i32[(SELF + 20) >> 2]; i++) {
                 var shape = unsafe._mem_i32[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)) >> 2];
-                var box = unsafe._mem_i32[(shape + 48) >> 2];
+                var box = Shape.BoundingBox(shape);
                 _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 8) >> 3];
                 _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 16) >> 3];
                 _zs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 24) >> 3];
@@ -3885,7 +3893,7 @@ var XRAY;
             switch (Shape.Type(light)) {
                 case ShapeType.SPHERE:
                     radius = unsafe._mem_f64[(light + 16) >> 3];
-                    center = unsafe._mem_i32[(light + 8) >> 2];
+                    center = new Vector3().read(unsafe._mem_i32[(light + 8) >> 2]);
                     break;
                 default:
                     var box = Shape.BoundingBox(light);
@@ -3893,9 +3901,7 @@ var XRAY;
                     center = Box.Center(box);
                     break;
             }
-            var _center = new Vector3().read(center);
-            free(center);
-            var point = _center;
+            var point = center.clone();
             if (this.SoftShadows) {
                 var x = void 0;
                 var y = void 0;
@@ -3903,13 +3909,13 @@ var XRAY;
                     x = Math.random() * 2 - 1;
                     y = Math.random() * 2 - 1;
                     if (x * x + y * y <= 1) {
-                        var l = _center.sub(n.origin).normalize();
+                        var l = center.sub(n.origin).normalize();
                         var u = l.cross(Vector3.RandomUnitVector()).normalize();
                         var v = l.cross(u);
                         point = new Vector3();
                         point = point.add(u.mulScalar(x * radius));
                         point = point.add(v.mulScalar(y * radius));
-                        point = point.add(_center);
+                        point = point.add(center);
                         break;
                     }
                 }
@@ -3920,10 +3926,15 @@ var XRAY;
                 return new Color3();
             }
             var hit = Scene.Intersect(scene, ray);
-            if (!hit.Ok() || hit.Shape != light) {
+            if (!hit.Ok()) {
                 return new Color3();
             }
-            var hyp = _center.sub(n.origin).length();
+            var material = Material.MaterialAt(hit.Shape, point);
+            var emittance = unsafe._mem_f64[(material + 32) >> 3];
+            if (emittance == 0) {
+                return new Color3();
+            }
+            var hyp = center.sub(n.origin).length();
             var opp = radius;
             var theta = Math.asin(opp / hyp);
             var adj = opp / Math.tan(theta);
@@ -3934,8 +3945,7 @@ var XRAY;
                 coverage = 1;
             }
             coverage = Math.min(coverage, 1);
-            var material = Material.MaterialAt(light, point);
-            var m = unsafe._mem_f64[(material + 32) >> 3] * diffuse * coverage;
+            var m = emittance * diffuse * coverage;
             return Color.MulScalar2(unsafe._mem_i32[(material + 4) >> 2], m);
         };
         return DefaultSampler;
@@ -4035,6 +4045,9 @@ var XRAY;
         };
         Vector3.prototype.minComponent = function () {
             return Math.min(Math.min(this.x, this.y), this.z);
+        };
+        Vector3.prototype.maxComponent = function () {
+            return Math.max(Math.max(this.x, this.y), this.z);
         };
         Vector3.prototype.reflect = function (i) {
             return i.sub(this.mulScalar(2 * this.dot(i)));

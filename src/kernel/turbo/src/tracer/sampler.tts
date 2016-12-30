@@ -144,13 +144,13 @@ export class DefaultSampler {
 
     sampleLight(scene:number, n:Ray, light:number):Color3 {
         // get bounding sphere center and radius
-        var center:number;
+        var center:Vector3;
         var radius:number;
 
         switch(Shape.Type(light)){
             case ShapeType.SPHERE:
                 radius = Sphere.Radius(light);
-                center = Sphere.Center(light);
+                center = new Vector3().read(Sphere.Center(light));
                 break;
 
             default:
@@ -161,11 +161,8 @@ export class DefaultSampler {
                 break;
         }
 
-        let _center  = new Vector3().read(center);
-        free(center);
-
         // get random point in disk
-        let point:Vector3 = _center;
+        let point:Vector3 = center.clone();
         if (this.SoftShadows) {
 
             let x;
@@ -178,13 +175,13 @@ export class DefaultSampler {
 
                 if(x*x+y*y <= 1) {
 
-                    let l = _center.sub(n.origin).normalize();
+                    let l = center.sub(n.origin).normalize();
                     let u = l.cross(Vector3.RandomUnitVector()).normalize();
                     let v = l.cross(u);
                     point = new Vector3();
                     point = point.add(u.mulScalar(x * radius));
                     point = point.add(v.mulScalar(y * radius));
-                    point = point.add(_center);
+                    point = point.add(center);
                     break;
                 }
 
@@ -202,12 +199,21 @@ export class DefaultSampler {
 
         // check for light visibility
         let hit = Scene.Intersect(scene, ray);
-        if (!hit.Ok() || hit.Shape != light) {
+
+        if (!hit.Ok()) {
+            return new Color3();
+        }
+
+        // get material properties from light
+        let material = Material.MaterialAt(hit.Shape, point);
+        let emittance = Material.Emittance(material);
+
+        if(emittance == 0){
             return new Color3();
         }
 
         // compute solid angle (hemisphere coverage)
-        let hyp = _center.sub(n.origin).length();
+        let hyp = center.sub(n.origin).length();
         let opp = radius;
         let theta = Math.asin(opp / hyp);
         let adj = opp / Math.tan(theta);
@@ -221,11 +227,8 @@ export class DefaultSampler {
         }
         coverage = Math.min(coverage, 1);
 
-        // get material properties from light
-        let material = Material.MaterialAt(light, point);
-
         // combine factors
-        let m = Material.Emittance(material) * diffuse * coverage;
+        let m = emittance * diffuse * coverage;
         return Color.MulScalar2(Material.Color(material), m);
     }
 

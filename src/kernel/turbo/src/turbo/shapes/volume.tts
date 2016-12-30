@@ -38,7 +38,7 @@
 
     static NewVolume(box:number/*Box*/, images:number, numImages:number, sliceSpacing:number, windows:number, numWindows:number):number {
         let bounds = Image.Bounds(images[0]);
-        let size = Box.Size(bounds);
+        let size = Box.Size_mem(bounds);
         let w = Vector.x(size);
         let h = Vector.y(size);
         let d = numImages;

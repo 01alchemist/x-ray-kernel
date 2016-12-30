@@ -151,7 +151,11 @@ export class Vector3 {
     }
 
     minComponent() {
-        return Math.min(Math.min(this.x, this.y), this.z)
+        return Math.min(Math.min(this.x, this.y), this.z);
+    }
+
+    maxComponent() {
+        return Math.max(Math.max(this.x, this.y), this.z);
     }
 
     reflect(i:Vector3):Vector3 {

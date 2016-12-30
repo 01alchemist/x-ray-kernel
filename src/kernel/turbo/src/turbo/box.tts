@@ -56,8 +56,8 @@
         return box
 	}
 
-	static Anchor(SELF, anchor:number, c?:number):number {
-        let size = Box.Size(SELF);
+	static Anchor_mem(SELF, anchor:number, c?:number):number {
+        let size = Box.Size_mem(SELF);
         let tmp = Vector.Mul_mem(size, anchor);
         free(size);
         if(c){
@@ -67,31 +67,35 @@
         }
 		return Vector.Add_mem(SELF.Min, c, c);
     }
+	static Anchor(SELF, anchor:Vector3):number {
+        let size:Vector3 = Box.Size(SELF);
+		return Vector.Add_12(SELF.Min, size.mul(anchor));
+    }
 
-	static Center(SELF):number {
+	static Center_mem(SELF):number {
         let anchor = Vector.NewVector(0.5, 0.5, 0.5);
 		return Box.Anchor(SELF, anchor, anchor);
 	}
+	static Center(SELF):Vector3 {
+        let anchor = new Vector3(0.5, 0.5, 0.5);
+		return Box.Anchor(SELF, anchor);
+	}
 
 	static OuterRadius(SELF):number {
-        let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(SELF.Min, center);
-		let len = Vector.Length_mem(tmp);
-        free(center);
-        free(tmp);
-        return len;
+        let center:Vector3 = Box.Center(SELF);
+        return Vector.Sub_12(SELF.Min, center).length();
 	}
 
 	static InnerRadius(SELF):number {
         let center = Box.Center(SELF);
-        let tmp = Vector.Sub_mem(center, SELF.Min);
-		let result = Vector.MaxComponent_mem(tmp);
-        free(tmp);
-        return result;
+        return Vector.Sub_21(center, SELF.Min).maxComponent();
     }
 
-	static Size(SELF):number {
+	static Size_mem(SELF):number {
 		return Vector.Sub_mem(SELF.Max, SELF.Min);
+	}
+	static Size(SELF):Vector3 {
+		return Vector.Sub_mem_2(SELF.Max, SELF.Min);
 	}
 
 	static Extend(SELF, b:number):number{

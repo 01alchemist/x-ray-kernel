@@ -199,6 +199,10 @@ export type XYZ = {
         }
     }
 
+    static Add_12(a:number, b:Vector3):Vector3 {
+        return new Vector3(Vector.x(a) + b.x, Vector.y(a) + b.y, Vector.z(a) + b.z);
+    }
+
     static Sub_12(a:number, b:Vector3):Vector3 {
         return new Vector3(Vector.x(a) - b.x, Vector.y(a) - b.y, Vector.z(a) - b.z);
     }
