@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace XRAY {
-// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 ///<reference path="./src/declaration.d.ts" />
@@ -149,11 +149,11 @@ export class Color extends MemoryObject{
         }
     }
     
-	static HexColor(hex:number):number {
+	static HexColor(hex:number, c?):number {
 		let r = ((hex >> 16) & 255 ) / 255;
 		let g = ((hex >> 8) & 255) / 255;
 		let b = (hex & 255) / 255;
-        let ptr:number = Color.initInstance(unsafe.alloc(32,8));
+        let ptr:number = c?c:Color.initInstance(unsafe.alloc(32,8));
 		return Color.Pow_mem(Color.Init_mem(ptr, r, g, b), 2.2);
 	}
 
