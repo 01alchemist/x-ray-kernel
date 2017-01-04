@@ -106,28 +106,28 @@ var XRAY;
             var green;
             var blue;
             if (K >= 6600) {
-                var A = 351.97690566805693;
+                var a = 351.97690566805693;
                 var b = 0.114206453784165;
                 var c = -40.25366309332127;
                 var x = K / 100 - 55;
-                red = A + b * x + c * Math.log(x);
+                red = a + b * x + c * Math.log(x);
             }
             else {
                 red = 255;
             }
             if (K >= 6600) {
-                A = 325.4494125711974;
+                a = 325.4494125711974;
                 b = 0.07943456536662342;
                 c = -28.0852963507957;
                 x = K / 100 - 50;
-                green = A + b * x + c * Math.log(x);
+                green = a + b * x + c * Math.log(x);
             }
             else if (K >= 1000) {
-                A = -155.25485562709179;
+                a = -155.25485562709179;
                 b = -0.44596950469579133;
                 c = 104.49216199393888;
                 x = K / 100 - 2;
-                green = A + b * x + c * Math.log(x);
+                green = a + b * x + c * Math.log(x);
             }
             else {
                 green = 0;
@@ -136,11 +136,11 @@ var XRAY;
                 blue = 255;
             }
             else if (K >= 2000) {
-                A = -254.76935184120902;
+                a = -254.76935184120902;
                 b = 0.8274096064007395;
                 c = 115.67994401066147;
                 x = K / 100 - 10;
-                blue = A + b * x + c * Math.log(x);
+                blue = a + b * x + c * Math.log(x);
             }
             else {
                 blue = 0;
@@ -156,7 +156,7 @@ var XRAY;
                 r: unsafe._mem_f64[(SELF + 8) >> 3],
                 g: unsafe._mem_f64[(SELF + 16) >> 3],
                 b: unsafe._mem_f64[(SELF + 24) >> 3],
-                A: 1.0
+                a: 1.0
             };
         };
         Color.RGB = function (SELF) {
@@ -177,7 +177,7 @@ var XRAY;
                 r: _d[0],
                 g: _d[1],
                 b: _d[2],
-                A: 255
+                a: 255
             };
         };
         Color.RGBA64 = function (SELF) {
@@ -185,154 +185,176 @@ var XRAY;
                 r: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 8) >> 3] * 65535))),
                 g: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 16) >> 3] * 65535))),
                 b: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 24) >> 3] * 65535))),
-                A: 65535
+                a: 65535
             };
         };
-        Color.Add = function (A, b) { return rgb(A.r + b.r, A.g + b.g, A.b + b.b); };
-        Color.Add_mem = function (A, b, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
-                return C;
+        Color.Add = function (a, b) { return rgb(a.r + b.r, a.g + b.g, a.b + b.b); };
+        Color.Add2 = function (a, b) { return new Color3(a.r + b.r, a.g + b.g, a.b + b.b); };
+        Color.Add_mem = function (a, b, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]);
+                return Color.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]);
             }
         };
-        Color.Sub = function (A, b) { return rgb(A.r - b.r, A.g - b.g, A.b - b.b); };
-        Color.Sub_mem = function (A, b, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
-                return C;
+        Color.Add_21 = function (a, b, c) {
+            c = c ? c : new Color3();
+            c.r = a.r + unsafe._mem_f64[(b + 8) >> 3];
+            c.g = a.g + unsafe._mem_f64[(b + 16) >> 3];
+            c.b = a.b + unsafe._mem_f64[(b + 24) >> 3];
+            return c;
+        };
+        Color.Sub = function (a, b) { return rgb(a.r - b.r, a.g - b.g, a.b - b.b); };
+        Color.Sub_mem = function (a, b, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]);
+                return Color.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]);
             }
         };
-        Color.Mul = function (A, b) { return rgb(A.r * b.r, A.g * b.g, A.b * b.b); };
-        Color.Mul2 = function (A, b) {
-            return new Color3(unsafe._mem_f64[(A + 8) >> 3] * b.r, unsafe._mem_f64[(A + 16) >> 3] * b.g, unsafe._mem_f64[(A + 24) >> 3] * b.b);
+        Color.Sub_mem2 = function (a, b, c) {
+            c = c ? c : new Color3();
+            c.r = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+            c.g = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+            c.b = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
+            return c;
         };
-        Color.Mul_mem = function (A, b, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
-                return C;
+        Color.Sub_21 = function (a, b, c) {
+            c = c ? c : new Color3();
+            c.r = a.r - unsafe._mem_f64[(b + 8) >> 3];
+            c.g = a.g - unsafe._mem_f64[(b + 16) >> 3];
+            c.b = a.b - unsafe._mem_f64[(b + 24) >> 3];
+            return c;
+        };
+        Color.Mul = function (a, b) { return rgb(a.r * b.r, a.g * b.g, a.b * b.b); };
+        Color.Mul2 = function (a, b) {
+            return new Color3(unsafe._mem_f64[(a + 8) >> 3] * b.r, unsafe._mem_f64[(a + 16) >> 3] * b.g, unsafe._mem_f64[(a + 24) >> 3] * b.b);
+        };
+        Color.Mul_mem = function (a, b, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]);
+                return Color.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3], unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]);
             }
         };
-        Color.MulScalar = function (A, f) { return rgb(A.r * f, A.g * f, A.b * f); };
-        Color.MulScalar2 = function (A, f) {
-            return new Color3(unsafe._mem_f64[(A + 8) >> 3] * f, unsafe._mem_f64[(A + 16) >> 3] * f, unsafe._mem_f64[(A + 24) >> 3] * f);
+        Color.MulScalar = function (a, f) { return rgb(a.r * f, a.g * f, a.b * f); };
+        Color.MulScalar2 = function (a, f) {
+            return new Color3(unsafe._mem_f64[(a + 8) >> 3] * f, unsafe._mem_f64[(a + 16) >> 3] * f, unsafe._mem_f64[(a + 24) >> 3] * f);
         };
-        Color.MulScalar_mem = function (A, f, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * f;
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * f;
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * f;
-                return C;
+        Color.MulScalar_mem = function (a, f, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * f;
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * f;
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * f;
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, unsafe._mem_f64[(A + 8) >> 3] * f, unsafe._mem_f64[(A + 16) >> 3] * f, unsafe._mem_f64[(A + 24) >> 3] * f);
+                return Color.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] * f, unsafe._mem_f64[(a + 16) >> 3] * f, unsafe._mem_f64[(a + 24) >> 3] * f);
             }
         };
-        Color.DivScalar = function (A, f) { return rgb(A.r / f, A.g / f, A.b / f); };
-        Color.DivScalar_mem = function (A, f, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] / f;
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] / f;
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] / f;
-                return C;
+        Color.DivScalar = function (a, f) { return rgb(a.r / f, a.g / f, a.b / f); };
+        Color.DivScalar_mem = function (a, f, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] / f;
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] / f;
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] / f;
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, unsafe._mem_f64[(A + 8) >> 3] / f, unsafe._mem_f64[(A + 16) >> 3] / f, unsafe._mem_f64[(A + 24) >> 3] / f);
+                return Color.Init_mem(ptr, unsafe._mem_f64[(a + 8) >> 3] / f, unsafe._mem_f64[(a + 16) >> 3] / f, unsafe._mem_f64[(a + 24) >> 3] / f);
             }
         };
-        Color.Min = function (A, b) { return rgb(Math.min(A.r, b.r), Math.min(A.g, b.g), Math.min(A.b, b.b)); };
-        Color.Min_mem = function (A, b, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = Math.min(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]);
-                unsafe._mem_f64[(C + 16) >> 3] = Math.min(unsafe._mem_f64[(A + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]);
-                unsafe._mem_f64[(C + 24) >> 3] = Math.min(unsafe._mem_f64[(A + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
-                return C;
+        Color.Min = function (a, b) { return rgb(Math.min(a.r, b.r), Math.min(a.g, b.g), Math.min(a.b, b.b)); };
+        Color.Min_mem = function (a, b, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = Math.min(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]);
+                unsafe._mem_f64[(c + 16) >> 3] = Math.min(unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]);
+                unsafe._mem_f64[(c + 24) >> 3] = Math.min(unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, Math.min(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]), Math.min(unsafe._mem_f64[(A + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]), Math.min(unsafe._mem_f64[(A + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]));
+                return Color.Init_mem(ptr, Math.min(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]), Math.min(unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]), Math.min(unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]));
             }
         };
-        Color.Max = function (A, b) { return rgb(Math.max(A.r, b.r), Math.max(A.g, b.g), Math.max(A.b, b.b)); };
-        Color.Max_mem = function (A, b, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = Math.max(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]);
-                unsafe._mem_f64[(C + 16) >> 3] = Math.max(unsafe._mem_f64[(A + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]);
-                unsafe._mem_f64[(C + 24) >> 3] = Math.max(unsafe._mem_f64[(A + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
-                return C;
-            }
-            else {
-                var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, Math.max(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]), Math.max(unsafe._mem_f64[(A + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]), Math.max(unsafe._mem_f64[(A + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]));
-            }
-        };
-        Color.MinComponent = function (A) { return Math.min(Math.min(A.r, A.g), A.b); };
-        Color.MinComponent_mem = function (A) {
-            return Math.min(Math.min(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3]);
-        };
-        Color.MaxComponent = function (A) { return Math.max(Math.max(A.r, A.g), A.b); };
-        Color.MaxComponent_mem = function (A) {
-            return Math.max(Math.max(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3]);
-        };
-        Color.Pow = function (A, f) { return rgb(Math.pow(A.r, f), Math.pow(A.g, f), Math.pow(A.b, f)); };
-        Color.Pow_mem = function (A, f, C) {
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = Math.pow(unsafe._mem_f64[(A + 8) >> 3], f);
-                unsafe._mem_f64[(C + 16) >> 3] = Math.pow(unsafe._mem_f64[(A + 16) >> 3], f);
-                unsafe._mem_f64[(C + 24) >> 3] = Math.pow(unsafe._mem_f64[(A + 24) >> 3], f);
-                return C;
+        Color.Max = function (a, b) { return rgb(Math.max(a.r, b.r), Math.max(a.g, b.g), Math.max(a.b, b.b)); };
+        Color.Max_mem = function (a, b, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = Math.max(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]);
+                unsafe._mem_f64[(c + 16) >> 3] = Math.max(unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]);
+                unsafe._mem_f64[(c + 24) >> 3] = Math.max(unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]);
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
-                return Color.Init_mem(ptr, Math.pow(unsafe._mem_f64[(A + 8) >> 3], f), Math.pow(unsafe._mem_f64[(A + 16) >> 3], f), Math.pow(unsafe._mem_f64[(A + 24) >> 3], f));
+                return Color.Init_mem(ptr, Math.max(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(b + 8) >> 3]), Math.max(unsafe._mem_f64[(a + 16) >> 3], unsafe._mem_f64[(b + 16) >> 3]), Math.max(unsafe._mem_f64[(a + 24) >> 3], unsafe._mem_f64[(b + 24) >> 3]));
             }
         };
-        Color.Mix = function (A, b, pct) {
-            var _a = Color.MulScalar(A, 1 - pct);
+        Color.MinComponent = function (a) { return Math.min(Math.min(a.r, a.g), a.b); };
+        Color.MinComponent_mem = function (a) {
+            return Math.min(Math.min(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3]);
+        };
+        Color.MaxComponent = function (a) { return Math.max(Math.max(a.r, a.g), a.b); };
+        Color.MaxComponent_mem = function (a) {
+            return Math.max(Math.max(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3]);
+        };
+        Color.Pow = function (a, f) { return rgb(Math.pow(a.r, f), Math.pow(a.g, f), Math.pow(a.b, f)); };
+        Color.Pow_mem = function (a, f, c) {
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = Math.pow(unsafe._mem_f64[(a + 8) >> 3], f);
+                unsafe._mem_f64[(c + 16) >> 3] = Math.pow(unsafe._mem_f64[(a + 16) >> 3], f);
+                unsafe._mem_f64[(c + 24) >> 3] = Math.pow(unsafe._mem_f64[(a + 24) >> 3], f);
+                return c;
+            }
+            else {
+                var ptr = Color.initInstance(unsafe.alloc(32, 8));
+                return Color.Init_mem(ptr, Math.pow(unsafe._mem_f64[(a + 8) >> 3], f), Math.pow(unsafe._mem_f64[(a + 16) >> 3], f), Math.pow(unsafe._mem_f64[(a + 24) >> 3], f));
+            }
+        };
+        Color.Mix = function (a, b, pct) {
+            var _a = Color.MulScalar(a, 1 - pct);
             var _b = Color.MulScalar(b, pct);
             return rgb(_a.r + _b.r, _a.g + _b.g, _a.b + _b.b);
         };
-        Color.Mix_mem = function (A, b, pct, C) {
-            var _a = Color.MulScalar_mem(A, 1 - pct);
+        Color.Mix_mem = function (a, b, pct, c) {
+            var _a = Color.MulScalar_mem(a, 1 - pct);
             var _b = Color.MulScalar_mem(b, pct);
-            if (C) {
-                unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3];
-                unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3];
-                unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3];
-                return C;
+            if (c) {
+                unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3];
+                unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3];
+                unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3];
+                return c;
             }
             else {
                 var ptr = Color.initInstance(unsafe.alloc(32, 8));
                 return Color.Init_mem(ptr, unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3], unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3], unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3]);
             }
         };
-        Color.IsEqual = function (A, b) {
-            return unsafe._mem_f64[(A + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(A + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(A + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
+        Color.IsEqual = function (a, b) {
+            return unsafe._mem_f64[(a + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(a + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(a + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
         };
-        Color.IsBlack = function (A) {
-            return Color.IsEqual(A, Color.BLACK);
+        Color.IsBlack = function (a) {
+            return Color.IsEqual(a, Color.BLACK);
         };
-        Color.IsWhite = function (A) {
-            return Color.IsEqual(A, Color.WHITE);
+        Color.IsWhite = function (a) {
+            return Color.IsEqual(a, Color.WHITE);
         };
         Color.Set = function (SELF, r, g, b) {
             unsafe._mem_f64[(SELF + 8) >> 3] = r;
@@ -1446,6 +1468,59 @@ var XRAY;
     }(MemoryObject));
     XRAY.Matrix = Matrix;
     unsafe._idToType[2093537] = Matrix;
+    var Image = (function (_super) {
+        __extends(Image, _super);
+        function Image(p) {
+            _super.call(this, p);
+        }
+        Object.defineProperty(Image, "BASE", {
+            get: function () {
+                return null;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Image.init = function (SELF, width, height, depth) {
+            if (depth === void 0) { depth = 8; }
+            unsafe._mem_i32[(SELF + 4) >> 2] = width;
+            unsafe._mem_i32[(SELF + 8) >> 2] = height;
+            unsafe._mem_u8[(SELF + 12) >> 0] = depth;
+            var len = width * height * 4;
+            var pixels = unsafe.alloc(4 + (1 * len), 1);
+            unsafe._mem_i32[pixels >> 2] = len;
+            unsafe._mem_i32[(SELF + 16) >> 2] = pixels;
+            return SELF;
+        };
+        Image.At = function (SELF, x, y) {
+            var i = (y * (unsafe._mem_i32[(SELF + 4) >> 2] * 4)) + (x * 4);
+            unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)) >> 0];
+        };
+        Image.setRaw = function (SELF, data) {
+            for (var i = 0; i < data.length; i++) {
+                unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)) >> 0] = (data[i]);
+            }
+        };
+        Image.setRGBA = function (SELF, x, y, c) {
+            var i = (y * (unsafe._mem_i32[(SELF + 4) >> 2] * 4)) + (x * 4);
+            unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)) >> 0] = (c.r * 255);
+            unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 1))) >> 0] = (c.g * 255);
+            unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 2))) >> 0] = (c.b * 255);
+            unsafe._mem_u8[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 3))) >> 0] = (c.a * 255);
+        };
+        Image.NewRGBA = function (width, height) {
+            var ptr = Image.initInstance(unsafe.alloc(20, 4));
+            Image.init(ptr, width, height, 8);
+            return ptr;
+        };
+        Image.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 150430; return SELF; };
+        Image.NAME = "Image";
+        Image.SIZE = 20;
+        Image.ALIGN = 4;
+        Image.CLSID = 150430;
+        return Image;
+    }(MemoryObject));
+    XRAY.Image = Image;
+    unsafe._idToType[150430] = Image;
     var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(p) {
@@ -1461,7 +1536,8 @@ var XRAY;
         Texture.init = function (SELF, width, height, data) {
             unsafe._mem_i32[(SELF + 4) >> 2] = width;
             unsafe._mem_i32[(SELF + 8) >> 2] = height;
-            unsafe._mem_i32[(SELF + 16) >> 2] = data;
+            unsafe._mem_i32[(SELF + 12) >> 2] = data;
+            return SELF;
         };
         Texture.GetTexture = function (path) {
             var texture = Texture.textures[path];
@@ -1480,22 +1556,23 @@ var XRAY;
             var im = Utils.LoadImage(path);
             return Texture.NewTexture(im);
         };
-        Texture.NewTexture = function (im) {
-            var size = unsafe._mem_i32[((Image.Bounds(im)) + 8) >> 2];
-            var data = unsafe.alloc(4 + (4 * (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3])), 4);
-            unsafe._mem_i32[number >> 2] = (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3]);
-            for (var y = 0; y < unsafe._mem_f64[(size + 16) >> 3]; y++) {
-                for (var x = 0; x < unsafe._mem_f64[(size + 8) >> 3]; x++) {
-                    var index = y * unsafe._mem_f64[(size + 8) >> 3] + x;
-                    unsafe._mem_i32[(data + 4 + (4 * index)) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
+        Texture.NewTexture = function (imgData, width, height) {
+            var data = unsafe.alloc(4 + (4 * (width * height)), 4);
+            unsafe._mem_i32[data >> 2] = (width * height);
+            for (var y = 0; y < height; y++) {
+                for (var x = 0; x < width; x++) {
+                    var i = (y * (width * 4)) + (x * 4);
+                    var index = y * width + x;
+                    var c = Color.NewColor(imgData[i] / 255, imgData[i + 1] / 255, imgData[i + 2] / 255);
+                    unsafe._mem_i32[(data + 4 + (4 * index)) >> 2] = (Color.Pow_mem(c, 2.2, c));
                 }
             }
-            var ptr = Texture.initInstance(unsafe.alloc(20, 4));
-            return Texture.init(ptr, unsafe._mem_f64[(size + 8) >> 3], unsafe._mem_f64[(size + 16) >> 3], data);
+            var ptr = Texture.initInstance(unsafe.alloc(16, 4));
+            return Texture.init(ptr, width, height, data);
         };
-        Texture.prototype.Pow = function (t, a) {
-            var data = unsafe._mem_i32[(t + 16) >> 2];
-            var len = unsafe._mem_i32[(t + 12) >> 2];
+        Texture.Pow = function (t, a) {
+            var data = unsafe._mem_i32[(t + 12) >> 2];
+            var len = Texture.DataLength(t);
             for (var i = 0; i < len; i++) {
                 var d = unsafe._mem_i32[(data + 4 + (4 * i)) >> 2];
                 Color.Pow_mem(d, a, d);
@@ -1503,8 +1580,8 @@ var XRAY;
             return t;
         };
         Texture.MulScalar = function (t, a) {
-            var data = unsafe._mem_i32[(t + 16) >> 2];
-            var len = unsafe._mem_i32[(t + 12) >> 2];
+            var data = unsafe._mem_i32[(t + 12) >> 2];
+            var len = Texture.DataLength(t);
             for (var i = 0; i < len; i++) {
                 var d = unsafe._mem_i32[(data + 4 + (4 * i)) >> 2];
                 Color.MulScalar_mem(d, a, d);
@@ -1514,34 +1591,46 @@ var XRAY;
         Texture.bilinearSample = function (t, u, v) {
             var Width = unsafe._mem_i32[(t + 4) >> 2];
             var Height = unsafe._mem_i32[(t + 8) >> 2];
-            var data = unsafe._mem_i32[(t + 16) >> 2];
+            var data = unsafe._mem_i32[(t + 12) >> 2];
             var w = Width - 1;
             var h = Height - 1;
             var _ = Utils.Modf(u * w);
-            var x = _.int;
+            var _x = _.int;
             var x = _.frac;
             _ = Utils.Modf(v * h);
-            var y = _.int;
+            var _y = _.int;
             var y = _.frac;
-            var x0 = parseInt(x);
-            var y0 = parseInt(y);
+            var x0 = _x;
+            var y0 = _y;
             var x1 = x0 + 1;
             var y1 = y0 + 1;
             var c00 = unsafe._mem_i32[(data + 4 + (4 * (y0 * Width + x0))) >> 2];
             var c01 = unsafe._mem_i32[(data + 4 + (4 * (y1 * Width + x0))) >> 2];
             var c10 = unsafe._mem_i32[(data + 4 + (4 * (y0 * Width + x1))) >> 2];
             var c11 = unsafe._mem_i32[(data + 4 + (4 * (y1 * Width + x1))) >> 2];
-            var c = Color.BLACK;
-            c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
-            c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
-            c = Color.Add_mem(c, Color.MulScalar_mem(c01, (1 - x) * y));
-            c = Color.Add_mem(c, Color.MulScalar_mem(c11, x * y));
+            var c = new Color3();
+            c = Color.Add2(c, Color.MulScalar2(c00, (1 - x) * (1 - y)));
+            c = Color.Add2(c, Color.MulScalar2(c10, x * (1 - y)));
+            c = Color.Add2(c, Color.MulScalar2(c01, (1 - x) * y));
+            c = Color.Add2(c, Color.MulScalar2(c11, x * y));
             return c;
         };
         Texture.Sample = function (t, u, v) {
-            u = Utils.FractAddOne(u);
-            v = Utils.FractAddOne(v);
+            u = Utils.Fract(Utils.Fract(u) + 1);
+            v = Utils.Fract(Utils.Fract(v) + 1);
             return Texture.bilinearSample(t, u, 1 - v);
+        };
+        Texture.SimpleSample = function (t, u, v) {
+            var Width = unsafe._mem_i32[(t + 4) >> 2];
+            var Height = unsafe._mem_i32[(t + 8) >> 2];
+            var data = unsafe._mem_i32[(t + 12) >> 2];
+            u = Utils.Fract(Utils.Fract(u) + 1);
+            v = Utils.Fract(Utils.Fract(v) + 1);
+            v = 1 - v;
+            var x = Math.round(u * Width);
+            var y = Math.round(v * Height);
+            var c = Color.toColor3(unsafe._mem_i32[(data + 4 + (4 * (y * Width + x))) >> 2]);
+            return c;
         };
         Texture.NormalSample = function (t, u, v, c) {
             var c = Texture.Sample(t, u, v);
@@ -1550,7 +1639,7 @@ var XRAY;
         Texture.BumpSample = function (t, u, v, c) {
             var Width = unsafe._mem_i32[(t + 4) >> 2];
             var Height = unsafe._mem_i32[(t + 8) >> 2];
-            var data = unsafe._mem_i32[(t + 16) >> 2];
+            var data = unsafe._mem_i32[(t + 12) >> 2];
             u = Utils.FractAddOne(u);
             v = Utils.FractAddOne(v);
             v = 1 - v;
@@ -1560,13 +1649,13 @@ var XRAY;
             var x2 = Utils.ClampInt(x + 1, 0, Width - 1);
             var y1 = Utils.ClampInt(y - 1, 0, Height - 1);
             var y2 = Utils.ClampInt(y + 1, 0, Height - 1);
-            var cx = Color.Sub_mem(unsafe._mem_i32[(data + 4 + (4 * (y * Width + x1))) >> 2], unsafe._mem_i32[(data + 4 + (4 * (y * Width + x2))) >> 2]);
-            var cy = Color.Sub_mem(unsafe._mem_i32[(data + 4 + (4 * (y1 * Width + x))) >> 2], unsafe._mem_i32[(data + 4 + (4 * (y2 * Width + x))) >> 2]);
-            return new Vector3(unsafe._mem_f64[(cx + 8) >> 3], unsafe._mem_f64[(cy + 8) >> 3], 0);
+            var cx = Color.Sub_mem2(unsafe._mem_i32[(data + 4 + (4 * (y * Width + x1))) >> 2], unsafe._mem_i32[(data + 4 + (4 * (y * Width + x2))) >> 2]);
+            var cy = Color.Sub_mem2(unsafe._mem_i32[(data + 4 + (4 * (y1 * Width + x))) >> 2], unsafe._mem_i32[(data + 4 + (4 * (y2 * Width + x))) >> 2]);
+            return new Vector3(cx.r, cy.r, 0);
         };
         Texture.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 10502342; return SELF; };
         Texture.NAME = "Texture";
-        Texture.SIZE = 20;
+        Texture.SIZE = 16;
         Texture.ALIGN = 4;
         Texture.CLSID = 10502342;
         Texture.textures = [];
@@ -1643,6 +1732,21 @@ var XRAY;
         Material.setTransparent = function (SELF, Transparent) {
             unsafe._mem_u8[(SELF + 72) >> 0] = Transparent;
         };
+        Material.setTexture = function (SELF, Texture) {
+            unsafe._mem_i32[(SELF + 8) >> 2] = Texture;
+        };
+        Material.setNormalTexture = function (SELF, NormalTexture) {
+            unsafe._mem_i32[(SELF + 12) >> 2] = NormalTexture;
+        };
+        Material.setBumpTexture = function (SELF, BumpTexture) {
+            unsafe._mem_i32[(SELF + 16) >> 2] = BumpTexture;
+        };
+        Material.setBumpMultiplier = function (SELF, BumpMultiplier) {
+            unsafe._mem_f64[(SELF + 24) >> 3] = BumpMultiplier;
+        };
+        Material.setGlossTexture = function (SELF, GlossTexture) {
+            unsafe._mem_i32[(SELF + 20) >> 2] = GlossTexture;
+        };
         Material.DiffuseMaterial = function (color) {
             var ptr = Material.initInstance(unsafe.alloc(73, 8));
             return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
@@ -1673,6 +1777,14 @@ var XRAY;
         };
         Material.MaterialAt = function (shape, point) {
             var material = Shape.MaterialAt(shape, point);
+            var uv = Shape.UV(shape, point);
+            if (unsafe._mem_i32[(material + 8) >> 2]) {
+                Color.init(unsafe._mem_i32[(material + 4) >> 2], Texture.Sample(unsafe._mem_i32[(material + 8) >> 2], uv.x, uv.y));
+            }
+            if (unsafe._mem_i32[(material + 20) >> 2]) {
+                var c = Texture.Sample(unsafe._mem_i32[(material + 20) >> 2], uv.x, uv.y);
+                unsafe._mem_f64[(material + 48) >> 3] = (c.r + c.g + c.b) / 3;
+            }
             return material;
         };
         Material.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 167722613; return SELF; };
@@ -2644,14 +2756,51 @@ var XRAY;
             return unsafe._mem_i32[(SELF + 44) >> 2];
         };
         Triangle.NormalAt_impl = function (SELF, p) {
+            var V1 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+            var V2 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+            var V3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
             var n1 = new Vector3().read(unsafe._mem_i32[(SELF + 20) >> 2]);
             var n2 = new Vector3().read(unsafe._mem_i32[(SELF + 24) >> 2]);
             var n3 = new Vector3().read(unsafe._mem_i32[(SELF + 28) >> 2]);
+            var T1 = new Vector3().read(unsafe._mem_i32[(SELF + 32) >> 2]);
+            var T2 = new Vector3().read(unsafe._mem_i32[(SELF + 36) >> 2]);
+            var T3 = new Vector3().read(unsafe._mem_i32[(SELF + 40) >> 2]);
             var uvw = Triangle.Barycentric(SELF, p);
             var n = new Vector3();
             n = n.add(n1.mulScalar(uvw.u));
             n = n.add(n2.mulScalar(uvw.v));
             n = n.add(n3.mulScalar(uvw.w));
+            if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2]) {
+                var b = new Vector3();
+                b = b.add(T1.mulScalar(uvw.u));
+                b = b.add(T2.mulScalar(uvw.v));
+                b = b.add(T3.mulScalar(uvw.w));
+                var ns = Texture.NormalSample(unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2], b.x, b.y);
+                var dv1 = V2.sub(V1);
+                var dv2 = V3.sub(V1);
+                var dt1 = T2.sub(T1);
+                var dt2 = T3.sub(T1);
+                var T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
+                var b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
+                var N = T.cross(b);
+                var matrix = new Matrix4(T.x, b.x, N.x, 0, T.y, b.y, N.y, 0, T.z, b.z, N.z, 0, 0, 0, 0, 1);
+                n = matrix.mulDirection(ns);
+            }
+            if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 16) >> 2]) {
+                var b = new Vector3();
+                b = b.add(T1.mulScalar(uvw.u));
+                b = b.add(T2.mulScalar(uvw.v));
+                b = b.add(T3.mulScalar(uvw.w));
+                var bump = Texture.BumpSample(unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 16) >> 2], b.x, b.y);
+                var dv1 = V2.sub(V1);
+                var dv2 = V3.sub(V1);
+                var dt1 = T2.sub(T1);
+                var dt2 = T3.sub(T1);
+                var tangent = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
+                var bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
+                n = n.add(tangent.mulScalar(bump.x * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
+                n = n.add(bitangent.mulScalar(bump.y * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
+            }
             n = n.normalize();
             return n;
         };
@@ -4230,5 +4379,235 @@ var XRAY;
         return Color3;
     }());
     XRAY.Color3 = Color3;
+    var Matrix4 = (function () {
+        function Matrix4(x00, x01, x02, x03, x10, x11, x12, x13, x20, x21, x22, x23, x30, x31, x32, x33) {
+            if (x00 === void 0) { x00 = 0; }
+            if (x01 === void 0) { x01 = 0; }
+            if (x02 === void 0) { x02 = 0; }
+            if (x03 === void 0) { x03 = 0; }
+            if (x10 === void 0) { x10 = 0; }
+            if (x11 === void 0) { x11 = 0; }
+            if (x12 === void 0) { x12 = 0; }
+            if (x13 === void 0) { x13 = 0; }
+            if (x20 === void 0) { x20 = 0; }
+            if (x21 === void 0) { x21 = 0; }
+            if (x22 === void 0) { x22 = 0; }
+            if (x23 === void 0) { x23 = 0; }
+            if (x30 === void 0) { x30 = 0; }
+            if (x31 === void 0) { x31 = 0; }
+            if (x32 === void 0) { x32 = 0; }
+            if (x33 === void 0) { x33 = 0; }
+            this.x00 = x00;
+            this.x01 = x01;
+            this.x02 = x02;
+            this.x03 = x03;
+            this.x10 = x10;
+            this.x11 = x11;
+            this.x12 = x12;
+            this.x13 = x13;
+            this.x20 = x20;
+            this.x21 = x21;
+            this.x22 = x22;
+            this.x23 = x23;
+            this.x30 = x30;
+            this.x31 = x31;
+            this.x32 = x32;
+            this.x33 = x33;
+        }
+        Matrix4.fromTHREEJS = function (e) {
+            return new Matrix44(e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]);
+        };
+        Object.defineProperty(Matrix4.prototype, "DATA", {
+            get: function () {
+                return [
+                    this.x00, this.x01, this.x02, this.x03,
+                    this.x10, this.x11, this.x12, this.x13,
+                    this.x20, this.x21, this.x22, this.x23,
+                    this.x30, this.x31, this.x32, this.x33
+                ];
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Matrix4.Identity = function () {
+            return new Matrix4;
+            1, 0, 0, 0,
+                0, 1, 0, 0,
+                0, 0, 1, 0,
+                0, 0, 0, 1;
+        };
+        Matrix4.IsEqual = function (a, b) {
+            return a.x00 == b.x00 && a.x01 == b.x01 && a.x02 == b.x02 && a.x03 == b.x03 &&
+                a.x10 == b.x10 && a.x11 == b.x11 && a.x12 == b.x12 && a.x13 == b.x13 &&
+                a.x20 == b.x20 && a.x21 == b.x21 && a.x22 == b.x22 && a.x23 == b.x23 &&
+                a.x30 == b.x30 && a.x31 == b.x31 && a.x32 == b.x32 && a.x33 == b.x33;
+        };
+        Matrix4.prototype.isIdentity = function () {
+            return this.x00 == 1 && this.x01 == 0 && this.x02 == 0 && this.x03 == 0 &&
+                this.x10 == 0 && this.x11 == 1 && this.x12 == 0 && this.x13 == 0 &&
+                this.x20 == 0 && this.x21 == 0 && this.x22 == 1 && this.x23 == 0 &&
+                this.x30 == 0 && this.x31 == 0 && this.x32 == 0 && this.x33 == 1;
+        };
+        Matrix4.TranslateUnitMatrix4 = function (v) {
+            return new Matrix4,
+                1, 0, 0, v.x,
+                0, 1, 0, v.y,
+                0, 0, 1, v.z,
+                0, 0, 0, 1;
+        };
+        Matrix4.ScaleUnitMatrix4 = function (v) {
+            return new Matrix4(v.x, 0, 0, 0, 0, v.y, 0, 0, 0, 0, v.z, 0, 0, 0, 0, 1);
+        };
+        Matrix4.RotateUnitMatrix4 = function (v, a, _c) {
+            v = v.normalize();
+            var s = Math.sin(a);
+            var c = Math.cos(a);
+            var m = 1 - c;
+            return new Matrix4(m * v.x * v.x + c, m * v.x * v.y + v.z * s, m * v.z * v.x - v.y * s, 0, m * v.x * v.y - v.z * s, m * v.y * v.y + c, m * v.y * v.z + v.x * s, 0, m * v.z * v.x + v.y * s, m * v.y * v.z - v.x * s, m * v.z * v.z + c, 0, 0, 0, 0, 1);
+        };
+        Matrix4.FrustumUnitMatrix4 = function (l, r, b, t, n, f, c) {
+            var t1 = 2 * n;
+            var t2 = r - l;
+            var t3 = t - b;
+            var t4 = f - n;
+            return new Matrix4(t1 / t2, 0, (r + l) / t2, 0, 0, t1 / t3, (t + b) / t3, 0, 0, 0, (-f - n) / t4, (-t1 * f) / t4, 0, 0, -1, 0);
+        };
+        Matrix4.OrthographicUnitMatrix4 = function (l, r, b, t, n, f, c) {
+            return new Matrix4(2 / (r - l), 0, 0, -(r + l) / (r - l), 0, 2 / (t - b), 0, -(t + b) / (t - b), 0, 0, -2 / (f - n), -(f + n) / (f - n), 0, 0, 0, 1);
+        };
+        Matrix4.PerspectiveUnitMatrix4 = function (fovy, aspect, near, far, c) {
+            var ymax = near * Math.tan(fovy * Math.PI / 360);
+            var xmax = ymax * aspect;
+            return Matrix4.Frustum(-xmax, xmax, -ymax, ymax, near, far, c);
+        };
+        Matrix4.LookAtMatrix4 = function (eye, center, up, c) {
+            up = up.normalize();
+            var f = center.sub(eye).normalize();
+            var s = f.cross(up).normalize();
+            var u = s.cross(f);
+            return new Matrix4(unsafe._mem_f64[(s + 8) >> 3], unsafe._mem_f64[(u + 8) >> 3], unsafe._mem_f64[(f + 8) >> 3], 0, unsafe._mem_f64[(s + 16) >> 3], unsafe._mem_f64[(u + 16) >> 3], unsafe._mem_f64[(f + 16) >> 3], 0, unsafe._mem_f64[(s + 24) >> 3], unsafe._mem_f64[(u + 24) >> 3], unsafe._mem_f64[(f + 24) >> 3], 0, 0, 0, 0, 1).Transpose().inverse().Translate(eye);
+        };
+        Matrix4.Translate = function (m, v, c) {
+            return Matrix4.Mul(m, Matrix4.TranslateUnitMatrix4(v), c);
+        };
+        Matrix4.Scale = function (m, v, c) {
+            return Matrix4.Mul(m, Matrix4.ScaleUnitMatrix4(v), c);
+        };
+        Matrix4.Rotate = function (m, v, a, c) {
+            return Matrix4.Mul(m, Matrix4.RotateUnitMatrix4(v, a), c);
+        };
+        Matrix4.Frustum = function (m, l, r, b, t, n, f, c) {
+            return Matrix4.Mul(m, Matrix4.FrustumUnitMatrix4(l, r, b, t, n, f, c), c);
+        };
+        Matrix4.Orthographic = function (m, l, r, b, t, n, f, c) {
+            return Matrix4.Mul(m, Matrix4.OrthographicUnitMatrix4(l, r, b, t, n, f, c), c);
+        };
+        Matrix4.Perspective = function (m, fovy, aspect, near, far, c) {
+            return Matrix4.Mul(m, Matrix4.PerspectiveUnitMatrix4(fovy, aspect, near, far, c), c);
+        };
+        Matrix4.prototype.mul = function (b) {
+            m = new Matrix4();
+            m.x00 = this.x00 * b.x00 + this.x01 * b.x10 + this.x02 * b.x20 + this.x03 * b.x30;
+            m.x10 = this.x10 * b.x00 + this.x11 * b.x10 + this.x12 * b.x20 + this.x13 * b.x30;
+            m.x20 = this.x20 * b.x00 + this.x21 * b.x10 + this.x22 * b.x20 + this.x23 * b.x30;
+            m.x30 = this.x30 * b.x00 + this.x31 * b.x10 + this.x32 * b.x20 + this.x33 * b.x30;
+            m.x01 = this.x00 * b.x01 + this.x01 * b.x11 + this.x02 * b.x21 + this.x03 * b.x31;
+            m.x11 = this.x10 * b.x01 + this.x11 * b.x11 + this.x12 * b.x21 + this.x13 * b.x31;
+            m.x21 = this.x20 * b.x01 + this.x21 * b.x11 + this.x22 * b.x21 + this.x23 * b.x31;
+            m.x31 = this.x30 * b.x01 + this.x31 * b.x11 + this.x32 * b.x21 + this.x33 * b.x31;
+            m.x02 = this.x00 * b.x02 + this.x01 * b.x12 + this.x02 * b.x22 + this.x03 * b.x32;
+            m.x12 = this.x10 * b.x02 + this.x11 * b.x12 + this.x12 * b.x22 + this.x13 * b.x32;
+            m.x22 = this.x20 * b.x02 + this.x21 * b.x12 + this.x22 * b.x22 + this.x23 * b.x32;
+            m.x32 = this.x30 * b.x02 + this.x31 * b.x12 + this.x32 * b.x22 + this.x33 * b.x32;
+            m.x03 = this.x00 * b.x03 + this.x01 * b.x13 + this.x02 * b.x23 + this.x03 * b.x33;
+            m.x13 = this.x10 * b.x03 + this.x11 * b.x13 + this.x12 * b.x23 + this.x13 * b.x33;
+            m.x23 = this.x20 * b.x03 + this.x21 * b.x13 + this.x22 * b.x23 + this.x23 * b.x33;
+            m.x33 = this.x30 * b.x03 + this.x31 * b.x13 + this.x32 * b.x23 + this.x33 * b.x33;
+            return m;
+        };
+        Matrix4.prototype.mulPosition = function (b) {
+            var x = this.x00 * b.x + this.x01 * b.y + this.x02 * b.z + this.x03;
+            var y = this.x10 * b.x + this.x11 * b.y + this.x12 * b.z + this.x13;
+            var z = this.x20 * b.x + this.x21 * b.y + this.x22 * b.z + this.x23;
+            return new Vector3(x, y, z);
+        };
+        Matrix4.prototype.mulDirection = function (b) {
+            var x = this.x00 * b.x + this.x01 * b.y + this.x02 * b.z;
+            var y = this.x10 * b.x + this.x11 * b.y + this.x12 * b.z;
+            var z = this.x20 * b.x + this.x21 * b.y + this.x22 * b.z;
+            return new Vector3(x, y, z);
+        };
+        Matrix4.MulRay = function (a, ray) {
+            throw "Not implemented";
+            var origin = Matrix4.MulPosition_vec3(a, ray.origin);
+            var direction = Matrix4.MulDirection_vec3(a, ray.direction);
+            return new Ray(origin, direction);
+        };
+        Matrix4.MulBox = function (a, box, c) {
+            throw "Not implemented";
+            var min = unsafe._mem_i32[(box + 4) >> 2];
+            var max = unsafe._mem_i32[(box + 8) >> 2];
+            var r = new Vector3(this.x00, this.x10, this.x20);
+            var u = new Vector3(this.x01, this.x11, this.x21);
+            var b = new Vector3(this.x02, this.x12, this.x22);
+            var t = new Vector3(this.x03, this.x13, this.x23);
+            var xa = r.mulScalar(unsafe._mem_f64[(min + 8) >> 3]);
+            var xb = r.mulScalar(unsafe._mem_f64[(max + 8) >> 3]);
+            var ya = u.mulScalar(unsafe._mem_f64[(min + 16) >> 3]);
+            var yb = u.mulScalar(unsafe._mem_f64[(max + 16) >> 3]);
+            var za = b.mulScalar(unsafe._mem_f64[(min + 24) >> 3]);
+            var zb = b.mulScalar(unsafe._mem_f64[(max + 24) >> 3]);
+            xa = xa.min(xb);
+            xb = xa.max(xb);
+            ya = ya.min(yb);
+            yb = ya.max(yb);
+            za = za.min(zb);
+            zb = za.max(zb);
+            min = xa.add(ya).add(za).add(t);
+            max = xb.add(yb).add(zb).add(t);
+            var ptr = c ? c : Box.initInstance(unsafe.alloc(12, 4));
+            return Box.Init_mem(ptr, min, max);
+        };
+        Matrix4.prototype.transpose = function () {
+            return new Matrix4(this.x00, this.x10, this.x20, this.x30, this.x01, this.x11, this.x21, this.x31, this.x02, this.x12, this.x22, this.x32, this.x03, this.x13, this.x23, this.x33);
+        };
+        Matrix4.prototype.determinant = function () {
+            return (this.x00 * this.x11 * this.x22 * this.x33 - this.x00 * this.x11 * this.x23 * this.x32 +
+                this.x00 * this.x12 * this.x23 * this.x31 - this.x00 * this.x12 * this.x21 * this.x33 +
+                this.x00 * this.x13 * this.x21 * this.x32 - this.x00 * this.x13 * this.x22 * this.x31 -
+                this.x01 * this.x12 * this.x23 * this.x30 + this.x01 * this.x12 * this.x20 * this.x33 -
+                this.x01 * this.x13 * this.x20 * this.x32 + this.x01 * this.x13 * this.x22 * this.x30 -
+                this.x01 * this.x10 * this.x22 * this.x33 + this.x01 * this.x10 * this.x23 * this.x32 +
+                this.x02 * this.x13 * this.x20 * this.x31 - this.x02 * this.x13 * this.x21 * this.x30 +
+                this.x02 * this.x10 * this.x21 * this.x33 - this.x02 * this.x10 * this.x23 * this.x31 +
+                this.x02 * this.x11 * this.x23 * this.x30 - this.x02 * this.x11 * this.x20 * this.x33 -
+                this.x03 * this.x10 * this.x21 * this.x32 + this.x03 * this.x10 * this.x22 * this.x31 -
+                this.x03 * this.x11 * this.x22 * this.x30 + this.x03 * this.x11 * this.x20 * this.x32 -
+                this.x03 * this.x12 * this.x20 * this.x31 + this.x03 * this.x12 * this.x21 * this.x30);
+        };
+        Matrix4.prototype.inverse = function () {
+            var m = new Matrix4();
+            var d = this.determinant();
+            m.x00 = (this.x12 * this.x23 * this.x31 - this.x13 * this.x22 * this.x31 + this.x13 * this.x21 * this.x32 - this.x11 * this.x23 * this.x32 - this.x12 * this.x21 * this.x33 + this.x11 * this.x22 * this.x33) / d;
+            m.x01 = (this.x03 * this.x22 * this.x31 - this.x02 * this.x23 * this.x31 - this.x03 * this.x21 * this.x32 + this.x01 * this.x23 * this.x32 + this.x02 * this.x21 * this.x33 - this.x01 * this.x22 * this.x33) / d;
+            m.x02 = (this.x02 * this.x13 * this.x31 - this.x03 * this.x12 * this.x31 + this.x03 * this.x11 * this.x32 - this.x01 * this.x13 * this.x32 - this.x02 * this.x11 * this.x33 + this.x01 * this.x12 * this.x33) / d;
+            m.x03 = (this.x03 * this.x12 * this.x21 - this.x02 * this.x13 * this.x21 - this.x03 * this.x11 * this.x22 + this.x01 * this.x13 * this.x22 + this.x02 * this.x11 * this.x23 - this.x01 * this.x12 * this.x23) / d;
+            m.x10 = (this.x13 * this.x22 * this.x30 - this.x12 * this.x23 * this.x30 - this.x13 * this.x20 * this.x32 + this.x10 * this.x23 * this.x32 + this.x12 * this.x20 * this.x33 - this.x10 * this.x22 * this.x33) / d;
+            m.x11 = (this.x02 * this.x23 * this.x30 - this.x03 * this.x22 * this.x30 + this.x03 * this.x20 * this.x32 - this.x00 * this.x23 * this.x32 - this.x02 * this.x20 * this.x33 + this.x00 * this.x22 * this.x33) / d;
+            m.x12 = (this.x03 * this.x12 * this.x30 - this.x02 * this.x13 * this.x30 - this.x03 * this.x10 * this.x32 + this.x00 * this.x13 * this.x32 + this.x02 * this.x10 * this.x33 - this.x00 * this.x12 * this.x33) / d;
+            m.x13 = (this.x02 * this.x13 * this.x20 - this.x03 * this.x12 * this.x20 + this.x03 * this.x10 * this.x22 - this.x00 * this.x13 * this.x22 - this.x02 * this.x10 * this.x23 + this.x00 * this.x12 * this.x23) / d;
+            m.x20 = (this.x11 * this.x23 * this.x30 - this.x13 * this.x21 * this.x30 + this.x13 * this.x20 * this.x31 - this.x10 * this.x23 * this.x31 - this.x11 * this.x20 * this.x33 + this.x10 * this.x21 * this.x33) / d;
+            m.x21 = (this.x03 * this.x21 * this.x30 - this.x01 * this.x23 * this.x30 - this.x03 * this.x20 * this.x31 + this.x00 * this.x23 * this.x31 + this.x01 * this.x20 * this.x33 - this.x00 * this.x21 * this.x33) / d;
+            m.x22 = (this.x01 * this.x13 * this.x30 - this.x03 * this.x11 * this.x30 + this.x03 * this.x10 * this.x31 - this.x00 * this.x13 * this.x31 - this.x01 * this.x10 * this.x33 + this.x00 * this.x11 * this.x33) / d;
+            m.x23 = (this.x03 * this.x11 * this.x20 - this.x01 * this.x13 * this.x20 - this.x03 * this.x10 * this.x21 + this.x00 * this.x13 * this.x21 + this.x01 * this.x10 * this.x23 - this.x00 * this.x11 * this.x23) / d;
+            m.x30 = (this.x12 * this.x21 * this.x30 - this.x11 * this.x22 * this.x30 - this.x12 * this.x20 * this.x31 + this.x10 * this.x22 * this.x31 + this.x11 * this.x20 * this.x32 - this.x10 * this.x21 * this.x32) / d;
+            m.x31 = (this.x01 * this.x22 * this.x30 - this.x02 * this.x21 * this.x30 + this.x02 * this.x20 * this.x31 - this.x00 * this.x22 * this.x31 - this.x01 * this.x20 * this.x32 + this.x00 * this.x21 * this.x32) / d;
+            m.x32 = (this.x02 * this.x11 * this.x30 - this.x01 * this.x12 * this.x30 - this.x02 * this.x10 * this.x31 + this.x00 * this.x12 * this.x31 + this.x01 * this.x10 * this.x32 - this.x00 * this.x11 * this.x32) / d;
+            m.x33 = (this.x01 * this.x12 * this.x20 - this.x02 * this.x11 * this.x20 + this.x02 * this.x10 * this.x21 - this.x00 * this.x12 * this.x21 - this.x01 * this.x10 * this.x22 + this.x00 * this.x11 * this.x22) / d;
+            return m;
+        };
+        return Matrix4;
+    }());
+    XRAY.Matrix4 = Matrix4;
 })(XRAY || (XRAY = {}));
 //# sourceMappingURL=xray-kernel-turbo.js.map

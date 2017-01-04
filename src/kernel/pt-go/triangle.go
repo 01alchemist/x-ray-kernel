@@ -140,6 +140,7 @@ func (t *Triangle) Barycentric(p Vector) (u, v, w float64) {
 	v0 := t.V2.Sub(t.V1)
 	v1 := t.V3.Sub(t.V1)
 	v2 := p.Sub(t.V1)
+
 	d00 := v0.Dot(v0)
 	d01 := v0.Dot(v1)
 	d11 := v1.Dot(v1)

@@ -216,17 +216,17 @@
 
     @virtual NormalAt(SELF, p:Vector3):Vector3 {
 
-        // let V1:Vector3 = new Vector3().read(SELF.V1);
-        // let V2:Vector3 = new Vector3().read(SELF.V2);
-        // let V3:Vector3 = new Vector3().read(SELF.V3);
+        let V1:Vector3 = new Vector3().read(SELF.V1);
+        let V2:Vector3 = new Vector3().read(SELF.V2);
+        let V3:Vector3 = new Vector3().read(SELF.V3);
 
         let n1:Vector3 = new Vector3().read(SELF.N1);
         let n2:Vector3 = new Vector3().read(SELF.N2);
         let n3:Vector3 = new Vector3().read(SELF.N3);
 
-        // let T1:Vector3 = new Vector3().read(SELF.T1);
-        // let T2:Vector3 = new Vector3().read(SELF.T2);
-        // let T3:Vector3 = new Vector3().read(SELF.T3);
+        let T1:Vector3 = new Vector3().read(SELF.T1);
+        let T2:Vector3 = new Vector3().read(SELF.T2);
+        let T3:Vector3 = new Vector3().read(SELF.T3);
 
 		let uvw = Triangle.Barycentric(SELF, p);
 		let n = new Vector3();
@@ -234,7 +234,7 @@
         n = n.add(n2.mulScalar(uvw.v));
         n = n.add(n3.mulScalar(uvw.w));
 
-		/*if (Material.NormalTexture(SELF.Material)) {
+		if (Material.NormalTexture(SELF.Material)) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
@@ -248,13 +248,12 @@
 			let T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
 			let b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
             let N = T.cross(b);
-			let matrix = @new Matrix;
-			Matrix.init(matrix,
+			let matrix = new Matrix4(
 					T.x, b.x, N.x, 0,
 					T.y, b.y, N.y, 0,
 					T.z, b.z, N.z, 0,
 					0, 0, 0, 1);
-			n = Matrix.MulDirection2(matrix, ns);
+			n = matrix.mulDirection(ns);
 		}
 		if (Material.BumpTexture(SELF.Material)) {
 			let b = new Vector3();
@@ -270,7 +269,7 @@
 			let bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
 			n = n.add(tangent.mulScalar(bump.x * Material.BumpMultiplier(SELF.Material)));
 			n = n.add(bitangent.mulScalar(bump.y * Material.BumpMultiplier(SELF.Material)));
-		}*/
+		}
 		n = n.normalize();
 		return n;
 	}
@@ -286,9 +285,11 @@
         let V1:Vector3 = new Vector3().read(SELF.V1);
         let V2:Vector3 = new Vector3().read(SELF.V2);
         let V3:Vector3 = new Vector3().read(SELF.V3);
+
         let v0 = V2.sub(V1);
         let V1 = V3.sub(V1);
         let V2 = p.sub(V1);
+
 		let d00 = v0.dot(v0);
 		let d01 = v0.dot(V1);
 		let d11 = V1.dot(V1);

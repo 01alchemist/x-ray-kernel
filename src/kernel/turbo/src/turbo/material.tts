@@ -90,6 +90,26 @@
         SELF.Transparent = Transparent;
     }
 
+    static setTexture(SELF, Texture) {
+        SELF.Texture = Texture;
+    }
+
+    static setNormalTexture(SELF, NormalTexture) {
+        SELF.NormalTexture = NormalTexture;
+    }
+
+    static setBumpTexture(SELF, BumpTexture) {
+        SELF.BumpTexture = BumpTexture;
+    }
+
+    static setBumpMultiplier(SELF, BumpMultiplier) {
+        SELF.BumpMultiplier = BumpMultiplier;
+    }
+
+    static setGlossTexture(SELF, GlossTexture) {
+        SELF.GlossTexture = GlossTexture;
+    }
+
     static DiffuseMaterial(color:number):number{
         let ptr:number = @new Material;
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
@@ -127,14 +147,14 @@
 
     static MaterialAt(shape:number, point:Vector3):number{
         let material:number = Shape.MaterialAt(shape, point);
-        // let uv:Vector3 = Shape.UV(shape, point);
-        // if (Material.Texture(material)) {
-        //     Material.Color(material) = Texture.Sample(Material.Texture(material), uv.x, uv.y);
-        // }
-        // if (Material.GlossTexture(material)) {
-        //     let c:number = Texture.Sample(Material.GlossTexture(material), uv.x, uv.y);
-        //     Material.Gloss(material) = (Color.r(c) + Color.g(c) + Color.b(c)) / 3;
-        // }
+        let uv:Vector3 = Shape.UV(shape, point);
+        if (Material.Texture(material)) {
+            Color.init(Material.Color(material), Texture.Sample(Material.Texture(material), uv.x, uv.y));
+        }
+        if (Material.GlossTexture(material)) {
+            let c:Color3 = Texture.Sample(Material.GlossTexture(material), uv.x, uv.y);
+            Material.Gloss(material) = (c.r + c.g + c.b) / 3;
+        }
         return material;
     }
 

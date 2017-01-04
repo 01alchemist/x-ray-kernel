@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace XRAY {
-// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 ///<reference path="./src/declaration.d.ts" />
@@ -104,7 +104,7 @@ type RGBA  = {
     r:number,
     g:number,
     b:number,
-    A:number
+    a:number
 };
 type RGB = {
     r:number,
@@ -163,27 +163,27 @@ export class Color extends MemoryObject{
         var blue:number;
         // red
         if(K >= 6600){
-            var A = 351.97690566805693;
+            var a = 351.97690566805693;
             var b = 0.114206453784165;
             var c = -40.25366309332127;
             var x = K/100 - 55;
-            red = A + b*x + c*Math.log(x)
+            red = a + b*x + c*Math.log(x)
         } else {
             red = 255;
         }
         // green
         if(K >= 6600){
-            A = 325.4494125711974;
+            a = 325.4494125711974;
             b = 0.07943456536662342;
             c = -28.0852963507957;
             x = K/100 - 50;
-            green = A + b*x + c*Math.log(x)
+            green = a + b*x + c*Math.log(x)
         } else if (K >= 1000) {
-            A = -155.25485562709179;
+            a = -155.25485562709179;
             b = -0.44596950469579133;
             c = 104.49216199393888;
             x = K/100 - 2;
-            green = A + b*x + c*Math.log(x)
+            green = a + b*x + c*Math.log(x)
         } else {
             green = 0
         }
@@ -191,11 +191,11 @@ export class Color extends MemoryObject{
         if (K >= 6600) {
             blue = 255
         } else if (K >= 2000) {
-            A = -254.76935184120902;
+            a = -254.76935184120902;
             b = 0.8274096064007395;
             c = 115.67994401066147;
             x = K/100 - 10;
-            blue = A + b*x + c*Math.log(x)
+            blue = a + b*x + c*Math.log(x)
         } else {
             blue = 0
         }
@@ -211,7 +211,7 @@ export class Color extends MemoryObject{
             r: unsafe._mem_f64[(SELF + 8) >> 3],
             g: unsafe._mem_f64[(SELF + 16) >> 3],
             b: unsafe._mem_f64[(SELF + 24) >> 3],
-            A: 1.0
+            a: 1.0
         };
     }
 
@@ -234,7 +234,7 @@ export class Color extends MemoryObject{
             r: _d[0],
             g: _d[1],
             b: _d[2],
-            A: 255
+            a: 255
         };
     }
 
@@ -243,202 +243,224 @@ export class Color extends MemoryObject{
             r: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 8) >> 3] * 65535))),
             g: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 16) >> 3] * 65535))),
             b: Math.round(Math.max(0, Math.min(65535, unsafe._mem_f64[(SELF + 24) >> 3] * 65535))),
-            A: 65535
+            a: 65535
         };
     }
     
-    static Add(A:RGBA, b:RGBA):RGB { return rgb(A.r + b.r, A.g + b.g, A.b + b.b); }
+    static Add(a:RGBA, b:RGBA):RGB { return rgb(a.r + b.r, a.g + b.g, a.b + b.b); }
+    static Add2(a:RGBA, b:RGBA):RGB { return new Color3(a.r + b.r, a.g + b.g, a.b + b.b); }
 
     /**
      *
-     * @param A Color 1
+     * @param a Color 1
      * @param b Color 2
-     * @param C result Color
+     * @param c result Color
      * @returns {number}
      * @constructor
      */
-    static Add_mem(A:number, b:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
-            return C;
+    static Add_mem(a:number, b:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3];
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                unsafe._mem_f64[(A + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3],
-                unsafe._mem_f64[(A + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3],
-                unsafe._mem_f64[(A + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] + unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] + unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] + unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
+    static Add_21(a:Color3, b:number, c?:Color3):Color3 {
+        c = c?c:new Color3();
+        c.r = a.r + unsafe._mem_f64[(b + 8) >> 3];
+        c.g = a.g + unsafe._mem_f64[(b + 16) >> 3];
+        c.b = a.b + unsafe._mem_f64[(b + 24) >> 3];
+        return c;
+    }
 
-    static Sub(A:RGBA, b:RGBA):RGB { return rgb(A.r - b.r, A.g - b.g, A.b - b.b); }
-    static Sub_mem(A:number, b:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
-            return C;
+    static Sub(a:RGBA, b:RGBA):RGB { return rgb(a.r - b.r, a.g - b.g, a.b - b.b); }
+    static Sub_mem(a:number, b:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                unsafe._mem_f64[(A + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3],
-                unsafe._mem_f64[(A + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3],
-                unsafe._mem_f64[(A + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3]
             );
         }
+    }
+    static Sub_mem2(a:number, b:number, c?:Color3):Color3 {
+        c = c?c:new Color3();
+        c.r = unsafe._mem_f64[(a + 8) >> 3] - unsafe._mem_f64[(b + 8) >> 3];
+        c.g = unsafe._mem_f64[(a + 16) >> 3] - unsafe._mem_f64[(b + 16) >> 3];
+        c.b = unsafe._mem_f64[(a + 24) >> 3] - unsafe._mem_f64[(b + 24) >> 3];
+        return c;
+    }
+    static Sub_21(a:Color3, b:number, c?:Color3):Color3 {
+        c = c?c:new Color3();
+        c.r = a.r - unsafe._mem_f64[(b + 8) >> 3];
+        c.g = a.g - unsafe._mem_f64[(b + 16) >> 3];
+        c.b = a.b - unsafe._mem_f64[(b + 24) >> 3];
+        return c;
     }
     
-    static Mul(A:RGBA, b:Color3):RGB { return rgb(A.r * b.r, A.g * b.g, A.b * b.b); }
-    static Mul2(A:number, b:Color3):Color3 {
+    static Mul(a:RGBA, b:Color3):RGB { return rgb(a.r * b.r, a.g * b.g, a.b * b.b); }
+    static Mul2(a:number, b:Color3):Color3 {
         return new Color3(
-            unsafe._mem_f64[(A + 8) >> 3] * b.r,
-            unsafe._mem_f64[(A + 16) >> 3] * b.g,
-            unsafe._mem_f64[(A + 24) >> 3] * b.b
+            unsafe._mem_f64[(a + 8) >> 3] * b.r,
+            unsafe._mem_f64[(a + 16) >> 3] * b.g,
+            unsafe._mem_f64[(a + 24) >> 3] * b.b
         );
     }
-    static Mul_mem(A:number, b:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
-            return C;
+    static Mul_mem(a:number, b:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3];
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                unsafe._mem_f64[(A + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3],
-                unsafe._mem_f64[(A + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3],
-                unsafe._mem_f64[(A + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]
+                unsafe._mem_f64[(a + 8) >> 3] * unsafe._mem_f64[(b + 8) >> 3],
+                unsafe._mem_f64[(a + 16) >> 3] * unsafe._mem_f64[(b + 16) >> 3],
+                unsafe._mem_f64[(a + 24) >> 3] * unsafe._mem_f64[(b + 24) >> 3]
             );
         }
     }
 
-    static MulScalar(A:RGBA, f:number):RGB { return rgb(A.r * f, A.g * f, A.b * f); }
-    static MulScalar2(A:number, f:number):Color3 {
+    static MulScalar(a:RGBA, f:number):RGB { return rgb(a.r * f, a.g * f, a.b * f); }
+    static MulScalar2(a:number, f:number):Color3 {
         return new Color3(
-            unsafe._mem_f64[(A + 8) >> 3] * f,
-            unsafe._mem_f64[(A + 16) >> 3] * f,
-            unsafe._mem_f64[(A + 24) >> 3] * f
+            unsafe._mem_f64[(a + 8) >> 3] * f,
+            unsafe._mem_f64[(a + 16) >> 3] * f,
+            unsafe._mem_f64[(a + 24) >> 3] * f
         );
     }
-    static MulScalar_mem(A:number, f:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] * f;
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] * f;
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] * f;
-            return C;
+    static MulScalar_mem(a:number, f:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] * f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] * f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] * f;
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                unsafe._mem_f64[(A + 8) >> 3] * f,
-                unsafe._mem_f64[(A + 16) >> 3] * f,
-                unsafe._mem_f64[(A + 24) >> 3] * f
+                unsafe._mem_f64[(a + 8) >> 3] * f,
+                unsafe._mem_f64[(a + 16) >> 3] * f,
+                unsafe._mem_f64[(a + 24) >> 3] * f
             );
         }
     }
 
-    static DivScalar(A:RGBA, f:number):RGB { return rgb(A.r / f, A.g / f, A.b / f); }
-    static DivScalar_mem(A:number, f:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[(A + 8) >> 3] / f;
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[(A + 16) >> 3] / f;
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[(A + 24) >> 3] / f;
-            return C;
+    static DivScalar(a:RGBA, f:number):RGB { return rgb(a.r / f, a.g / f, a.b / f); }
+    static DivScalar_mem(a:number, f:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[(a + 8) >> 3] / f;
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[(a + 16) >> 3] / f;
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[(a + 24) >> 3] / f;
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                unsafe._mem_f64[(A + 8) >> 3] / f,
-                unsafe._mem_f64[(A + 16) >> 3] / f,
-                unsafe._mem_f64[(A + 24) >> 3] / f
+                unsafe._mem_f64[(a + 8) >> 3] / f,
+                unsafe._mem_f64[(a + 16) >> 3] / f,
+                unsafe._mem_f64[(a + 24) >> 3] / f
             );
         }
     }
 
-    static Min(A:RGBA, b:RGBA):RGB { return rgb( Math.min(A.r , b.r), Math.min(A.g , b.g), Math.min(A.b , b.b) ); }
-    static Min_mem(A:number, b:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = Math.min(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
-            unsafe._mem_f64[(C + 16) >> 3] = Math.min(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
-            unsafe._mem_f64[(C + 24) >> 3] = Math.min(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
-            return C;
+    static Min(a:RGBA, b:RGBA):RGB { return rgb( Math.min(a.r , b.r), Math.min(a.g , b.g), Math.min(a.b , b.b) ); }
+    static Min_mem(a:number, b:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = Math.min(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.min(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.min(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.min(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
-                Math.min(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
-                Math.min(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
+                Math.min(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.min(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.min(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static Max(A:RGBA, b:RGBA):RGB {return rgb( Math.max(A.r , b.r), Math.max(A.g , b.g), Math.max(A.b , b.b) );}
-    static Max_mem(A:number, b:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = Math.max(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
-            unsafe._mem_f64[(C + 16) >> 3] = Math.max(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
-            unsafe._mem_f64[(C + 24) >> 3] = Math.max(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
-            return C;
+    static Max(a:RGBA, b:RGBA):RGB {return rgb( Math.max(a.r , b.r), Math.max(a.g , b.g), Math.max(a.b , b.b) );}
+    static Max_mem(a:number, b:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = Math.max(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.max(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.max(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3]);
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.max(unsafe._mem_f64[(A + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
-                Math.max(unsafe._mem_f64[(A + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
-                Math.max(unsafe._mem_f64[(A + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
+                Math.max(unsafe._mem_f64[(a + 8) >> 3] , unsafe._mem_f64[(b + 8) >> 3]),
+                Math.max(unsafe._mem_f64[(a + 16) >> 3] , unsafe._mem_f64[(b + 16) >> 3]),
+                Math.max(unsafe._mem_f64[(a + 24) >> 3] , unsafe._mem_f64[(b + 24) >> 3])
             );
         }
     }
 
-    static MinComponent(A:RGBA):number {return Math.min(Math.min(A.r, A.g), A.b)}
-    static MinComponent_mem(A:number) {
-        return Math.min( Math.min(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3] );
+    static MinComponent(a:RGBA):number {return Math.min(Math.min(a.r, a.g), a.b)}
+    static MinComponent_mem(a:number) {
+        return Math.min( Math.min(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3] );
     }
 
-    static MaxComponent(A:RGBA):number { return Math.max(Math.max(A.r, A.g), A.b) }
-    static MaxComponent_mem(A:number):number {
-        return Math.max( Math.max(unsafe._mem_f64[(A + 8) >> 3], unsafe._mem_f64[(A + 16) >> 3]), unsafe._mem_f64[(A + 24) >> 3] );
+    static MaxComponent(a:RGBA):number { return Math.max(Math.max(a.r, a.g), a.b) }
+    static MaxComponent_mem(a:number):number {
+        return Math.max( Math.max(unsafe._mem_f64[(a + 8) >> 3], unsafe._mem_f64[(a + 16) >> 3]), unsafe._mem_f64[(a + 24) >> 3] );
     }
 
-    static Pow(A:RGBA, f:number):RGB {return rgb( Math.pow(A.r, f), Math.pow(A.g, f), Math.pow(A.b, f) );}
-    static Pow_mem(A:number, f:number, C?:number):number {
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = Math.pow(unsafe._mem_f64[(A + 8) >> 3] , f);
-            unsafe._mem_f64[(C + 16) >> 3] = Math.pow(unsafe._mem_f64[(A + 16) >> 3] , f);
-            unsafe._mem_f64[(C + 24) >> 3] = Math.pow(unsafe._mem_f64[(A + 24) >> 3] , f);
-            return C;
+    static Pow(a:RGBA, f:number):RGB {return rgb( Math.pow(a.r, f), Math.pow(a.g, f), Math.pow(a.b, f) );}
+    static Pow_mem(a:number, f:number, c?:number):number {
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = Math.pow(unsafe._mem_f64[(a + 8) >> 3] , f);
+            unsafe._mem_f64[(c + 16) >> 3] = Math.pow(unsafe._mem_f64[(a + 16) >> 3] , f);
+            unsafe._mem_f64[(c + 24) >> 3] = Math.pow(unsafe._mem_f64[(a + 24) >> 3] , f);
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
                 ptr,
-                Math.pow(unsafe._mem_f64[(A + 8) >> 3] , f),
-                Math.pow(unsafe._mem_f64[(A + 16) >> 3] , f),
-                Math.pow(unsafe._mem_f64[(A + 24) >> 3] , f)
+                Math.pow(unsafe._mem_f64[(a + 8) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(a + 16) >> 3] , f),
+                Math.pow(unsafe._mem_f64[(a + 24) >> 3] , f)
             );
         }
     }
 
-    static Mix(A:RGBA, b:RGBA, pct:number):RGB {
-        let _a = Color.MulScalar(A, 1 - pct);
+    static Mix(a:RGBA, b:RGBA, pct:number):RGB {
+        let _a = Color.MulScalar(a, 1 - pct);
         let _b = Color.MulScalar(b, pct);
         return rgb(_a.r + _b.r, _a.g + _b.g, _a.b + _b.b);
     }
-    static Mix_mem(A:number, b:number, pct:number, C?:number):number {
+    static Mix_mem(a:number, b:number, pct:number, c?:number):number {
 
-        let _a:number = Color.MulScalar_mem(A, 1 - pct);
+        let _a:number = Color.MulScalar_mem(a, 1 - pct);
         let _b:number = Color.MulScalar_mem(b, pct);
 
-        if(C){
-            unsafe._mem_f64[(C + 8) >> 3] = unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3];
-            unsafe._mem_f64[(C + 16) >> 3] = unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3];
-            unsafe._mem_f64[(C + 24) >> 3] = unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3];
-            return C;
+        if(c){
+            unsafe._mem_f64[(c + 8) >> 3] = unsafe._mem_f64[((_a) + 8) >> 3] + unsafe._mem_f64[((_b) + 8) >> 3];
+            unsafe._mem_f64[(c + 16) >> 3] = unsafe._mem_f64[((_a) + 16) >> 3] + unsafe._mem_f64[((_b) + 16) >> 3];
+            unsafe._mem_f64[(c + 24) >> 3] = unsafe._mem_f64[((_a) + 24) >> 3] + unsafe._mem_f64[((_b) + 24) >> 3];
+            return c;
         }else{
             let ptr:number = Color.initInstance(unsafe.alloc(32,8));
             return Color.Init_mem(
@@ -450,16 +472,16 @@ export class Color extends MemoryObject{
         }
     }
 
-    static IsEqual(A:number, b:number):boolean{
-        return unsafe._mem_f64[(A + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(A + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(A + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
+    static IsEqual(a:number, b:number):boolean{
+        return unsafe._mem_f64[(a + 8) >> 3] === unsafe._mem_f64[(b + 8) >> 3] && unsafe._mem_f64[(a + 16) >> 3] === unsafe._mem_f64[(b + 16) >> 3] && unsafe._mem_f64[(a + 24) >> 3] === unsafe._mem_f64[(b + 24) >> 3];
     }
 
-    static IsBlack(A:number):boolean{
-        return Color.IsEqual(A, Color.BLACK);
+    static IsBlack(a:number):boolean{
+        return Color.IsEqual(a, Color.BLACK);
     }
 
-    static IsWhite(A:number):boolean{
-        return Color.IsEqual(A, Color.WHITE);
+    static IsWhite(a:number):boolean{
+        return Color.IsEqual(a, Color.WHITE);
     }
     static Set(SELF:number, r:number, g:number, b:number) {
          unsafe._mem_f64[(SELF + 8) >> 3] = r; 
@@ -1825,9 +1847,67 @@ export class Matrix extends MemoryObject{
 }
 unsafe._idToType[2093537] = Matrix;
 
+export class Image extends MemoryObject{
+   static NAME:string = "Image";
+   static SIZE:number = 20;
+   static ALIGN:number = 4;
+   static CLSID:number = 150430;
+
+   static get BASE():string{
+       return null
+   }
+
+   constructor(p:number){
+       super(p);
+   }
+
+    static init(SELF, width:number, height:number, depth:number = 8) {
+
+         unsafe._mem_i32[(SELF + 4) >> 2] = width; 
+         unsafe._mem_i32[(SELF + 8) >> 2] = height; 
+         unsafe._mem_u8[(SELF + 12) >> 0] = depth; 
+        let len = width * height * 4;
+        let pixels = unsafe.alloc( 4 + ( 1 * len ), 1 ) /*Array*/;
+        unsafe._mem_i32[pixels >> 2] = len;
+         unsafe._mem_i32[(SELF + 16) >> 2] = pixels; 
+        return SELF;
+    }
+
+    static At(SELF, x, y){
+        let i = (y * (unsafe._mem_i32[(SELF + 4) >> 2] * 4)) + (x * 4);
+        unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)  ) >> 0];
+
+    }
+
+    static setRaw(SELF, data){
+
+        for(let i=0;i < data.length;i++){
+            unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)  ) >> 0] = (data[i]);
+        }
+
+    }
+
+
+    static setRGBA(SELF, x, y, c){
+        let i = (y * (unsafe._mem_i32[(SELF + 4) >> 2] * 4)) + (x * 4);
+        unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * i)  ) >> 0] = (c.r * 255);
+        unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 1))  ) >> 0] = (c.g * 255);
+        unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 2))  ) >> 0] = (c.b * 255);
+        unsafe._mem_u8[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (1 * (i + 3))  ) >> 0] = (c.a * 255);
+    }
+
+    static NewRGBA(width:number, height:number) {
+        let ptr = Image.initInstance(unsafe.alloc(20,4));
+        Image.init(ptr, width, height, 8);
+        return ptr;
+    }
+    static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=150430; return SELF; }
+}
+unsafe._idToType[150430] = Image;
+
 export class Texture extends MemoryObject{
    static NAME:string = "Texture";
-   static SIZE:number = 20;
+   static SIZE:number = 16;
    static ALIGN:number = 4;
    static CLSID:number = 10502342;
 
@@ -1842,7 +1922,8 @@ export class Texture extends MemoryObject{
     static init(SELF, width:number, height:number, data:number){
          unsafe._mem_i32[(SELF + 4) >> 2] = width; 
          unsafe._mem_i32[(SELF + 8) >> 2] = height; 
-         unsafe._mem_i32[(SELF + 16) >> 2] = data; 
+         unsafe._mem_i32[(SELF + 12) >> 2] = data; 
+        return SELF;
     }
 
     static textures:any = [];
@@ -1867,23 +1948,25 @@ export class Texture extends MemoryObject{
         return Texture.NewTexture(im);
     }
 
-    static NewTexture(im:number /*Image*/):number /*Texture*/{
-        let size:number = unsafe._mem_i32[((Image.Bounds(im)) + 8) >> 2];
-        let data:number = unsafe.alloc( 4 + ( 4 * (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3]) ), 4 ) /*Array*/;
-        unsafe._mem_i32[number >> 2] = (unsafe._mem_f64[(size + 8) >> 3] * unsafe._mem_f64[(size + 16) >> 3]);
-        for (let y:number = 0; y < unsafe._mem_f64[(size + 16) >> 3]; y++) {
-            for (let x:number = 0; x < unsafe._mem_f64[(size + 8) >> 3]; x++) {
-                let index = y * unsafe._mem_f64[(size + 8) >> 3] + x;
-                unsafe._mem_i32[(  data + 4 + (4 * index)  ) >> 2] = (Color.Pow(Image.At(im, x, y), 2.2));
+    static NewTexture(imgData:Uint8Array, width:number, height:number):number /*Texture*/{
+
+        let data = unsafe.alloc( 4 + ( 4 * (width * height) ), 4 ) /*Array*/;
+        unsafe._mem_i32[data >> 2] = (width * height);
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let i = (y * (width * 4)) + (x * 4);
+                let index = y * width + x;
+                let c = Color.NewColor(imgData[i]/255, imgData[i+1]/255, imgData[i+2]/255);
+                unsafe._mem_i32[(  data + 4 + (4 * index)  ) >> 2] = (Color.Pow_mem(c, 2.2, c));
             }
         }
-        let ptr:number = Texture.initInstance(unsafe.alloc(20,4));
-        return Texture.init(ptr, unsafe._mem_f64[(size + 8) >> 3], unsafe._mem_f64[(size + 16) >> 3], data);
+        let ptr = Texture.initInstance(unsafe.alloc(16,4));
+        return Texture.init(ptr, width, height, data);
     }
 
-    Pow(t:number, a:number):number {
-        let data:number = unsafe._mem_i32[(t + 16) >> 2];
-        let len:number = unsafe._mem_i32[(t + 12) >> 2];
+    static Pow(t:number, a:number):number {
+        let data:number = unsafe._mem_i32[(t + 12) >> 2];
+        let len:number = Texture.DataLength(t);
 
         for (let i:number = 0; i < len; i++) {
             let d = unsafe._mem_i32[(  data + 4 + (4 * i)  ) >> 2];
@@ -1893,8 +1976,8 @@ export class Texture extends MemoryObject{
     }
 
     static MulScalar(t:number, a:number):number{
-        let data:number = unsafe._mem_i32[(t + 16) >> 2];
-        let len:number = unsafe._mem_i32[(t + 12) >> 2];
+        let data:number = unsafe._mem_i32[(t + 12) >> 2];
+        let len:number = Texture.DataLength(t);
 
         for (let i:number = 0; i < len; i++) {
             let d = unsafe._mem_i32[(  data + 4 + (4 * i)  ) >> 2];
@@ -1903,43 +1986,56 @@ export class Texture extends MemoryObject{
         return t;
     }
 
-    static bilinearSample(t:number, u:number, v:number):number{
+    static bilinearSample(t:number, u:number, v:number):Color3{
         let Width:number = unsafe._mem_i32[(t + 4) >> 2];
         let Height:number = unsafe._mem_i32[(t + 8) >> 2];
-        let data:number = unsafe._mem_i32[(t + 16) >> 2];
+        let data:number = unsafe._mem_i32[(t + 12) >> 2];
 
         let w:number = Width - 1;
         let h:number = Height - 1;
         
         let _ = Utils.Modf(u * w);
         
-        let x = _.int;
+        let _x = _.int;
         let x = _.frac;
         _ = Utils.Modf(v * h);
-        let y = _.int;
+        let _y = _.int;
         let y = _.frac;
 
-        let x0:number = parseInt(x);
-        let y0:number = parseInt(y);
+        let x0:number = _x;
+        let y0:number = _y;
         let x1:number = x0 + 1;
         let y1:number = y0 + 1;
         let c00:number = unsafe._mem_i32[(  data + 4 + (4 * (y0 * Width + x0))  ) >> 2];
         let c01:number = unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x0))  ) >> 2];
         let c10:number = unsafe._mem_i32[(  data + 4 + (4 * (y0 * Width + x1))  ) >> 2];
         let c11:number = unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x1))  ) >> 2];
-        let c:number = Color.BLACK;
-        c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c01, (1 - x) * y));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c11, x * y));
+        let c:Color3 = new Color3();
+        c = Color.Add2(c, Color.MulScalar2(c00, (1 - x) * (1 - y)));
+        c = Color.Add2(c, Color.MulScalar2(c10, x * (1 - y)));
+        c = Color.Add2(c, Color.MulScalar2(c01, (1 - x) * y));
+        c = Color.Add2(c, Color.MulScalar2(c11, x * y));
         return c;
     }
 
-
-    static Sample(t:number, u:number, v:number):number {
-        u = Utils.FractAddOne(u);
-        v = Utils.FractAddOne(v);
+    static Sample(t:number, u:number, v:number):Color3 {
+        u = Utils.Fract(Utils.Fract(u) + 1);
+        v = Utils.Fract(Utils.Fract(v) + 1);
         return Texture.bilinearSample(t, u, 1-v);
+    }
+
+    static SimpleSample(t:number, u:number, v:number):Color3 {
+        let Width:number = unsafe._mem_i32[(t + 4) >> 2];
+        let Height:number = unsafe._mem_i32[(t + 8) >> 2];
+        let data:number = unsafe._mem_i32[(t + 12) >> 2];
+
+        u = Utils.Fract(Utils.Fract(u) + 1);
+        v = Utils.Fract(Utils.Fract(v) + 1);
+        v = 1 - v;
+        let x = Math.round(u * Width);
+        let y = Math.round(v * Height);
+        let c = Color.toColor3(unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x))  ) >> 2]);
+        return c;
     }
 
     static NormalSample(t:number, u:number, v:number, c?:number):Vector3 {
@@ -1950,7 +2046,7 @@ export class Texture extends MemoryObject{
     static BumpSample(t:number, u:number, v:number, c?:number):Vector3 {
         let Width:number = unsafe._mem_i32[(t + 4) >> 2];
         let Height:number = unsafe._mem_i32[(t + 8) >> 2];
-        let data:number = unsafe._mem_i32[(t + 16) >> 2];
+        let data:number = unsafe._mem_i32[(t + 12) >> 2];
         u = Utils.FractAddOne(u);
         v = Utils.FractAddOne(v);
         v = 1 - v;
@@ -1960,9 +2056,9 @@ export class Texture extends MemoryObject{
         let x2 = Utils.ClampInt(x+1, 0, Width-1);
         let y1 = Utils.ClampInt(y-1, 0, Height-1);
         let y2 = Utils.ClampInt(y+1, 0, Height-1);
-        let cx = Color.Sub_mem(unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x1))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x2))  ) >> 2]);
-        let cy = Color.Sub_mem(unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y2 * Width + x))  ) >> 2]);
-        return new Vector3(unsafe._mem_f64[(cx + 8) >> 3], unsafe._mem_f64[(cy + 8) >> 3], 0);
+        let cx = Color.Sub_mem2(unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x1))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y * Width + x2))  ) >> 2]);
+        let cy = Color.Sub_mem2(unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x))  ) >> 2], unsafe._mem_i32[(  data + 4 + (4 * (y2 * Width + x))  ) >> 2]);
+        return new Vector3(cx.r, cy.r, 0);
     }
     static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=10502342; return SELF; }
 }
@@ -2060,6 +2156,26 @@ export class Material extends MemoryObject{
          unsafe._mem_u8[(SELF + 72) >> 0] = Transparent; 
     }
 
+    static setTexture(SELF, Texture) {
+         unsafe._mem_i32[(SELF + 8) >> 2] = Texture; 
+    }
+
+    static setNormalTexture(SELF, NormalTexture) {
+         unsafe._mem_i32[(SELF + 12) >> 2] = NormalTexture; 
+    }
+
+    static setBumpTexture(SELF, BumpTexture) {
+         unsafe._mem_i32[(SELF + 16) >> 2] = BumpTexture; 
+    }
+
+    static setBumpMultiplier(SELF, BumpMultiplier) {
+         unsafe._mem_f64[(SELF + 24) >> 3] = BumpMultiplier; 
+    }
+
+    static setGlossTexture(SELF, GlossTexture) {
+         unsafe._mem_i32[(SELF + 20) >> 2] = GlossTexture; 
+    }
+
     static DiffuseMaterial(color:number):number{
         let ptr:number = Material.initInstance(unsafe.alloc(73,8));
         return Material.init(ptr, color, 0, 0, 0, 0, 1, 0, 1, 0, 0, -1, false);
@@ -2097,14 +2213,14 @@ export class Material extends MemoryObject{
 
     static MaterialAt(shape:number, point:Vector3):number{
         let material:number = Shape.MaterialAt(shape, point);
-        // let uv:Vector3 = Shape.UV(shape, point);
-        // if (unsafe._mem_i32[(material + 8) >> 2]) {
-        //     unsafe._mem_i32[(material + 4) >> 2] = Texture.Sample(unsafe._mem_i32[(material + 8) >> 2], uv.x, uv.y);
-        // }
-        // if (unsafe._mem_i32[(material + 20) >> 2]) {
-        //     let c:number = Texture.Sample(unsafe._mem_i32[(material + 20) >> 2], uv.x, uv.y);
-        //     unsafe._mem_f64[(material + 48) >> 3] = (unsafe._mem_f64[(c + 8) >> 3] + unsafe._mem_f64[(c + 16) >> 3] + unsafe._mem_f64[(c + 24) >> 3]) / 3;
-        // }
+        let uv:Vector3 = Shape.UV(shape, point);
+        if (unsafe._mem_i32[(material + 8) >> 2]) {
+            Color.init(unsafe._mem_i32[(material + 4) >> 2], Texture.Sample(unsafe._mem_i32[(material + 8) >> 2], uv.x, uv.y));
+        }
+        if (unsafe._mem_i32[(material + 20) >> 2]) {
+            let c:Color3 = Texture.Sample(unsafe._mem_i32[(material + 20) >> 2], uv.x, uv.y);
+            unsafe._mem_f64[(material + 48) >> 3] = (c.r + c.g + c.b) / 3;
+        }
         return material;
     }
     static initInstance(SELF) { unsafe._mem_i32[SELF>>2]=167722613; return SELF; }
@@ -3133,17 +3249,17 @@ export class Triangle extends Shape{
 	}
     static NormalAt_impl(SELF, p:Vector3):Vector3 {
 
-        // let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
-        // let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
-        // let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
+        let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+        let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
 
         let n1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 20) >> 2]);
         let n2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 24) >> 2]);
         let n3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 28) >> 2]);
 
-        // let T1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 32) >> 2]);
-        // let T2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 36) >> 2]);
-        // let T3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 40) >> 2]);
+        let T1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 32) >> 2]);
+        let T2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 36) >> 2]);
+        let T3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 40) >> 2]);
 
 		let uvw = Triangle.Barycentric(SELF, p);
 		let n = new Vector3();
@@ -3151,7 +3267,7 @@ export class Triangle extends Shape{
         n = n.add(n2.mulScalar(uvw.v));
         n = n.add(n3.mulScalar(uvw.w));
 
-		/*if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2]) {
+		if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 12) >> 2]) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
@@ -3165,13 +3281,12 @@ export class Triangle extends Shape{
 			let T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
 			let b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
             let N = T.cross(b);
-			let matrix = Matrix.initInstance(unsafe.alloc(136,8));
-			Matrix.init(matrix,
+			let matrix = new Matrix4(
 					T.x, b.x, N.x, 0,
 					T.y, b.y, N.y, 0,
 					T.z, b.z, N.z, 0,
 					0, 0, 0, 1);
-			n = Matrix.MulDirection2(matrix, ns);
+			n = matrix.mulDirection(ns);
 		}
 		if (unsafe._mem_i32[((unsafe._mem_i32[(SELF + 44) >> 2]) + 16) >> 2]) {
 			let b = new Vector3();
@@ -3187,7 +3302,7 @@ export class Triangle extends Shape{
 			let bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
 			n = n.add(tangent.mulScalar(bump.x * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
 			n = n.add(bitangent.mulScalar(bump.y * unsafe._mem_f64[((unsafe._mem_i32[(SELF + 44) >> 2]) + 24) >> 3]));
-		}*/
+		}
 		n = n.normalize();
 		return n;
 	}
@@ -3203,9 +3318,11 @@ export class Triangle extends Shape{
         let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
         let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
         let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
+
         let v0 = V2.sub(V1);
         let V1 = V3.sub(V1);
         let V2 = p.sub(V1);
+
 		let d00 = v0.dot(v0);
 		let d01 = v0.dot(V1);
 		let d11 = V1.dot(V1);
@@ -5162,6 +5279,310 @@ export class Color3 {
     }
 }
 
+
+export class Matrix4{
+
+    x00:float64
+    x01:float64
+    x02:float64
+    x03:float64
+
+    x10:float64
+    x11:float64
+    x12:float64
+    x13:float64
+
+    x20:float64
+    x21:float64
+    x22:float64
+    x23:float64
+
+    x30:float64
+    x31:float64
+    x32:float64
+    x33:float64
+
+    constructor(x00:number=0, x01:number=0, x02:number=0, x03:number=0,
+                x10:number=0, x11:number=0, x12:number=0, x13:number=0,
+                x20:number=0, x21:number=0, x22:number=0, x23:number=0,
+                x30:number=0, x31:number=0, x32:number=0, x33:number=0) {
+        this.x00 = x00;
+        this.x01 = x01;
+        this.x02 = x02;
+        this.x03 = x03;
+        this.x10 = x10;
+        this.x11 = x11;
+        this.x12 = x12;
+        this.x13 = x13;
+        this.x20 = x20;
+        this.x21 = x21;
+        this.x22 = x22;
+        this.x23 = x23;
+        this.x30 = x30;
+        this.x31 = x31;
+        this.x32 = x32;
+        this.x33 = x33;
+    }
+
+    static fromTHREEJS(e:number[]):Matrix4 {
+
+        return new Matrix44(
+            e[0], e[4], e[8], e[12],
+            e[1], e[5], e[9], e[13],
+            e[2], e[6], e[10], e[14],
+            e[3], e[7], e[11], e[15]
+        );
+    }
+
+    get DATA():number[] {
+        return [
+            this.x00, this.x01, this.x02, this.x03,
+            this.x10, this.x11, this.x12, this.x13,
+            this.x20, this.x21, this.x22, this.x23,
+            this.x30, this.x31, this.x32, this.x33
+        ]
+    }
+
+    static Identity():Matrix4 {
+        return new Matrix4
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static IsEqual(a:number, b:number):boolean {
+        return a.x00 == b.x00 && a.x01 == b.x01 && a.x02 == b.x02 && a.x03 == b.x03 &&
+            a.x10 == b.x10 && a.x11 == b.x11 && a.x12 == b.x12 && a.x13 == b.x13 &&
+            a.x20 == b.x20 && a.x21 == b.x21 && a.x22 == b.x22 && a.x23 == b.x23 &&
+            a.x30 == b.x30 && a.x31 == b.x31 && a.x32 == b.x32 && a.x33 == b.x33;
+    }
+
+    isIdentity():boolean {
+        return this.x00 == 1 && this.x01 == 0 && this.x02 == 0 && this.x03 == 0 &&
+            this.x10 == 0 && this.x11 == 1 && this.x12 == 0 && this.x13 == 0 &&
+            this.x20 == 0 && this.x21 == 0 && this.x22 == 1 && this.x23 == 0 &&
+            this.x30 == 0 && this.x31 == 0 && this.x32 == 0 && this.x33 == 1;
+    }
+
+    static TranslateUnitMatrix4(v:Vector3):Matrix4{
+        return new Matrix4,
+            1, 0, 0, v.x,
+            0, 1, 0, v.y,
+            0, 0, 1, v.z,
+            0, 0, 0, 1
+        )
+    }
+
+    static ScaleUnitMatrix4(v:Vector3):Matrix4{
+        return new Matrix4(
+            v.x, 0, 0, 0,
+            0, v.y, 0, 0,
+            0, 0, v.z, 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static RotateUnitMatrix4(v:Vector3, a:number, _c?:number):Matrix4{
+
+        v = v.normalize();
+        let s:number = Math.sin(a);
+        let c:number = Math.cos(a);
+        let m:number = 1 - c;
+
+        return new Matrix4(
+            m*v.x * v.x + c, m * v.x * v.y + v.z * s, m * v.z * v.x - v.y * s, 0,
+            m*v.x * v.y - v.z * s, m*v.y * v.y + c, m*v.y * v.z + v.x * s, 0,
+            m*v.z * v.x + v.y * s, m*v.y * v.z - v.x * s, m*v.z * v.z + c, 0,
+            0, 0, 0, 1
+        )
+    }
+
+    static FrustumUnitMatrix4(l:number, r:number, b:number, t:number, n:number, f:number, c?:number):Matrix4{
+
+        let t1:number = 2 * n;
+        let t2:number = r - l;
+        let t3:number = t - b;
+        let t4:number = f - n;
+
+        return new Matrix4(
+            t1 / t2, 0, (r + l) / t2, 0,
+            0, t1 / t3, (t + b) / t3, 0,
+            0, 0, (-f - n) / t4, (-t1 * f) / t4,
+            0, 0, -1, 0
+        )
+    }
+
+    static OrthographicUnitMatrix4(l:number, r:number, b:number, t:number, n:number, f:number, c?:number):Matrix4{
+
+        return new Matrix4(
+            2 / (r - l), 0, 0, -(r + l) / (r - l),
+            0, 2 / (t - b), 0, -(t + b) / (t - b),
+            0, 0, -2 / (f - n), -(f + n) / (f - n),
+            0, 0, 0, 1
+        )
+    }
+
+    static PerspectiveUnitMatrix4(fovy:number, aspect:number, near:number, far:number, c?:number):Matrix4 {
+        let ymax:number = near * Math.tan(fovy * Math.PI/360);
+        let xmax:number = ymax * aspect;
+        return Matrix4.Frustum(-xmax, xmax, -ymax, ymax, near, far, c);
+    }
+
+    static LookAtMatrix4(eye:number, center:number, up:number, c?:number):Matrix4{
+        up = up.normalize();
+        let f:Vector3 = center.sub(eye).normalize();
+        let s:Vector3 = f.cross(up).normalize();
+        let u:Vector3 = s.cross(f);
+
+        return new Matrix4(
+            unsafe._mem_f64[(s + 8) >> 3], unsafe._mem_f64[(u + 8) >> 3], unsafe._mem_f64[(f + 8) >> 3], 0,
+            unsafe._mem_f64[(s + 16) >> 3], unsafe._mem_f64[(u + 16) >> 3], unsafe._mem_f64[(f + 16) >> 3], 0,
+            unsafe._mem_f64[(s + 24) >> 3], unsafe._mem_f64[(u + 24) >> 3], unsafe._mem_f64[(f + 24) >> 3], 0,
+            0, 0, 0, 1
+        ).Transpose().inverse().Translate(eye);
+    }
+    
+    static Translate(m:number, v:Vector3, c?:number):Matrix4 {
+        return Matrix4.Mul(m, Matrix4.TranslateUnitMatrix4(v), c);
+    }
+
+    static Scale(m:number, v:Vector3, c?:number):Matrix4{
+        return Matrix4.Mul(m, Matrix4.ScaleUnitMatrix4(v), c);
+    }
+
+    static Rotate(m:number, v:Vector3, a:number, c?:number):Matrix4 {
+        return Matrix4.Mul(m, Matrix4.RotateUnitMatrix4(v, a), c);
+    }
+
+    static Frustum(m:number, l:number, r:number, b:number, t:number, n:number, f:number, c?:number):Matrix4 {
+        return Matrix4.Mul(m, Matrix4.FrustumUnitMatrix4(l, r, b, t, n, f, c), c);
+    }
+
+    static Orthographic(m:number, l:number, r:number, b:number, t:number, n:number, f:number, c?:number):Matrix4 {
+        return Matrix4.Mul(m, Matrix4.OrthographicUnitMatrix4(l, r, b, t, n, f, c), c);
+    }
+
+    static Perspective(m:number, fovy:number, aspect:number, near:number, far:number, c?:number):Matrix4 {
+        return Matrix4.Mul(m, Matrix4.PerspectiveUnitMatrix4(fovy, aspect, near, far, c), c);
+    }
+
+    mul(b:Matrix4):Matrix4{
+        m = new Matrix4();
+        m.x00 = this.x00 * b.x00 + this.x01 * b.x10 + this.x02 * b.x20 + this.x03 * b.x30;
+        m.x10 = this.x10 * b.x00 + this.x11 * b.x10 + this.x12 * b.x20 + this.x13 * b.x30;
+        m.x20 = this.x20 * b.x00 + this.x21 * b.x10 + this.x22 * b.x20 + this.x23 * b.x30;
+        m.x30 = this.x30 * b.x00 + this.x31 * b.x10 + this.x32 * b.x20 + this.x33 * b.x30;
+        m.x01 = this.x00 * b.x01 + this.x01 * b.x11 + this.x02 * b.x21 + this.x03 * b.x31;
+        m.x11 = this.x10 * b.x01 + this.x11 * b.x11 + this.x12 * b.x21 + this.x13 * b.x31;
+        m.x21 = this.x20 * b.x01 + this.x21 * b.x11 + this.x22 * b.x21 + this.x23 * b.x31;
+        m.x31 = this.x30 * b.x01 + this.x31 * b.x11 + this.x32 * b.x21 + this.x33 * b.x31;
+        m.x02 = this.x00 * b.x02 + this.x01 * b.x12 + this.x02 * b.x22 + this.x03 * b.x32;
+        m.x12 = this.x10 * b.x02 + this.x11 * b.x12 + this.x12 * b.x22 + this.x13 * b.x32;
+        m.x22 = this.x20 * b.x02 + this.x21 * b.x12 + this.x22 * b.x22 + this.x23 * b.x32;
+        m.x32 = this.x30 * b.x02 + this.x31 * b.x12 + this.x32 * b.x22 + this.x33 * b.x32;
+        m.x03 = this.x00 * b.x03 + this.x01 * b.x13 + this.x02 * b.x23 + this.x03 * b.x33;
+        m.x13 = this.x10 * b.x03 + this.x11 * b.x13 + this.x12 * b.x23 + this.x13 * b.x33;
+        m.x23 = this.x20 * b.x03 + this.x21 * b.x13 + this.x22 * b.x23 + this.x23 * b.x33;
+        m.x33 = this.x30 * b.x03 + this.x31 * b.x13 + this.x32 * b.x23 + this.x33 * b.x33;
+        return m;
+    }
+
+    mulPosition(b:Vector3):Matrix4 {
+        let x:number = this.x00 * b.x + this.x01 * b.y + this.x02 * b.z + this.x03;
+        let y:number = this.x10 * b.x + this.x11 * b.y + this.x12 * b.z + this.x13;
+        let z:number = this.x20 * b.x + this.x21 * b.y + this.x22 * b.z + this.x23;
+        return new Vector3(x, y, z);
+    }
+
+    mulDirection(b:Vector):Vector3 {
+        let x:number = this.x00 * b.x + this.x01 * b.y + this.x02 * b.z;
+        let y:number = this.x10 * b.x + this.x11 * b.y + this.x12 * b.z;
+        let z:number = this.x20 * b.x + this.x21 * b.y + this.x22 * b.z;
+        return new Vector3(x, y, z);
+    }
+
+    static MulRay(a:number, ray:Ray):Ray {
+        throw "Not implemented";
+        let origin:Vector3 = Matrix4.MulPosition_vec3(a, ray.origin);
+        let direction:Vector3 = Matrix4.MulDirection_vec3(a, ray.direction);
+        return new Ray(origin, direction);
+    }
+
+    static  MulBox(a:number, box:number, c?:number):Matrix4 {
+        throw "Not implemented";
+        let min:number = unsafe._mem_i32[(box + 4) >> 2];
+        let max:number = unsafe._mem_i32[(box + 8) >> 2];
+        // http://dev.theomader.com/transform-bounding-boxes/
+        let r:Vector3 = new Vector3(this.x00, this.x10, this.x20);
+        let u:Vector3 = new Vector3(this.x01, this.x11, this.x21);
+        let b:Vector3 = new Vector3(this.x02, this.x12, this.x22);
+        let t:Vector3 = new Vector3(this.x03, this.x13, this.x23);
+        let xa:Vector3 = r.mulScalar(unsafe._mem_f64[(min + 8) >> 3]);
+        let xb:Vector3 = r.mulScalar(unsafe._mem_f64[(max + 8) >> 3]);
+        let ya:Vector3 = u.mulScalar(unsafe._mem_f64[(min + 16) >> 3]);
+        let yb:Vector3 = u.mulScalar(unsafe._mem_f64[(max + 16) >> 3]);
+        let za:Vector3 = b.mulScalar(unsafe._mem_f64[(min + 24) >> 3]);
+        let zb:Vector3 = b.mulScalar(unsafe._mem_f64[(max + 24) >> 3]);
+        xa = xa.min(xb);
+        xb = xa.max(xb);
+        ya = ya.min(yb);
+        yb = ya.max(yb);
+        za = za.min(zb);
+        zb = za.max(zb);
+        min = xa.add(ya).add(za).add(t);
+        max = xb.add(yb).add(zb).add(t);
+        let ptr = c?c:Box.initInstance(unsafe.alloc(12,4));
+        return Box.Init_mem(ptr, min, max);
+    }
+
+    transpose():Matrix4 {
+        return new Matrix4(
+            this.x00, this.x10, this.x20, this.x30,
+            this.x01, this.x11, this.x21, this.x31,
+            this.x02, this.x12, this.x22, this.x32,
+            this.x03, this.x13, this.x23, this.x33
+        );
+    }
+
+    determinant():number {
+        return (this.x00*this.x11*this.x22*this.x33 - this.x00*this.x11*this.x23*this.x32 +
+        this.x00*this.x12*this.x23*this.x31 - this.x00*this.x12*this.x21*this.x33 +
+        this.x00*this.x13*this.x21*this.x32 - this.x00*this.x13*this.x22*this.x31 -
+        this.x01*this.x12*this.x23*this.x30 + this.x01*this.x12*this.x20*this.x33 -
+        this.x01*this.x13*this.x20*this.x32 + this.x01*this.x13*this.x22*this.x30 -
+        this.x01*this.x10*this.x22*this.x33 + this.x01*this.x10*this.x23*this.x32 +
+        this.x02*this.x13*this.x20*this.x31 - this.x02*this.x13*this.x21*this.x30 +
+        this.x02*this.x10*this.x21*this.x33 - this.x02*this.x10*this.x23*this.x31 +
+        this.x02*this.x11*this.x23*this.x30 - this.x02*this.x11*this.x20*this.x33 -
+        this.x03*this.x10*this.x21*this.x32 + this.x03*this.x10*this.x22*this.x31 -
+        this.x03*this.x11*this.x22*this.x30 + this.x03*this.x11*this.x20*this.x32 -
+        this.x03*this.x12*this.x20*this.x31 + this.x03*this.x12*this.x21*this.x30)
+    }
+
+    inverse():Matrix4 {
+        let m:number = new Matrix4();
+        let d:number = this.determinant();
+        m.x00 = (this.x12*this.x23*this.x31 - this.x13*this.x22*this.x31 + this.x13*this.x21*this.x32 - this.x11*this.x23*this.x32 - this.x12*this.x21*this.x33 + this.x11*this.x22*this.x33) / d
+        m.x01 = (this.x03*this.x22*this.x31 - this.x02*this.x23*this.x31 - this.x03*this.x21*this.x32 + this.x01*this.x23*this.x32 + this.x02*this.x21*this.x33 - this.x01*this.x22*this.x33) / d
+        m.x02 = (this.x02*this.x13*this.x31 - this.x03*this.x12*this.x31 + this.x03*this.x11*this.x32 - this.x01*this.x13*this.x32 - this.x02*this.x11*this.x33 + this.x01*this.x12*this.x33) / d
+        m.x03 = (this.x03*this.x12*this.x21 - this.x02*this.x13*this.x21 - this.x03*this.x11*this.x22 + this.x01*this.x13*this.x22 + this.x02*this.x11*this.x23 - this.x01*this.x12*this.x23) / d
+        m.x10 = (this.x13*this.x22*this.x30 - this.x12*this.x23*this.x30 - this.x13*this.x20*this.x32 + this.x10*this.x23*this.x32 + this.x12*this.x20*this.x33 - this.x10*this.x22*this.x33) / d
+        m.x11 = (this.x02*this.x23*this.x30 - this.x03*this.x22*this.x30 + this.x03*this.x20*this.x32 - this.x00*this.x23*this.x32 - this.x02*this.x20*this.x33 + this.x00*this.x22*this.x33) / d
+        m.x12 = (this.x03*this.x12*this.x30 - this.x02*this.x13*this.x30 - this.x03*this.x10*this.x32 + this.x00*this.x13*this.x32 + this.x02*this.x10*this.x33 - this.x00*this.x12*this.x33) / d
+        m.x13 = (this.x02*this.x13*this.x20 - this.x03*this.x12*this.x20 + this.x03*this.x10*this.x22 - this.x00*this.x13*this.x22 - this.x02*this.x10*this.x23 + this.x00*this.x12*this.x23) / d
+        m.x20 = (this.x11*this.x23*this.x30 - this.x13*this.x21*this.x30 + this.x13*this.x20*this.x31 - this.x10*this.x23*this.x31 - this.x11*this.x20*this.x33 + this.x10*this.x21*this.x33) / d
+        m.x21 = (this.x03*this.x21*this.x30 - this.x01*this.x23*this.x30 - this.x03*this.x20*this.x31 + this.x00*this.x23*this.x31 + this.x01*this.x20*this.x33 - this.x00*this.x21*this.x33) / d
+        m.x22 = (this.x01*this.x13*this.x30 - this.x03*this.x11*this.x30 + this.x03*this.x10*this.x31 - this.x00*this.x13*this.x31 - this.x01*this.x10*this.x33 + this.x00*this.x11*this.x33) / d
+        m.x23 = (this.x03*this.x11*this.x20 - this.x01*this.x13*this.x20 - this.x03*this.x10*this.x21 + this.x00*this.x13*this.x21 + this.x01*this.x10*this.x23 - this.x00*this.x11*this.x23) / d
+        m.x30 = (this.x12*this.x21*this.x30 - this.x11*this.x22*this.x30 - this.x12*this.x20*this.x31 + this.x10*this.x22*this.x31 + this.x11*this.x20*this.x32 - this.x10*this.x21*this.x32) / d
+        m.x31 = (this.x01*this.x22*this.x30 - this.x02*this.x21*this.x30 + this.x02*this.x20*this.x31 - this.x00*this.x22*this.x31 - this.x01*this.x20*this.x32 + this.x00*this.x21*this.x32) / d
+        m.x32 = (this.x02*this.x11*this.x30 - this.x01*this.x12*this.x30 - this.x02*this.x10*this.x31 + this.x00*this.x12*this.x31 + this.x01*this.x10*this.x32 - this.x00*this.x11*this.x32) / d
+        m.x33 = (this.x01*this.x12*this.x20 - this.x02*this.x11*this.x20 + this.x02*this.x10*this.x21 - this.x00*this.x12*this.x21 - this.x01*this.x10*this.x22 + this.x00*this.x11*this.x22) / d
+        return m;
+    }
+}
 
 
 

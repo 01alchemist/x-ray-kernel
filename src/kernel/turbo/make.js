@@ -13,6 +13,7 @@ let modules = [
     "./src/utils/util.tts",
     "./src/turbo/box.tts",
     "./src/turbo/matrix.tts",
+    "./src/turbo/image.tts",
     "./src/turbo/texture.tts",
     "./src/turbo/material.tts",
     "./src/tracer/ray.tts",
@@ -32,6 +33,7 @@ let modules = [
 
     "./src/tracer/vector3.tts",
     "./src/tracer/color3.tts",
+    "./src/tracer/matrix4.tts",
 
 ];
 var source = "//Turbo module\n";

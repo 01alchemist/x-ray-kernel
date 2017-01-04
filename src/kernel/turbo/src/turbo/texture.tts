@@ -2,13 +2,13 @@
 
     Width:int32
     Height:int32
-    DataLength:int32
     Data:Color.Array
 
     @method init(SELF, width:number, height:number, data:number){
         SELF.Width = width;
         SELF.Height = height;
         SELF.Data = data;
+        return SELF;
     }
 
     static textures:any = [];
@@ -33,20 +33,22 @@
         return Texture.NewTexture(im);
     }
 
-    static NewTexture(im:number /*Image*/):number /*Texture*/{
-        let size:number = Box.Max(Image.Bounds(im));
-        let data:number = @new Color.Array(Vector.x(size) * Vector.y(size));
-        for (let y:number = 0; y < Vector.y(size); y++) {
-            for (let x:number = 0; x < Vector.x(size); x++) {
-                let index = y * Vector.x(size) + x;
-                Color.Array.setAt(data, index, Color.Pow(Image.At(im, x, y), 2.2) );
+    static NewTexture(imgData:Uint8Array, width:number, height:number):number /*Texture*/{
+
+        let data = @new Color.Array(width * height);
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                let i = (y * (width * 4)) + (x * 4);
+                let index = y * width + x;
+                let c = Color.NewColor(imgData[i]/255, imgData[i+1]/255, imgData[i+2]/255);
+                Color.Array.setAt(data, index, Color.Pow_mem(c, 2.2, c) );
             }
         }
-        let ptr:number = @new Texture;
-        return Texture.init(ptr, Vector.x(size), Vector.y(size), data);
+        let ptr = @new Texture;
+        return Texture.init(ptr, width, height, data);
     }
 
-    Pow(t:number, a:number):number {
+    static Pow(t:number, a:number):number {
         let data:number = Texture.Data(t);
         let len:number = Texture.DataLength(t);
 
@@ -68,7 +70,7 @@
         return t;
     }
 
-    static bilinearSample(t:number, u:number, v:number):number{
+    static bilinearSample(t:number, u:number, v:number):Color3{
         let Width:number = Texture.Width(t);
         let Height:number = Texture.Height(t);
         let data:number = Texture.Data(t);
@@ -78,33 +80,46 @@
         
         let _ = Utils.Modf(u * w);
         
-        let x = _.int;
+        let _x = _.int;
         let x = _.frac;
         _ = Utils.Modf(v * h);
-        let y = _.int;
+        let _y = _.int;
         let y = _.frac;
 
-        let x0:number = parseInt(x);
-        let y0:number = parseInt(y);
+        let x0:number = _x;
+        let y0:number = _y;
         let x1:number = x0 + 1;
         let y1:number = y0 + 1;
         let c00:number = Color.Array.at(data, y0 * Width + x0);
         let c01:number = Color.Array.at(data, y1 * Width + x0);
         let c10:number = Color.Array.at(data, y0 * Width + x1);
         let c11:number = Color.Array.at(data, y1 * Width + x1);
-        let c:number = Color.BLACK;
-        c = Color.Add_mem(c, Color.MulScalar_mem(c00, (1 - x) * (1 - y)));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c10, x * (1 - y)));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c01, (1 - x) * y));
-        c = Color.Add_mem(c, Color.MulScalar_mem(c11, x * y));
+        let c:Color3 = new Color3();
+        c = Color.Add2(c, Color.MulScalar2(c00, (1 - x) * (1 - y)));
+        c = Color.Add2(c, Color.MulScalar2(c10, x * (1 - y)));
+        c = Color.Add2(c, Color.MulScalar2(c01, (1 - x) * y));
+        c = Color.Add2(c, Color.MulScalar2(c11, x * y));
         return c;
     }
 
-
-    static Sample(t:number, u:number, v:number):number {
-        u = Utils.FractAddOne(u);
-        v = Utils.FractAddOne(v);
+    static Sample(t:number, u:number, v:number):Color3 {
+        u = Utils.Fract(Utils.Fract(u) + 1);
+        v = Utils.Fract(Utils.Fract(v) + 1);
         return Texture.bilinearSample(t, u, 1-v);
+    }
+
+    static SimpleSample(t:number, u:number, v:number):Color3 {
+        let Width:number = Texture.Width(t);
+        let Height:number = Texture.Height(t);
+        let data:number = Texture.Data(t);
+
+        u = Utils.Fract(Utils.Fract(u) + 1);
+        v = Utils.Fract(Utils.Fract(v) + 1);
+        v = 1 - v;
+        let x = Math.round(u * Width);
+        let y = Math.round(v * Height);
+        let c = Color.toColor3(Color.Array.at(data, y * Width + x));
+        return c;
     }
 
     static NormalSample(t:number, u:number, v:number, c?:number):Vector3 {
@@ -125,9 +140,9 @@
         let x2 = Utils.ClampInt(x+1, 0, Width-1);
         let y1 = Utils.ClampInt(y-1, 0, Height-1);
         let y2 = Utils.ClampInt(y+1, 0, Height-1);
-        let cx = Color.Sub_mem(Color.Array.at(data, y * Width + x1), Color.Array.at(data, y * Width + x2));
-        let cy = Color.Sub_mem(Color.Array.at(data, y1 * Width + x), Color.Array.at(data, y2 * Width + x));
-        return new Vector3(Color.r(cx), Color.r(cy), 0);
+        let cx = Color.Sub_mem2(Color.Array.at(data, y * Width + x1), Color.Array.at(data, y * Width + x2));
+        let cy = Color.Sub_mem2(Color.Array.at(data, y1 * Width + x), Color.Array.at(data, y2 * Width + x));
+        return new Vector3(cx.r, cy.r, 0);
     }
 
 } @end
