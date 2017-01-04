@@ -95,10 +95,10 @@
         let c10:number = Color.Array.at(data, y0 * Width + x1);
         let c11:number = Color.Array.at(data, y1 * Width + x1);
         let c:Color3 = new Color3();
-        c = Color.Add2(c, Color.MulScalar2(c00, (1 - x) * (1 - y)));
-        c = Color.Add2(c, Color.MulScalar2(c10, x * (1 - y)));
-        c = Color.Add2(c, Color.MulScalar2(c01, (1 - x) * y));
-        c = Color.Add2(c, Color.MulScalar2(c11, x * y));
+        c = c.add(Color.MulScalar2(c00, (1 - x) * (1 - y)));
+        c = c.add(Color.MulScalar2(c10, x * (1 - y)));
+        c = c.add(Color.MulScalar2(c01, (1 - x) * y));
+        c = c.add(Color.MulScalar2(c11, x * y));
         return c;
     }
 

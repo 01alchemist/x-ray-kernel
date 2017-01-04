@@ -15,7 +15,7 @@ class MemoryObject {
 }
 
 namespace XRAY {
-// Generated from /Users/d437814/workspace/x-ray-kernel/src/kernel/turbo/xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
+// Generated from C:\Users\nidin\workspace\x-ray-kernel\src\kernel\turbo\xray-kernel-turbo.tts by turbo.js 1.0.0; github.com/01alchemist/turbo.js
 
 //Turbo module
 ///<reference path="./src/declaration.d.ts" />
@@ -2011,10 +2011,10 @@ export class Texture extends MemoryObject{
         let c10:number = unsafe._mem_i32[(  data + 4 + (4 * (y0 * Width + x1))  ) >> 2];
         let c11:number = unsafe._mem_i32[(  data + 4 + (4 * (y1 * Width + x1))  ) >> 2];
         let c:Color3 = new Color3();
-        c = Color.Add2(c, Color.MulScalar2(c00, (1 - x) * (1 - y)));
-        c = Color.Add2(c, Color.MulScalar2(c10, x * (1 - y)));
-        c = Color.Add2(c, Color.MulScalar2(c01, (1 - x) * y));
-        c = Color.Add2(c, Color.MulScalar2(c11, x * y));
+        c = c.add(Color.MulScalar2(c00, (1 - x) * (1 - y)));
+        c = c.add(Color.MulScalar2(c10, x * (1 - y)));
+        c = c.add(Color.MulScalar2(c01, (1 - x) * y));
+        c = c.add(Color.MulScalar2(c11, x * y));
         return c;
     }
 
@@ -3315,19 +3315,19 @@ export class Triangle extends Shape{
 	}
 
 	static Barycentric(SELF, p:Vector3):{u:number, v:number, w:number} {
-        let V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
-        let V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
-        let V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
+        let _V1:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 8) >> 2]);
+        let _V2:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 12) >> 2]);
+        let _V3:Vector3 = new Vector3().read(unsafe._mem_i32[(SELF + 16) >> 2]);
 
-        let v0 = V2.sub(V1);
-        let V1 = V3.sub(V1);
-        let V2 = p.sub(V1);
+        let v0 = _V2.sub(_V1);
+        let v1 = _V3.sub(_V1);
+        let v2 = p.sub(_V1);
 
 		let d00 = v0.dot(v0);
-		let d01 = v0.dot(V1);
-		let d11 = V1.dot(V1);
-		let d20 = V2.dot(v0);
-		let d21 = V2.dot(V1);
+		let d01 = v0.dot(v1);
+		let d11 = v1.dot(v1);
+		let d20 = v2.dot(v0);
+		let d21 = v2.dot(v1);
 		let d = d00*d11 - d01*d01;
 		let v = (d11*d20 - d01*d21) / d;
 		let w = (d00*d21 - d01*d20) / d;

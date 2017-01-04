@@ -282,19 +282,19 @@
 	}
 
 	static Barycentric(SELF, p:Vector3):{u:number, v:number, w:number} {
-        let V1:Vector3 = new Vector3().read(SELF.V1);
-        let V2:Vector3 = new Vector3().read(SELF.V2);
-        let V3:Vector3 = new Vector3().read(SELF.V3);
+        let _V1:Vector3 = new Vector3().read(SELF.V1);
+        let _V2:Vector3 = new Vector3().read(SELF.V2);
+        let _V3:Vector3 = new Vector3().read(SELF.V3);
 
-        let v0 = V2.sub(V1);
-        let V1 = V3.sub(V1);
-        let V2 = p.sub(V1);
+        let v0 = _V2.sub(_V1);
+        let v1 = _V3.sub(_V1);
+        let v2 = p.sub(_V1);
 
 		let d00 = v0.dot(v0);
-		let d01 = v0.dot(V1);
-		let d11 = V1.dot(V1);
-		let d20 = V2.dot(v0);
-		let d21 = V2.dot(V1);
+		let d01 = v0.dot(v1);
+		let d11 = v1.dot(v1);
+		let d20 = v2.dot(v0);
+		let d21 = v2.dot(v1);
 		let d = d00*d11 - d01*d01;
 		let v = (d11*d20 - d01*d21) / d;
 		let w = (d00*d21 - d01*d20) / d;
