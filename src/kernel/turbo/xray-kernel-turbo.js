@@ -1078,17 +1078,6 @@ var XRAY;
             }
             return box;
         };
-        Box.BoxForTriangles = function (shapes, numShapes) {
-            if (numShapes == 0) {
-                return Box.NewBox();
-            }
-            var box = Triangle.BoundingBox(unsafe._mem_i32[(shapes + 4 + (4 * 0)) >> 2]);
-            for (var i = 0; i < numShapes; i++) {
-                var shape = unsafe._mem_i32[(shapes + 4 + (4 * i)) >> 2];
-                box = Box.Extend(box, Triangle.BoundingBox(shape));
-            }
-            return box;
-        };
         Box.Anchor_mem = function (SELF, anchor, c) {
             var size = Box.Size_mem(SELF);
             var tmp = Vector.Mul_mem(size, anchor);
@@ -1389,7 +1378,7 @@ var XRAY;
             var x = unsafe._mem_f64[(a + 8) >> 3] * b.x + unsafe._mem_f64[(a + 16) >> 3] * b.y + unsafe._mem_f64[(a + 24) >> 3] * b.z;
             var y = unsafe._mem_f64[(a + 40) >> 3] * b.x + unsafe._mem_f64[(a + 48) >> 3] * b.y + unsafe._mem_f64[(a + 56) >> 3] * b.z;
             var z = unsafe._mem_f64[(a + 72) >> 3] * b.x + unsafe._mem_f64[(a + 80) >> 3] * b.y + unsafe._mem_f64[(a + 88) >> 3] * b.z;
-            return new Vector3(x, y, z);
+            return new Vector3(x, y, z).normalize();
         };
         Matrix.MulRay = function (a, ray) {
             var origin = Matrix.MulPosition_vec3(a, ray.origin);
@@ -2163,7 +2152,9 @@ var XRAY;
             return Shape.Type(unsafe._mem_i32[(SELF + 12) >> 2]);
         };
         TransformedShape.ToJSON_impl = function (SELF) {
-            return Shape.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]);
+            var json = Shape.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]);
+            json.box = Box.ToJSON(TransformedShape.BoundingBox(SELF));
+            return json;
         };
         TransformedShape.Compile_impl = function (SELF, c) {
             return Shape.Compile(unsafe._mem_i32[(SELF + 12) >> 2], c);
@@ -2971,7 +2962,7 @@ var XRAY;
         Mesh.ToJSON_impl = function (SELF) {
             return {
                 numTriangles: unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2],
-                box: Box.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2]),
+                box: Box.ToJSON(Mesh.BoundingBox(SELF)),
                 tree: unsafe._mem_i32[(SELF + 20) >> 2]
             };
         };
@@ -3272,7 +3263,7 @@ var XRAY;
             var right = 0;
             for (var i = 0; i < unsafe._mem_i32[(SELF + 20) >> 2]; i++) {
                 var shape = unsafe._mem_i32[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)) >> 2];
-                var box = unsafe._mem_i32[(shape + 48) >> 2];
+                var box = Shape.BoundingBox(shape);
                 var lr = Box.Partition(box, axis, point);
                 if (lr.left) {
                     left++;

@@ -1345,18 +1345,18 @@ export class Box extends MemoryObject{
 		return box;
 	}
 
-	static BoxForTriangles(shapes:number, numShapes:number):number {
-        if(numShapes == 0) {
-            return Box.NewBox();
-        }
-        let box = Triangle.BoundingBox(unsafe._mem_i32[(  shapes + 4 + (4 * 0)  ) >> 2]);
-
-        for(let i:number = 0; i < numShapes; i++){
-            let shape:number = unsafe._mem_i32[(  shapes + 4 + (4 * i)  ) >> 2];
-            box = Box.Extend(box, Triangle.BoundingBox(shape));
-        }
-        return box
-	}
+	// static BoxForTriangles(shapes:number, numShapes:number):number {
+     //    if(numShapes == 0) {
+     //        return Box.NewBox();
+     //    }
+     //    let box = Triangle.BoundingBox(unsafe._mem_i32[(  shapes + 4 + (4 * 0)  ) >> 2]);
+    //
+     //    for(let i:number = 0; i < numShapes; i++){
+     //        let shape:number = unsafe._mem_i32[(  shapes + 4 + (4 * i)  ) >> 2];
+     //        box = Box.Extend(box, Triangle.BoundingBox(shape));
+     //    }
+     //    return box
+	// }
 
 	static Anchor_mem(SELF, anchor:number, c?:number):number {
         let size = Box.Size_mem(SELF);
@@ -1762,7 +1762,7 @@ export class Matrix extends MemoryObject{
         let x:number = unsafe._mem_f64[(a + 8) >> 3] * b.x + unsafe._mem_f64[(a + 16) >> 3] * b.y + unsafe._mem_f64[(a + 24) >> 3] * b.z;
         let y:number = unsafe._mem_f64[(a + 40) >> 3] * b.x + unsafe._mem_f64[(a + 48) >> 3] * b.y + unsafe._mem_f64[(a + 56) >> 3] * b.z;
         let z:number = unsafe._mem_f64[(a + 72) >> 3] * b.x + unsafe._mem_f64[(a + 80) >> 3] * b.y + unsafe._mem_f64[(a + 88) >> 3] * b.z;
-        return new Vector3(x, y, z);
+        return new Vector3(x, y, z).normalize();
     }
 
     static MulRay(a:number, ray:Ray):Ray {
@@ -2609,7 +2609,9 @@ export class TransformedShape extends Shape{
         return Shape.Type(unsafe._mem_i32[(SELF + 12) >> 2]);
     }
     static ToJSON_impl(SELF){
-        return Shape.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]);
+    	let json = Shape.ToJSON(unsafe._mem_i32[(SELF + 12) >> 2]);
+        json.box = Box.ToJSON(TransformedShape.BoundingBox(SELF));
+        return json;
     }
     static Compile_impl(SELF, c?:number){
         return Shape.Compile(unsafe._mem_i32[(SELF + 12) >> 2], c);
@@ -3480,7 +3482,7 @@ export class Mesh extends Shape{
     static ToJSON_impl(SELF){
         return {
             numTriangles:unsafe._mem_i32[(unsafe._mem_i32[(SELF + 8) >> 2]) >> 2],
-            box:Box.ToJSON(unsafe._mem_i32[(SELF + 16) >> 2]),
+            box:Box.ToJSON(Mesh.BoundingBox(SELF)),
             tree:unsafe._mem_i32[(SELF + 20) >> 2]
         }
     }
@@ -3797,8 +3799,8 @@ export class Node extends MemoryObject{
         let right = 0;
         for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
             let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
-            // let box = Shape.BoundingBox(shape);
-            let box = unsafe._mem_i32[(shape + 48) >> 2];
+            let box = Shape.BoundingBox(shape);
+            // let box = unsafe._mem_i32[(shape + 48) >> 2];
             let lr = Box.Partition(box, axis, point);
             if (lr.left) {
                 left++

@@ -244,7 +244,7 @@
         let x:number = Matrix.x00(a) * b.x + Matrix.x01(a) * b.y + Matrix.x02(a) * b.z;
         let y:number = Matrix.x10(a) * b.x + Matrix.x11(a) * b.y + Matrix.x12(a) * b.z;
         let z:number = Matrix.x20(a) * b.x + Matrix.x21(a) * b.y + Matrix.x22(a) * b.z;
-        return new Vector3(x, y, z);
+        return new Vector3(x, y, z).normalize();
     }
 
     static MulRay(a:number, ray:Ray):Ray {

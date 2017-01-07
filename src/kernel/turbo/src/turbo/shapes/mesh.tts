@@ -41,7 +41,7 @@
     @virtual ToJSON(SELF){
         return {
             numTriangles:Triangle.Array.len(SELF.Triangles),
-            box:Box.ToJSON(SELF.box),
+            box:Box.ToJSON(Mesh.BoundingBox(SELF)),
             tree:SELF.tree
         }
     }
