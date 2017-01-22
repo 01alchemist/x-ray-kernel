@@ -43,8 +43,7 @@ export class Matrix4{
     }
 
     static fromTHREEJS(e:number[]):Matrix4 {
-
-        return new Matrix44(
+        return new Matrix4(
             e[0], e[4], e[8], e[12],
             e[1], e[5], e[9], e[13],
             e[2], e[6], e[10], e[14],
@@ -62,7 +61,7 @@ export class Matrix4{
     }
 
     static Identity():Matrix4 {
-        return new Matrix4
+        return new Matrix4(
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
@@ -85,7 +84,7 @@ export class Matrix4{
     }
 
     static TranslateUnitMatrix4(v:Vector3):Matrix4{
-        return new Matrix4,
+        return new Matrix4(
             1, 0, 0, v.x,
             0, 1, 0, v.y,
             0, 0, 1, v.z,
