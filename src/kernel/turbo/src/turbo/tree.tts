@@ -98,8 +98,8 @@
         let right = 0;
         for(let i=0;i < SELF.NumShapes;i++) {
             let shape:number  = Shape.Array.at(SELF.Shapes, i);
-            // let box = Shape.BoundingBox(shape);
-            let box = Triangle.Box(shape);
+            let box = Shape.BoundingBox(shape);
+            // let box = Triangle.Box(shape);
             let lr = Box.Partition(box, axis, point);
             if (lr.left) {
                 left++
@@ -162,16 +162,16 @@
         for(let i=0;i < SELF.NumShapes;i++) {
             let shape:number  = Shape.Array.at(SELF.Shapes, i);
             // let box = Shape.BoundingBox(shape);
-            let box = Triangle.Box(shape);
+            let box = Triangle.BoundingBox(shape);
 
-            _xs[count] = Vector.X(Box.Min(box));
-            _ys[count] = Vector.Y(Box.Min(box));
-            _zs[count] = Vector.Z(Box.Min(box));
+            _xs[count] = Vector.x(Box.Min(box));
+            _ys[count] = Vector.y(Box.Min(box));
+            _zs[count] = Vector.z(Box.Min(box));
             count++;
 
-            _xs[count] = Vector.X(Box.Max(box));
-            _ys[count] = Vector.Y(Box.Max(box));
-            _zs[count] = Vector.Z(Box.Max(box));
+            _xs[count] = Vector.x(Box.Max(box));
+            _ys[count] = Vector.y(Box.Max(box));
+            _zs[count] = Vector.z(Box.Max(box));
             count++;
         }
 

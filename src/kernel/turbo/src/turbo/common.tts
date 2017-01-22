@@ -1,3 +1,4 @@
+///<reference path="./src/declaration.d.ts" />
 type float32 = number;
 type float64 = number;
 
@@ -16,25 +17,25 @@ const EPS:number = 1e-9;
 const SENTINEL:number = 1e32;
 
 function xy(x:number, y:number) {
-    return {X: x, Y: y};
+    return {x: x, y: y};
 }
 function xyz(x:number, y:number, z:number) {
-    return {X: x, Y: y, Z: z};
+    return {x: x, y: y, z: z};
 }
 function xyzw(x:number, y:number, z:number, w:number) {
-    return {X: x, Y: y, Z: z, W: w};
+    return {x: x, y: y, z: z, W: w};
 }
 function F3(a:number, b:number, c:number) {
-    return {A: a, B: b, C: c};
+    return {A: a, b: b, C: c};
 }
 function rgb(r:number, g:number, b:number) {
-    return {R: r, G: g, B: b};
+    return {r: r, g: g, b: b};
 }
 function ray(origin:number, direction:number) {
     return {Origin: origin, Direction: direction};
 }
 function free(ptr){
-    turbo.Runtime.free(ptr);
+    unsafe.free(ptr);
 }
 // const black = DL3(0,0,0);
 

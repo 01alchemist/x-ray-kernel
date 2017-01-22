@@ -160,12 +160,12 @@
     }*/
     @virtual Intersect(SELF, r:Ray):Hit {
 
-		let e1x = Vector.X(SELF.V2) - Vector.X(SELF.V1);
-        let e1y = Vector.Y(SELF.V2) - Vector.Y(SELF.V1);
-        let e1z = Vector.Z(SELF.V2) - Vector.Z(SELF.V1);
-        let e2x = Vector.X(SELF.V3) - Vector.X(SELF.V1);
-        let e2y = Vector.Y(SELF.V3) - Vector.Y(SELF.V1);
-        let e2z = Vector.Z(SELF.V3) - Vector.Z(SELF.V1);
+		let e1x = Vector.x(SELF.V2) - Vector.x(SELF.V1);
+        let e1y = Vector.y(SELF.V2) - Vector.y(SELF.V1);
+        let e1z = Vector.z(SELF.V2) - Vector.z(SELF.V1);
+        let e2x = Vector.x(SELF.V3) - Vector.x(SELF.V1);
+        let e2y = Vector.y(SELF.V3) - Vector.y(SELF.V1);
+        let e2z = Vector.z(SELF.V3) - Vector.z(SELF.V1);
         let px = r.direction.y * e2z - r.direction.z * e2y;
         let py = r.direction.z * e2x - r.direction.x * e2z;
         let pz = r.direction.x * e2y - r.direction.y * e2x;
@@ -174,9 +174,9 @@
 			return Hit.NoHit;
 		}
 		let inv = 1 / det;
-        let tx = r.origin.x - Vector.X(SELF.V1);
-        let ty = r.origin.y - Vector.Y(SELF.V1);
-        let tz = r.origin.z - Vector.Z(SELF.V1);
+        let tx = r.origin.x - Vector.x(SELF.V1);
+        let ty = r.origin.y - Vector.y(SELF.V1);
+        let tz = r.origin.z - Vector.z(SELF.V1);
         let u = (tx * px + ty * py + tz * pz) * inv;
 		if (u < 0 || u > 1) {
 			return Hit.NoHit;
@@ -216,17 +216,17 @@
 
     @virtual NormalAt(SELF, p:Vector3):Vector3 {
 
-        // let V1:Vector3 = new Vector3().read(SELF.V1);
-        // let V2:Vector3 = new Vector3().read(SELF.V2);
-        // let V3:Vector3 = new Vector3().read(SELF.V3);
+        let V1:Vector3 = new Vector3().read(SELF.V1);
+        let V2:Vector3 = new Vector3().read(SELF.V2);
+        let V3:Vector3 = new Vector3().read(SELF.V3);
 
         let n1:Vector3 = new Vector3().read(SELF.N1);
         let n2:Vector3 = new Vector3().read(SELF.N2);
         let n3:Vector3 = new Vector3().read(SELF.N3);
 
-        // let T1:Vector3 = new Vector3().read(SELF.T1);
-        // let T2:Vector3 = new Vector3().read(SELF.T2);
-        // let T3:Vector3 = new Vector3().read(SELF.T3);
+        let T1:Vector3 = new Vector3().read(SELF.T1);
+        let T2:Vector3 = new Vector3().read(SELF.T2);
+        let T3:Vector3 = new Vector3().read(SELF.T3);
 
 		let uvw = Triangle.Barycentric(SELF, p);
 		let n = new Vector3();
@@ -234,7 +234,7 @@
         n = n.add(n2.mulScalar(uvw.v));
         n = n.add(n3.mulScalar(uvw.w));
 
-		/*if (Material.NormalTexture(SELF.Material)) {
+		if (Material.NormalTexture(SELF.Material)) {
 			let b = new Vector3();
             b = b.add(T1.mulScalar(uvw.u));
             b = b.add(T2.mulScalar(uvw.v));
@@ -246,15 +246,14 @@
             let dt2 = T3.sub(T1);
 
 			let T = dv1.mulScalar(dt2.y).sub(dv2.mulScalar(dt1.y)).normalize();
-			let B = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
-            let N = T.cross(B);
-			let matrix = @new Matrix;
-			Matrix.init(matrix,
-					T.x, B.x, N.x, 0,
-					T.y, B.y, N.y, 0,
-					T.z, B.z, N.z, 0,
+			let b = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
+            let N = T.cross(b);
+			let matrix = new Matrix4(
+					T.x, b.x, N.x, 0,
+					T.y, b.y, N.y, 0,
+					T.z, b.z, N.z, 0,
 					0, 0, 0, 1);
-			n = Matrix.MulDirection2(matrix, ns);
+			n = matrix.mulDirection(ns);
 		}
 		if (Material.BumpTexture(SELF.Material)) {
 			let b = new Vector3();
@@ -270,7 +269,7 @@
 			let bitangent = dv2.mulScalar(dt1.x).sub(dv1.mulScalar(dt2.x)).normalize();
 			n = n.add(tangent.mulScalar(bump.x * Material.BumpMultiplier(SELF.Material)));
 			n = n.add(bitangent.mulScalar(bump.y * Material.BumpMultiplier(SELF.Material)));
-		}*/
+		}
 		n = n.normalize();
 		return n;
 	}
@@ -283,17 +282,19 @@
 	}
 
 	static Barycentric(SELF, p:Vector3):{u:number, v:number, w:number} {
-        let V1:Vector3 = new Vector3().read(SELF.V1);
-        let V2:Vector3 = new Vector3().read(SELF.V2);
-        let V3:Vector3 = new Vector3().read(SELF.V3);
-        let v0 = V2.sub(V1);
-        let V1 = V3.sub(V1);
-        let V2 = p.sub(V1);
+        let _V1:Vector3 = new Vector3().read(SELF.V1);
+        let _V2:Vector3 = new Vector3().read(SELF.V2);
+        let _V3:Vector3 = new Vector3().read(SELF.V3);
+
+        let v0 = _V2.sub(_V1);
+        let v1 = _V3.sub(_V1);
+        let v2 = p.sub(_V1);
+
 		let d00 = v0.dot(v0);
-		let d01 = v0.dot(V1);
-		let d11 = V1.dot(V1);
-		let d20 = V2.dot(v0);
-		let d21 = V2.dot(V1);
+		let d01 = v0.dot(v1);
+		let d11 = v1.dot(v1);
+		let d20 = v2.dot(v0);
+		let d21 = v2.dot(v1);
 		let d = d00*d11 - d01*d01;
 		let v = (d11*d20 - d01*d21) / d;
 		let w = (d00*d21 - d01*d20) / d;

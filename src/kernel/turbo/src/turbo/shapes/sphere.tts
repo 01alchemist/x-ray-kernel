@@ -15,8 +15,8 @@
 	static NewSphere(center:number, radius:number, material:number):number {
 		let min = @new Vector;
 		let max = @new Vector;
-		Vector.Init_mem(min, Vector.X(center) - radius, Vector.Y(center) - radius, Vector.Z(center) - radius);
-		Vector.Init_mem(max, Vector.X(center) + radius, Vector.Y(center) + radius, Vector.Z(center) + radius);
+		Vector.Init_mem(min, Vector.x(center) - radius, Vector.y(center) - radius, Vector.z(center) - radius);
+		Vector.Init_mem(max, Vector.x(center) + radius, Vector.y(center) + radius, Vector.z(center) + radius);
 		let box = @new Box;
 		Box.Init_mem(box , min, max);
 		let ptr:number = @new Sphere;

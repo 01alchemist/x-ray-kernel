@@ -38,16 +38,16 @@ export class Vector3 {
     }
 
     read(memory:number):Vector3 {
-        this.x = Vector.X(memory);
-        this.y = Vector.Y(memory);
-        this.z = Vector.Z(memory);
+        this.x = Vector.x(memory);
+        this.y = Vector.y(memory);
+        this.z = Vector.z(memory);
         return this;
     }
 
     write(memory:number):number {
-        Vector.X(memory) = this.x;
-        Vector.Y(memory) = this.y;
-        Vector.Z(memory) = this.z;
+        Vector.x(memory) = this.x;
+        Vector.y(memory) = this.y;
+        Vector.z(memory) = this.z;
         return memory;
     }
 
@@ -151,7 +151,11 @@ export class Vector3 {
     }
 
     minComponent() {
-        return Math.min(Math.min(this.x, this.y), this.z)
+        return Math.min(Math.min(this.x, this.y), this.z);
+    }
+
+    maxComponent() {
+        return Math.max(Math.max(this.x, this.y), this.z);
     }
 
     reflect(i:Vector3):Vector3 {

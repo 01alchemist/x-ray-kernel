@@ -44,11 +44,111 @@
 		return Tree.Intersect(SELF.tree, r);
 	}
 
+	static Sample(SELF, r:Ray, emission:boolean, samples:number, depth:number):Color3 {
+        if (depth > this.MaxBounces) {
+            return new Color3();
+        }
+        var hit = Scene.Intersect(SELF, r);
+        if (!hit.Ok()) {
+            return new Color3(0,0,0);
+        }
+        var info = hit.Info(r);
+        var result:Color3 = new Color3();
+        let material = info.Material
+        let color:Color3 = Color.toColor3(Material.Color(material));
+        let tint = Material.Tint(material);
+        if (emission) {
+            var emittance = Material.Emittance(material);
+            if (emittance > 0) {
+                let __f = Material.Emittance(material) * samples;
+				let tmp = color.mulScalar(__f);
+				result = result.add(tmp);
+            }
+        }
+        var n:number = Math.round(Math.sqrt(samples));
+        for (var u = 0; u < n; u++) {
+            for (var v = 0; v < n; v++) {
+                var p = Math.random();
+                var fu = (u + Math.random()) / n;
+                var fv = (v + Math.random()) / n;
+                var bounce = r.bounce2(info, p, fu, fv);
+                var indirect = Scene.Sample(SELF, bounce.ray, bounce.reflected, 1, depth + 1);
+                if (bounce.reflected) {
+                    var tinted = indirect.mix(color.mul(indirect), tint);
+                    result = result.add(tinted);
+                } else {
+                    var direct = Scene.DirectLight(info.ray);
+                    result = result.add(color.mul(direct.add(indirect)));
+                }
+            }
+        }
+        return result.divScalar(n * n);
+    }
+
+	static Shadow(SELF, r:Ray, light:Shape, max:number):boolean {
+        var hit = Scene.Intersect(SELF, r);
+        return hit.shape != light && hit.T < max;
+    }
+
+    static DirectLight(SELF, n:Ray):Color3 {
+        let nLights = SELF.NumLights | 0;
+        if (nLights == 0) {
+            return new Color3();
+        }
+        var color = new Color3();
+        var self = this;
+
+        var i:number = 0;
+        let lights = SELF.Lights;
+
+        for (; i < nLights; i++) {
+            let light = int32.Array.at(lights, i);
+            var p = Vector3.RandomUnitVector()
+            var d = p.sub(n.origin);
+            var lr = new Ray(n.origin, d.normalize());
+            var diffuse = lr.direction.dot(n.direction);
+            if (diffuse <= 0) {
+                continue
+            }
+            var distance = d.length();
+            if (Scene.Shadow(lr, light, distance)) {
+                continue;
+            }
+            let material = Material.MaterialAt(light, p);
+            //var emittance = material.emittance;
+            //var attenuation = 1;//material.attenuation.compute(distance);
+            //color = color.add(light.getColor(p).mulScalar(diffuse * emittance * attenuation));
+            let m = Material.Emittance(material) * diffuse;
+            color = color.add(Color.MulScalar2(Material.Color(material), m));
+        }
+
+        /*this.lights.forEach(function (light:Shape) {
+         var p = light.getRandomPoint();
+         var d = p.sub(n.origin);
+         var lr = new Ray(n.origin, d.normalize());
+         var diffuse = lr.direction.dot(n.direction);
+         if (diffuse <= 0) {
+         return
+         }
+         var distance = d.length();
+         if (self.shadow(lr, light, distance)) {
+         return;
+         }
+         var material = light.getMaterial(p);
+         var emittance = material.emittance;
+         var attenuation = material.attenuation.compute(distance);
+         color = color.add(light.getColor(p).mulScalar(diffuse * emittance * attenuation));
+         });*/
+
+        return color.divScalar(this.lights.length);
+    }
+
 } @end
 
 
 export class MasterScene{
 
+	color;
 	shapes:IShape[];
 	lights:IShape[];
 	scenePtr:number;
@@ -56,14 +156,24 @@ export class MasterScene{
 	static defaultMaterial;
 
 	constructor(color){
+		this.color = color;
 		this.scenePtr = Scene.NewScene(color);
         this.shapes = [];
         this.lights = [];
 
 		// MasterScene.defaultMaterial = Material.GlossyMaterial(Color.HexColor(0xFF0000), 1.5, Utils.Radians(30));
         // MasterScene.defaultMaterial = Material.LightMaterial(Color.HexColor(0x00FF00), 5);
-		MasterScene.defaultMaterial = Material.DiffuseMaterial(Color.HexColor(0xFF0000));
+		//MasterScene.defaultMaterial = Material.DiffuseMaterial(Color.HexColor(0xFF0000));
 
+	}
+	setClearColor(color) {
+		Color.HexColor(color, Scene.Color(this.scenePtr));
+    }
+	Clear(){
+		this.scenePtr = Scene.NewScene(this.color);
+		Scene.tree(this.scenePtr) = 0;
+        this.shapes = [];
+        this.lights = [];
 	}
     AddDebugScene(){
         let wall = Material.GlossyMaterial(Color.HexColor(0xFCFAE1), 1.5, Utils.Radians(10));

@@ -1,48 +1,48 @@
 export type XYZ = {
-    X:number,
-    Y:number,
-    Z:number
+    x:number,
+    y:number,
+    z:number
 };
 
 @turbo class Vector{
 
-	X:float64
-	Y:float64
-	Z:float64
+	x:float64
+	y:float64
+	z:float64
 
-	@method init(SELF:number, vector = {X:0,Y:0,Z:0}):number {
-		SELF.X = vector.X;
-		SELF.Y = vector.Y;
-		SELF.Z = vector.Z;
+	@method init(SELF:number, vector = {x:0,y:0,z:0}):number {
+		SELF.x = vector.x;
+		SELF.y = vector.y;
+		SELF.z = vector.z;
 		return SELF;
 	}
 
-    static Init_mem(SELF:number, X:number = 0,Y:number = 0,Z:number = 0):number {
-		SELF.X = X;
-		SELF.Y = Y;
-		SELF.Z = Z;
+    static Init_mem(SELF:number, x:number = 0,y:number = 0,z:number = 0):number {
+		SELF.x = x;
+		SELF.y = y;
+		SELF.z = z;
 		return SELF;
 	}
 
-    static NewVector(vector?,Y:number=0,Z:number=0):number {
+    static NewVector(vector?,y:number=0,z:number=0):number {
         let ptr:number = @new Vector;
         if(typeof vector === "object"){
             return Vector.init(ptr, vector);
         }else{
-            return Vector.Init_mem(ptr, vector, Y, Z);
+            return Vector.Init_mem(ptr, vector, y, z);
         }
     }
 
     static ToJSON(SELF){
         return {
-            X:SELF.X,
-            Y:SELF.Y,
-            Z:SELF.Z
+            x:SELF.x,
+            y:SELF.y,
+            z:SELF.z
         };
     }
 
     static XYZ(a:number):XYZ {
-        return xyz(Vector.X(a), Vector.Y(a), Vector.Z(a));
+        return xyz(Vector.x(a), Vector.y(a), Vector.z(a));
     }
 
     static RandomUnitVector():number {
@@ -61,11 +61,11 @@ export type XYZ = {
     }
 
     static Length(a:XYZ):number {
-        return Math.sqrt((a.X * a.X) + (a.Y * a.Y) + (a.Z * a.Z));
+        return Math.sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z));
     }
 
     static Length_mem(a:number):number {
-        return Math.sqrt(Vector.X(a) * Vector.X(a) + Vector.Y(a) * Vector.Y(a) + Vector.Z(a) * Vector.Z(a));
+        return Math.sqrt(Vector.x(a) * Vector.x(a) + Vector.y(a) * Vector.y(a) + Vector.z(a) * Vector.z(a));
     }
 
     static LengthN(a:XYZ, n:number):number {
@@ -74,7 +74,7 @@ export type XYZ = {
         }
         a = Vector.Abs(a);
         return Math.pow(
-            Math.pow(a.X, n) + Math.pow(a.Y, n) + Math.pow(a.Z, n),
+            Math.pow(a.x, n) + Math.pow(a.y, n) + Math.pow(a.z, n),
             1/n
         );
     }
@@ -85,35 +85,35 @@ export type XYZ = {
         }
         a = Vector.Abs_mem(a);
         return Math.pow(
-            Math.pow(Vector.X(a), n) + Math.pow(Vector.Y(a), n) + Math.pow(Vector.Z(a), n),
+            Math.pow(Vector.x(a), n) + Math.pow(Vector.y(a), n) + Math.pow(Vector.z(a), n),
             1/n
         );
     }
 
-    static Dot(a:XYZ, B:XYZ):number {
-        return (a.X * B.X) + (a.Y * B.Y) + (a.Z * B.Z);
+    static Dot(a:XYZ, b:XYZ):number {
+        return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
     }
 
-    static Dot_mem(a:number, B:number):number {
-        return (Vector.X(a) * Vector.X(B)) + (Vector.Y(a) * Vector.Y(B)) + (Vector.Z(a) * Vector.Z(B));
+    static Dot_mem(a:number, b:number):number {
+        return (Vector.x(a) * Vector.x(b)) + (Vector.y(a) * Vector.y(b)) + (Vector.z(a) * Vector.z(b));
     }
 
-    static Cross(a:XYZ, B:XYZ):XYZ {
-        let x:number = (a.Y * B.Z) - (a.Z * B.Y);
-        let y:number = (a.Z * B.X) - (a.X * B.Z);
-        let z:number = (a.X * B.Y) - (a.Y * B.X);
+    static Cross(a:XYZ, b:XYZ):XYZ {
+        let x:number = (a.y * b.z) - (a.z * b.y);
+        let y:number = (a.z * b.x) - (a.x * b.z);
+        let z:number = (a.x * b.y) - (a.y * b.x);
         return xyz(x, y, z);
     }
 
-    static Cross_mem(a:number, B:number, c?:number):number {
-        let x:number = (Vector.Y(a) * Vector.Z(B)) - (Vector.Z(a) * Vector.Y(B));
-        let y:number = (Vector.Z(a) * Vector.X(B)) - (Vector.X(a) * Vector.Z(B));
-        let z:number = (Vector.X(a) * Vector.Y(B)) - (Vector.Y(a) * Vector.X(B));
+    static Cross_mem(a:number, b:number, c?:number):number {
+        let x:number = (Vector.y(a) * Vector.z(b)) - (Vector.z(a) * Vector.y(b));
+        let y:number = (Vector.z(a) * Vector.x(b)) - (Vector.x(a) * Vector.z(b));
+        let z:number = (Vector.x(a) * Vector.y(b)) - (Vector.y(a) * Vector.x(b));
 
         if(c){
-            Vector.X(c) = x;
-            Vector.Y(c) = y;
-            Vector.Z(c) = z;
+            Vector.x(c) = x;
+            Vector.y(c) = y;
+            Vector.z(c) = z;
             return c;
         }else{
             let ptr:number = @new Vector;
@@ -123,287 +123,291 @@ export type XYZ = {
 
     static Normalize(a:XYZ):XYZ {
         let d:number = Vector.Length(a);
-        return xyz(a.X / d, a.Y / d, a.Z / d);
+        return xyz(a.x / d, a.y / d, a.z / d);
     }
 
     static Normalize_mem(a:number, c?:number):number {
         let d:number = Vector.Length_mem(a);
         if(c){
-            Vector.X(c) = Vector.X(a) / d;
-            Vector.Y(c) = Vector.Y(a) / d;
-            Vector.Z(c) = Vector.Z(a) / d;
+            Vector.x(c) = Vector.x(a) / d;
+            Vector.y(c) = Vector.y(a) / d;
+            Vector.z(c) = Vector.z(a) / d;
             return c;
         }else{
             let ptr:number = @new Vector;
-            return Vector.Init_mem(ptr, Vector.X(a) / d, Vector.Y(a) / d, Vector.Z(a) / d);
+            return Vector.Init_mem(ptr, Vector.x(a) / d, Vector.y(a) / d, Vector.z(a) / d);
         }
     }
 
     static Negate(a:XYZ):XYZ {
-        return xyz(-a.X, -a.Y, -a.Z);
+        return xyz(-a.x, -a.y, -a.z);
     }
 
     static Negate_mem(a:number, c?:number):number {
         if(c){
-            Vector.X(c) = -Vector.X(a);
-            Vector.Y(c) = -Vector.Y(a);
-            Vector.Z(c) = -Vector.Z(a);
+            Vector.x(c) = -Vector.x(a);
+            Vector.y(c) = -Vector.y(a);
+            Vector.z(c) = -Vector.z(a);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                -Vector.X(a),
-                -Vector.Y(a),
-                -Vector.Z(a)
+                -Vector.x(a),
+                -Vector.y(a),
+                -Vector.z(a)
             );
         }
     }
 
     static Abs(a:XYZ):XYZ {
-        return xyz(Math.abs(a.X), Math.abs(a.Y), Math.abs(a.Z));
+        return xyz(Math.abs(a.x), Math.abs(a.y), Math.abs(a.z));
     }
 
     static Abs_mem(a:number, c?:number):number {
         if(c){
-            Vector.X(c) = Math.abs(Vector.X(a));
-            Vector.Y(c) = Math.abs(Vector.Y(a));
-            Vector.Z(c) = Math.abs(Vector.Z(a));
+            Vector.x(c) = Math.abs(Vector.x(a));
+            Vector.y(c) = Math.abs(Vector.y(a));
+            Vector.z(c) = Math.abs(Vector.z(a));
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Math.abs(Vector.X(a)),
-                Math.abs(Vector.Y(a)),
-                Math.abs(Vector.Z(a))
+                Math.abs(Vector.x(a)),
+                Math.abs(Vector.y(a)),
+                Math.abs(Vector.z(a))
             );
         }
     }
-    static Add(a:XYZ, b:XYZ):XYZ { return xyz(a.X + b.X, a.Y + b.Y, a.Z + b.Z); }
+    static Add(a:XYZ, b:XYZ):XYZ { return xyz(a.x + b.x, a.y + b.y, a.z + b.z); }
 
     static Add_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) + Vector.X(b);
-            Vector.Y(c) = Vector.Y(a) + Vector.Y(b);
-            Vector.Z(c) = Vector.Z(a) + Vector.Z(b);
+            Vector.x(c) = Vector.x(a) + Vector.x(b);
+            Vector.y(c) = Vector.y(a) + Vector.y(b);
+            Vector.z(c) = Vector.z(a) + Vector.z(b);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) + Vector.X(b),
-                Vector.Y(a) + Vector.Y(b),
-                Vector.Z(a) + Vector.Z(b)
+                Vector.x(a) + Vector.x(b),
+                Vector.y(a) + Vector.y(b),
+                Vector.z(a) + Vector.z(b)
             );
         }
     }
 
+    static Add_12(a:number, b:Vector3):Vector3 {
+        return new Vector3(Vector.x(a) + b.x, Vector.y(a) + b.y, Vector.z(a) + b.z);
+    }
+
     static Sub_12(a:number, b:Vector3):Vector3 {
-        return new Vector3(Vector.X(a) - b.x, Vector.Y(a) - b.y, Vector.Z(a) - b.z);
+        return new Vector3(Vector.x(a) - b.x, Vector.y(a) - b.y, Vector.z(a) - b.z);
     }
 
     static Sub_21(a:number, b:Vector3):Vector3 {
-        return new Vector3(a.x - Vector.X(b), a.y - Vector.Y(b), a.z - Vector.Z(b));
+        return new Vector3(a.x - Vector.x(b), a.y - Vector.y(b), a.z - Vector.z(b));
     }
     static Sub_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) - Vector.X(b);
-            Vector.Y(c) = Vector.Y(a) - Vector.Y(b);
-            Vector.Z(c) = Vector.Z(a) - Vector.Z(b);
+            Vector.x(c) = Vector.x(a) - Vector.x(b);
+            Vector.y(c) = Vector.y(a) - Vector.y(b);
+            Vector.z(c) = Vector.z(a) - Vector.z(b);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) - Vector.X(b),
-                Vector.Y(a) - Vector.Y(b),
-                Vector.Z(a) - Vector.Z(b)
+                Vector.x(a) - Vector.x(b),
+                Vector.y(a) - Vector.y(b),
+                Vector.z(a) - Vector.z(b)
             );
         }
     }
     static Sub_mem_2(a:number, b:number):Vector3 {
-        return new Vector3(Vector.X(a) - Vector.X(b), Vector.Y(a) - Vector.Y(b), Vector.Z(a) - Vector.Z(b));
+        return new Vector3(Vector.x(a) - Vector.x(b), Vector.y(a) - Vector.y(b), Vector.z(a) - Vector.z(b));
     }
 
-    static Mul(a:XYZ, b:XYZ):XYZ { return xyz(a.X * b.X, a.Y * b.Y, a.Z * b.Z); }
+    static Mul(a:XYZ, b:XYZ):XYZ { return xyz(a.x * b.x, a.y * b.y, a.z * b.z); }
     static Mul_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) * Vector.X(b);
-            Vector.Y(c) = Vector.Y(a) * Vector.Y(b);
-            Vector.Z(c) = Vector.Z(a) * Vector.Z(b);
+            Vector.x(c) = Vector.x(a) * Vector.x(b);
+            Vector.y(c) = Vector.y(a) * Vector.y(b);
+            Vector.z(c) = Vector.z(a) * Vector.z(b);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) * Vector.X(b),
-                Vector.Y(a) * Vector.Y(b),
-                Vector.Z(a) * Vector.Z(b)
+                Vector.x(a) * Vector.x(b),
+                Vector.y(a) * Vector.y(b),
+                Vector.z(a) * Vector.z(b)
             );
         }
     }
 
     static Div_12(a:number, b:Vector3):Vector3 {
-        return new Vector3(Vector.X(a) / b.X, Vector.Y(a) / b.Y, Vector.Z(a) / b.Z);
+        return new Vector3(Vector.x(a) / b.x, Vector.y(a) / b.y, Vector.z(a) / b.z);
     }
 
     static Div_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) / Vector.X(b);
-            Vector.Y(c) = Vector.Y(a) / Vector.Y(b);
-            Vector.Z(c) = Vector.Z(a) / Vector.Z(b);
+            Vector.x(c) = Vector.x(a) / Vector.x(b);
+            Vector.y(c) = Vector.y(a) / Vector.y(b);
+            Vector.z(c) = Vector.z(a) / Vector.z(b);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) / Vector.X(b),
-                Vector.Y(a) / Vector.Y(b),
-                Vector.Z(a) / Vector.Z(b)
+                Vector.x(a) / Vector.x(b),
+                Vector.y(a) / Vector.y(b),
+                Vector.z(a) / Vector.z(b)
             );
         }
     }
 
     static Mod(a:XYZ, b:XYZ):XYZ {
         // as implemented in GLSL
-        let x = a.X - b.X * Math.floor(a.X/b.X);
-        let y = a.Y - b.Y * Math.floor(a.Y/b.Y);
-        let z = a.Z - b.Z * Math.floor(a.Z/b.Z);
+        let x = a.x - b.x * Math.floor(a.x/b.x);
+        let y = a.y - b.y * Math.floor(a.y/b.y);
+        let z = a.z - b.z * Math.floor(a.z/b.z);
         return xyz(x, y, z);
     }
 
     static Mod_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) - Vector.X(b) * Math.floor(Vector.X(a)/Vector.X(b));
-            Vector.Y(c) = Vector.Y(a) - Vector.Y(b) * Math.floor(Vector.Y(a)/Vector.Y(b));
-            Vector.Z(c) = Vector.Z(a) - Vector.Z(b) * Math.floor(Vector.Z(a)/Vector.Z(b));
+            Vector.x(c) = Vector.x(a) - Vector.x(b) * Math.floor(Vector.x(a)/Vector.x(b));
+            Vector.y(c) = Vector.y(a) - Vector.y(b) * Math.floor(Vector.y(a)/Vector.y(b));
+            Vector.z(c) = Vector.z(a) - Vector.z(b) * Math.floor(Vector.z(a)/Vector.z(b));
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) - Vector.X(b) * Math.floor(Vector.X(a)/Vector.X(b)),
-                Vector.Y(a) - Vector.Y(b) * Math.floor(Vector.Y(a)/Vector.Y(b)),
-                Vector.Z(a) - Vector.Z(b) * Math.floor(Vector.Z(a)/Vector.Z(b))
+                Vector.x(a) - Vector.x(b) * Math.floor(Vector.x(a)/Vector.x(b)),
+                Vector.y(a) - Vector.y(b) * Math.floor(Vector.y(a)/Vector.y(b)),
+                Vector.z(a) - Vector.z(b) * Math.floor(Vector.z(a)/Vector.z(b))
             );
         }
     }
 
-    static AddScalar(a:XYZ, f:number):XYZ { return xyz(a.X + f, a.Y + f, a.Z + f); }
+    static AddScalar(a:XYZ, f:number):XYZ { return xyz(a.x + f, a.y + f, a.z + f); }
 
     static AddScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) + f;
-            Vector.Y(c) = Vector.Y(a) + f;
-            Vector.Z(c) = Vector.Z(a) + f;
+            Vector.x(c) = Vector.x(a) + f;
+            Vector.y(c) = Vector.y(a) + f;
+            Vector.z(c) = Vector.z(a) + f;
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) + f,
-                Vector.Y(a) + f,
-                Vector.Z(a) + f
+                Vector.x(a) + f,
+                Vector.y(a) + f,
+                Vector.z(a) + f
             );
         }
     }
 
-    static SubScalar(a:XYZ, f:number):XYZ { return xyz(a.X - f, a.Y - f, a.Z - f); }
+    static SubScalar(a:XYZ, f:number):XYZ { return xyz(a.x - f, a.y - f, a.z - f); }
 
     static SubScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) - f;
-            Vector.Y(c) = Vector.Y(a) - f;
-            Vector.Z(c) = Vector.Z(a) - f;
+            Vector.x(c) = Vector.x(a) - f;
+            Vector.y(c) = Vector.y(a) - f;
+            Vector.z(c) = Vector.z(a) - f;
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) - f,
-                Vector.Y(a) - f,
-                Vector.Z(a) - f
+                Vector.x(a) - f,
+                Vector.y(a) - f,
+                Vector.z(a) - f
             );
         }
     }
 
-    static MulScalar(a:XYZ, f:number):XYZ { return xyz(a.X * f, a.Y * f, a.Z * f); }
+    static MulScalar(a:XYZ, f:number):XYZ { return xyz(a.x * f, a.y * f, a.z * f); }
     static MulScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) * f;
-            Vector.Y(c) = Vector.Y(a) * f;
-            Vector.Z(c) = Vector.Z(a) * f;
+            Vector.x(c) = Vector.x(a) * f;
+            Vector.y(c) = Vector.y(a) * f;
+            Vector.z(c) = Vector.z(a) * f;
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) * f,
-                Vector.Y(a) * f,
-                Vector.Z(a) * f
+                Vector.x(a) * f,
+                Vector.y(a) * f,
+                Vector.z(a) * f
             );
         }
     }
 
-    static DivScalar(a:XYZ, f:number):XYZ { return xyz(a.X / f, a.Y / f, a.Z / f); }
+    static DivScalar(a:XYZ, f:number):XYZ { return xyz(a.x / f, a.y / f, a.z / f); }
     static DivScalar_mem(a:number, f:number, c?:number):number {
         if(c){
-            Vector.X(c) = Vector.X(a) / f;
-            Vector.Y(c) = Vector.Y(a) / f;
-            Vector.Z(c) = Vector.Z(a) / f;
+            Vector.x(c) = Vector.x(a) / f;
+            Vector.y(c) = Vector.y(a) / f;
+            Vector.z(c) = Vector.z(a) / f;
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Vector.X(a) / f,
-                Vector.Y(a) / f,
-                Vector.Z(a) / f
+                Vector.x(a) / f,
+                Vector.y(a) / f,
+                Vector.z(a) / f
             );
         }
     }
 
-    static Min(a:XYZ, b:XYZ):XYZ { return xyz( Math.min(a.X , b.X), Math.min(a.Y , b.Y), Math.min(a.Z , b.Z) ); }
+    static Min(a:XYZ, b:XYZ):XYZ { return xyz( Math.min(a.x , b.x), Math.min(a.y , b.y), Math.min(a.z , b.z) ); }
     static Min_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Math.min(Vector.X(a) , Vector.X(b));
-            Vector.Y(c) = Math.min(Vector.Y(a) , Vector.Y(b));
-            Vector.Z(c) = Math.min(Vector.Z(a) , Vector.Z(b));
+            Vector.x(c) = Math.min(Vector.x(a) , Vector.x(b));
+            Vector.y(c) = Math.min(Vector.y(a) , Vector.y(b));
+            Vector.z(c) = Math.min(Vector.z(a) , Vector.z(b));
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Math.min(Vector.X(a) , Vector.X(b)),
-                Math.min(Vector.Y(a) , Vector.Y(b)),
-                Math.min(Vector.Z(a) , Vector.Z(b))
+                Math.min(Vector.x(a) , Vector.x(b)),
+                Math.min(Vector.y(a) , Vector.y(b)),
+                Math.min(Vector.z(a) , Vector.z(b))
             );
         }
     }
 
-    static Max(a:XYZ, b:XYZ):XYZ {return xyz( Math.max(a.X , b.X), Math.max(a.Y , b.Y), Math.max(a.Z , b.Z) );}
+    static Max(a:XYZ, b:XYZ):XYZ {return xyz( Math.max(a.x , b.x), Math.max(a.y , b.y), Math.max(a.z , b.z) );}
     static Max_mem(a:number, b:number, c?:number):number {
         if(c){
-            Vector.X(c) = Math.max(Vector.X(a) , Vector.X(b));
-            Vector.Y(c) = Math.max(Vector.Y(a) , Vector.Y(b));
-            Vector.Z(c) = Math.max(Vector.Z(a) , Vector.Z(b));
+            Vector.x(c) = Math.max(Vector.x(a) , Vector.x(b));
+            Vector.y(c) = Math.max(Vector.y(a) , Vector.y(b));
+            Vector.z(c) = Math.max(Vector.z(a) , Vector.z(b));
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Math.max(Vector.X(a) , Vector.X(b)),
-                Math.max(Vector.Y(a) , Vector.Y(b)),
-                Math.max(Vector.Z(a) , Vector.Z(b))
+                Math.max(Vector.x(a) , Vector.x(b)),
+                Math.max(Vector.y(a) , Vector.y(b)),
+                Math.max(Vector.z(a) , Vector.z(b))
             );
         }
     }
 
     static MinAxis(a:XYZ):XYZ {
-        let x:number = Math.abs(a.X);
-        let y:number = Math.abs(a.Y);
-        let z:number = Math.abs(a.Z);
+        let x:number = Math.abs(a.x);
+        let y:number = Math.abs(a.y);
+        let z:number = Math.abs(a.z);
 
         if(x <= y && x <= z) {
             return xyz(1, 0, 0);
@@ -414,9 +418,9 @@ export type XYZ = {
     }
 
     static MinAxis_mem(a:number, c?:number):number {
-        let x:number = Math.abs(Vector.X(a));
-        let y:number = Math.abs(Vector.Y(a));
-        let z:number = Math.abs(Vector.Z(a));
+        let x:number = Math.abs(Vector.x(a));
+        let y:number = Math.abs(Vector.y(a));
+        let z:number = Math.abs(Vector.z(a));
 
         if(x <= y && x <= z) {
             x = 1;
@@ -433,9 +437,9 @@ export type XYZ = {
         }
 
         if(c){
-            Vector.X(c) = x;
-            Vector.Y(c) = y;
-            Vector.Z(c) = z;
+            Vector.x(c) = x;
+            Vector.y(c) = y;
+            Vector.z(c) = z;
             return c;
         }else{
             let ptr:number = @new Vector;
@@ -443,14 +447,14 @@ export type XYZ = {
         }
     }
 
-    static MinComponent(a:XYZ):number {return Math.min(Math.min(a.X, a.Y), a.Z)}
+    static MinComponent(a:XYZ):number {return Math.min(Math.min(a.x, a.y), a.z)}
     static MinComponent_mem(a:number) {
-        return Math.min( Math.min(Vector.X(a), Vector.Y(a)), Vector.Z(a) );
+        return Math.min( Math.min(Vector.x(a), Vector.y(a)), Vector.z(a) );
     }
 
-    static MaxComponent(a:XYZ):number { return Math.max(Math.max(a.X, a.Y), a.Z) }
+    static MaxComponent(a:XYZ):number { return Math.max(Math.max(a.x, a.y), a.z) }
     static MaxComponent_mem(a:number):number {
-        return Math.max( Math.max(Vector.X(a), Vector.Y(a)), Vector.Z(a) );
+        return Math.max( Math.max(Vector.x(a), Vector.y(a)), Vector.z(a) );
     }
 
     static Reflect(a:XYZ, b:XYZ):XYZ {
@@ -513,68 +517,68 @@ export type XYZ = {
 
 
     //--------------------------------
-    // X X X X X X X X X X X X X X X X
+    // x x x x x x x x x x x x x x x x
     //--------------------------------
 
 
-    static Pow(a:XYZ, f:number):XYZ {return xyz( Math.pow(a.X, f), Math.pow(a.Y, f), Math.pow(a.Z, f) );}
+    static Pow(a:XYZ, f:number):XYZ {return xyz( Math.pow(a.x, f), Math.pow(a.y, f), Math.pow(a.z, f) );}
     static Pow_mem(a:number, f:number, c?:number):number {
         if(c){
-            Vector.X(c) = Math.pow(Vector.X(a) , f);
-            Vector.Y(c) = Math.pow(Vector.Y(a) , f);
-            Vector.Z(c) = Math.pow(Vector.Z(a) , f);
+            Vector.x(c) = Math.pow(Vector.x(a) , f);
+            Vector.y(c) = Math.pow(Vector.y(a) , f);
+            Vector.z(c) = Math.pow(Vector.z(a) , f);
             return c;
         }else{
             let ptr:number = @new Vector;
             return Vector.Init_mem(
                 ptr,
-                Math.pow(Vector.X(a) , f),
-                Math.pow(Vector.Y(a) , f),
-                Math.pow(Vector.Z(a) , f)
+                Math.pow(Vector.x(a) , f),
+                Math.pow(Vector.y(a) , f),
+                Math.pow(Vector.z(a) , f)
             );
         }
     }
 
     static IsEqual(a:number, b:number):boolean{
-        return Vector.X(a) === Vector.X(b) && Vector.Y(a) === Vector.Y(b) && Vector.Z(a) === Vector.Z(b);
+        return Vector.x(a) === Vector.x(b) && Vector.y(a) === Vector.y(b) && Vector.z(a) === Vector.z(b);
     }
 
-    static ZERO:number = Vector.NewVector({X:0,Y:0,Y:0});
-    static ONE:number = Vector.NewVector({X:1,Y:1,Y:1});
-    static NegativeONE:number = Vector.NewVector({X:-1,Y:-1,Y:-1});
+    static ZERO:number = Vector.NewVector({x:0,y:0,y:0});
+    static ONE:number = Vector.NewVector({x:1,y:1,y:1});
+    static NegativeONE:number = Vector.NewVector({x:-1,y:-1,y:-1});
 
     static IsZero(a:number):boolean{
-        return Vector.X(a) === 0 && Vector.Y(a) === 0 && Vector.Z(a) === 0;
+        return Vector.x(a) === 0 && Vector.y(a) === 0 && Vector.z(a) === 0;
     }
 
-    static Set(SELF:number, X:number, Y:number, Z:number) {
-        SELF.X = X;
-        SELF.Y = Y;
-        SELF.Z = Z;
+    static Set(SELF:number, x:number, y:number, z:number) {
+        SELF.x = x;
+        SELF.y = y;
+        SELF.z = z;
         return SELF;
     }
 
     static SetFromJSON(SELF:number, d) {
-        SELF.X = d.x;
-        SELF.Y = d.y;
-        SELF.Z = d.z;
+        SELF.x = d.x;
+        SELF.y = d.y;
+        SELF.z = d.z;
         return SELF;
     }
 
     static SetFromArray(SELF:number, d:number[]) {
-        SELF.X = d[0];
-        SELF.Y = d[1];
-        SELF.Z = d[2];
+        SELF.x = d[0];
+        SELF.y = d[1];
+        SELF.z = d[2];
         return SELF;
     }
 
     static Copy(SELF:number, a:number):number {
-        return Vector.Set(SELF, Vector.X(a), Vector.Y(a), Vector.Z(a));
+        return Vector.Set(SELF, Vector.x(a), Vector.y(a), Vector.z(a));
     }
 
     static Clone(SELF:number, c?:number):number {
         let ptr:number = c?c:@new Vector;
-        return Vector.Init_mem(ptr, SELF.X, SELF.Y, SELF.Z);
+        return Vector.Init_mem(ptr, SELF.x, SELF.y, SELF.z);
     }
 
 } @end
