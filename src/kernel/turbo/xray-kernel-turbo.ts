@@ -1468,30 +1468,6 @@ export class Box extends MemoryObject{
             tmin: Math.max(Math.max(x1, y1), z1),
 		    tmax: Math.min(Math.min(x2, y2), z2)
         };
-
-        /*
-        * 	 x1 := (b.Min.x - r.Origin.x) / r.Direction.x
-             y1 := (b.Min.y - r.Origin.y) / r.Direction.y
-             z1 := (b.Min.z - r.Origin.z) / r.Direction.z
-             x2 := (b.Max.x - r.Origin.x) / r.Direction.x
-             y2 := (b.Max.y - r.Origin.y) / r.Direction.y
-             z2 := (b.Max.z - r.Origin.z) / r.Direction.z
-
-             if x1 > x2 {
-             x1, x2 = x2, x1
-             }
-             if y1 > y2 {
-             y1, y2 = y2, y1
-             }
-             if z1 > z2 {
-             z1, z2 = z2, z1
-             }
-             t1 := math.Max(math.Max(x1, y1), z1)
-             t2 := math.Min(math.Min(x2, y2), z2)
-             return t1, t2
-        *
-        **/
-
 	}
 
 	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
@@ -3864,8 +3840,8 @@ export class Node extends MemoryObject{
         let count = 0;
         for(let i=0;i < unsafe._mem_i32[(SELF + 20) >> 2];i++) {
             let shape:number  = unsafe._mem_i32[(  (unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)  ) >> 2];
-            let box = Shape.BoundingBox(shape);
-            //let box = unsafe._mem_i32[(shape + 48) >> 2];
+            // let box = Shape.BoundingBox(shape);
+            let box = Triangle.BoundingBox(shape);
 
             _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 8) >> 3];
             _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 16) >> 3];
@@ -5327,8 +5303,7 @@ export class Matrix4{
     }
 
     static fromTHREEJS(e:number[]):Matrix4 {
-
-        return new Matrix44(
+        return new Matrix4(
             e[0], e[4], e[8], e[12],
             e[1], e[5], e[9], e[13],
             e[2], e[6], e[10], e[14],
@@ -5346,7 +5321,7 @@ export class Matrix4{
     }
 
     static Identity():Matrix4 {
-        return new Matrix4
+        return new Matrix4(
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 1, 0,
@@ -5369,7 +5344,7 @@ export class Matrix4{
     }
 
     static TranslateUnitMatrix4(v:Vector3):Matrix4{
-        return new Matrix4,
+        return new Matrix4(
             1, 0, 0, v.x,
             0, 1, 0, v.y,
             0, 0, 1, v.z,

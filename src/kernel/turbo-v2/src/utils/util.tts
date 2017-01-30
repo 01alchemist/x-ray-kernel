@@ -61,7 +61,7 @@ export class Utils {
     }
 
     static NumberString(x:number):string {
-        let suffixes = ["", "k", "M", "G"];
+        let suffixes = ["", "k", "M", "g"];
 
         suffixes.forEach((suffix) => {
             if (x < 1000) {

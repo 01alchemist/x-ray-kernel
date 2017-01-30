@@ -117,7 +117,9 @@ export enum ShapeType{
     }
 
     @virtual ToJSON(SELF){
-        return Shape.ToJSON(SELF.Shape);
+    	let json = Shape.ToJSON(SELF.Shape);
+        json.box = Box.ToJSON(TransformedShape.BoundingBox(SELF));
+        return json;
     }
 
     @virtual Compile(SELF, c?:number){

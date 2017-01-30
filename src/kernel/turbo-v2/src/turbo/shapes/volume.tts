@@ -38,9 +38,9 @@
 
     static NewVolume(box:number/*Box*/, images:number, numImages:number, sliceSpacing:number, windows:number, numWindows:number):number {
         let bounds = Image.Bounds(images[0]);
-        let size = Box.Size(bounds);
-        let w = Vector.X(size);
-        let h = Vector.Y(size);
+        let size = Box.Size_mem(bounds);
+        let w = Vector.x(size);
+        let h = Vector.y(size);
         let d = numImages;
         // TODO: w/h aspect ratio
         let zs:number = (sliceSpacing * d) / w;
@@ -50,7 +50,7 @@
             let img = Image.Array.at(images, i);
             for (let y = 0; y < h; y++) {
                 for (let x = 0; x < w; x++) {
-                    let r = Image.At(img, x, y).RGBA().R;
+                    let r = Image.At(img, x, y).RGBA().r;
                     let f = r / 65535;
                     float64.Array.setAt(data, x+y*w+i*w*h, f);
                 }
@@ -106,7 +106,7 @@
     }
 
     static Sign(SELF, a:number /*Vector*/):number {
-        let s = SELF.Sample(Vector.X(a), Vector.Y(a), Vector.Z(a));
+        let s = SELF.Sample(Vector.x(a), Vector.y(a), Vector.z(a));
         let numWindows  = SELF.NumWindows;
         for (let i:number = 0;i < numWindows;i++) {
             let window:number = VolumeWindow.Array.at(SELF.NumWindows, i);
@@ -154,7 +154,7 @@
     static MaterialAt(SELF, p:number):number {
         let be = 1e9;
         let bm:number = null;
-        let s = Volume.Sample(SELF, Vector.X(p), Vector.Y(p), Vector.Z(p));
+        let s = Volume.Sample(SELF, Vector.x(p), Vector.y(p), Vector.z(p));
         for (let i=0;i<SELF.NumWindows;i++) {
             let window:number = VolumeWindow.Array.at(SELF.Windows, i);
             if (s >= VolumeWindow.Lo(window) && s <= VolumeWindow.Hi(window)) {
@@ -174,9 +174,9 @@
         let n = @new Vector;
 
         Vector.init(n,
-            Volume.Sample(SELF, Vector.X(p) - eps, Vector.Y(p), Vector.Z(p)) - SELF.Sample(Vector.X(p)+eps, Vector.Y(p), Vector.Z(p)),
-            Volume.Sample(SELF, Vector.X(p), Vector.Y(p)-eps, Vector.Z(p)) - SELF.Sample(Vector.X(p), Vector.Y(p)+eps, Vector.Z(p)),
-            Volume.Sample(SELF, Vector.X(p), Vector.Y(p), Vector.Z(p)-eps) - SELF.Sample(Vector.X(p), Vector.Y(p), Vector.Z(p)+eps)
+            Volume.Sample(SELF, Vector.x(p) - eps, Vector.y(p), Vector.z(p)) - SELF.Sample(Vector.x(p)+eps, Vector.y(p), Vector.z(p)),
+            Volume.Sample(SELF, Vector.x(p), Vector.y(p)-eps, Vector.z(p)) - SELF.Sample(Vector.x(p), Vector.y(p)+eps, Vector.z(p)),
+            Volume.Sample(SELF, Vector.x(p), Vector.y(p), Vector.z(p)-eps) - SELF.Sample(Vector.x(p), Vector.y(p), Vector.z(p)+eps)
         );
         return Vector.Normalize_mem(n, n);
     }

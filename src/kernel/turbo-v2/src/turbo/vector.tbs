@@ -47,8 +47,8 @@ class Vector {
         return new Vector(this.x + b.x, this.y + b.y, this.z + b.z);
     }
 
-    sub(a: float32, b: Vector3): Vector3 {
-        return new Vector3(this.x - b.x, this.y - b.y, this.z - b.z);
+    sub(b: Vector): Vector {
+        return new Vector(this.x - b.x, this.y - b.y, this.z - b.z);
     }
 
     mul(b: Vector): Vector {
@@ -108,26 +108,25 @@ class Vector {
     }
 
     reflect(b: Vector): Vector {
-        return b.sub(a.mulScalar(2.0 * a.dot(b)));
+        return b.sub(this.mulScalar(2.0 * this.dot(b)));
         //return Vector.Sub(b, Vector.MulScalar(a, 2 * Vector.Dot(a,b)));
     }
 
     refract(b: Vector, n1: float32, n2: float32): Vector {
         let nr: float32 = n1 / n2;
-        let cosI: float32 = -a.dot(b);
+        let cosI: float32 = -this.dot(b);
         let sinT2: float32 = nr * nr * (1 - cosI * cosI);
         if (sinT2 > 1) {
             return new Vector(0.0, 0.0, 0.0);
         }
         let cosT: float32 = Math.sqrt(1.0 - sinT2);
-        return b.mulScalar(nr).add(this.mulScalar(nr * (cosI - cosT))
+        return b.mulScalar(nr).add(this.mulScalar(nr * (cosI - cosT)));
 // return Vector.Add(Vector.MulScalar(b, nr), Vector.MulScalar(a, nr * cosI - cosT));
-
     }
 
     reflectance(b: Vector, n1: float32, n2: float32): float32 {
         let nr: float32 = n1 / n2;
-        let cosI: float32 = -a.dot(b);
+        let cosI: float32 = -this.dot(b);
         let sinT2: float32 = nr * nr * (1 - cosI * cosI);
         if (sinT2 > 1) {
             return 1;
@@ -193,4 +192,4 @@ function RandomUnitVector(): float32 {
 }
 const ZERO: Vector = new Vector(0.0, 0.0, 0.0);
 const ONE: Vector = new Vector(1.0, 1.0, 1.0);
-const NegativeONE: Vector = Vector.NewVector({x: -1, y: -1, y: -1});
+const NegativeONE: Vector = new Vector(-1, -1, -1);

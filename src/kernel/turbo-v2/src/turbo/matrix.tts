@@ -90,9 +90,9 @@
     static TranslateUnitMatrix(v:number, c?:number):number{
         let ptr:number = c?c:@new Matrix;
         return Matrix.init(ptr,
-            1, 0, 0, Vector.X(v),
-            0, 1, 0, Vector.Y(v),
-            0, 0, 1, Vector.Z(v),
+            1, 0, 0, Vector.x(v),
+            0, 1, 0, Vector.y(v),
+            0, 0, 1, Vector.z(v),
             0, 0, 0, 1
         )
     }
@@ -100,9 +100,9 @@
     static ScaleUnitMatrix(v:number, c?:number):number{
         let ptr:number = c?c:@new Matrix;
         return Matrix.init(ptr,
-            Vector.X(v), 0, 0, 0,
-            0, Vector.Y(v), 0, 0,
-            0, 0, Vector.Z(v), 0,
+            Vector.x(v), 0, 0, 0,
+            0, Vector.y(v), 0, 0,
+            0, 0, Vector.z(v), 0,
             0, 0, 0, 1
         )
     }
@@ -116,9 +116,9 @@
 
         let ptr:number = _c?_c:@new Matrix;
         return Matrix.init(ptr,
-            m*Vector.X(v) * Vector.X(v) + c, m * Vector.X(v) * Vector.Y(v) + Vector.Z(v) * s, m * Vector.Z(v) * Vector.X(v) - Vector.Y(v) * s, 0,
-            m*Vector.X(v) * Vector.Y(v) - Vector.Z(v) * s, m*Vector.Y(v) * Vector.Y(v) + c, m*Vector.Y(v) * Vector.Z(v) + Vector.X(v) * s, 0,
-            m*Vector.Z(v) * Vector.X(v) + Vector.Y(v) * s, m*Vector.Y(v) * Vector.Z(v) - Vector.X(v) * s, m*Vector.Z(v) * Vector.Z(v) + c, 0,
+            m*Vector.x(v) * Vector.x(v) + c, m * Vector.x(v) * Vector.y(v) + Vector.z(v) * s, m * Vector.z(v) * Vector.x(v) - Vector.y(v) * s, 0,
+            m*Vector.x(v) * Vector.y(v) - Vector.z(v) * s, m*Vector.y(v) * Vector.y(v) + c, m*Vector.y(v) * Vector.z(v) + Vector.x(v) * s, 0,
+            m*Vector.z(v) * Vector.x(v) + Vector.y(v) * s, m*Vector.y(v) * Vector.z(v) - Vector.x(v) * s, m*Vector.z(v) * Vector.z(v) + c, 0,
             0, 0, 0, 1
         )
     }
@@ -164,9 +164,9 @@
 
         let ptr:number = c?c:@new Matrix;
         Matrix.init(ptr,
-            Vector.X(s), Vector.X(u), Vector.X(f), 0,
-            Vector.Y(s), Vector.Y(u), Vector.Y(f), 0,
-            Vector.Z(s), Vector.Z(u), Vector.Z(f), 0,
+            Vector.x(s), Vector.x(u), Vector.x(f), 0,
+            Vector.y(s), Vector.y(u), Vector.y(f), 0,
+            Vector.z(s), Vector.z(u), Vector.z(f), 0,
             0, 0, 0, 1
         );
         return Matrix.Translate(Matrix.Inverse(Matrix.Transpose(ptr, ptr), ptr), eye, ptr);
@@ -218,9 +218,9 @@
     }
 
     static MulPosition(a:number, b:number, c?:number):number {
-        let x:number = Matrix.x00(a) * Vector.X(b) + Matrix.x01(a) * Vector.Y(b) + Matrix.x02(a) * Vector.Z(b) + Matrix.x03(a);
-        let y:number = Matrix.x10(a) * Vector.X(b) + Matrix.x11(a) * Vector.Y(b) + Matrix.x12(a) * Vector.Z(b) + Matrix.x13(a);
-        let z:number = Matrix.x20(a) * Vector.X(b) + Matrix.x21(a) * Vector.Y(b) + Matrix.x22(a) * Vector.Z(b) + Matrix.x23(a);
+        let x:number = Matrix.x00(a) * Vector.x(b) + Matrix.x01(a) * Vector.y(b) + Matrix.x02(a) * Vector.z(b) + Matrix.x03(a);
+        let y:number = Matrix.x10(a) * Vector.x(b) + Matrix.x11(a) * Vector.y(b) + Matrix.x12(a) * Vector.z(b) + Matrix.x13(a);
+        let z:number = Matrix.x20(a) * Vector.x(b) + Matrix.x21(a) * Vector.y(b) + Matrix.x22(a) * Vector.z(b) + Matrix.x23(a);
         let ptr:number = c?c:@new Vector();
         return Vector.Init_mem(ptr, x, y, z);
     }
@@ -233,9 +233,9 @@
     }
 
     static MulDirection(a:number, b:number, c?:number):number {
-        let x:number = Matrix.x00(a) * Vector.X(b) + Matrix.x01(a) * Vector.Y(b) + Matrix.x02(a) * Vector.Z(b);
-        let y:number = Matrix.x10(a) * Vector.X(b) + Matrix.x11(a) * Vector.Y(b) + Matrix.x12(a) * Vector.Z(b);
-        let z:number = Matrix.x20(a) * Vector.X(b) + Matrix.x21(a) * Vector.Y(b) + Matrix.x22(a) * Vector.Z(b);
+        let x:number = Matrix.x00(a) * Vector.x(b) + Matrix.x01(a) * Vector.y(b) + Matrix.x02(a) * Vector.z(b);
+        let y:number = Matrix.x10(a) * Vector.x(b) + Matrix.x11(a) * Vector.y(b) + Matrix.x12(a) * Vector.z(b);
+        let z:number = Matrix.x20(a) * Vector.x(b) + Matrix.x21(a) * Vector.y(b) + Matrix.x22(a) * Vector.z(b);
         let ptr:number = c?c:@new Vector;
         return Vector.Normalize_mem(Vector.Init_mem(ptr, x, y, z));
     }
@@ -244,7 +244,7 @@
         let x:number = Matrix.x00(a) * b.x + Matrix.x01(a) * b.y + Matrix.x02(a) * b.z;
         let y:number = Matrix.x10(a) * b.x + Matrix.x11(a) * b.y + Matrix.x12(a) * b.z;
         let z:number = Matrix.x20(a) * b.x + Matrix.x21(a) * b.y + Matrix.x22(a) * b.z;
-        return new Vector3(x, y, z);
+        return new Vector3(x, y, z).normalize();
     }
 
     static MulRay(a:number, ray:Ray):Ray {
@@ -261,12 +261,12 @@
         let u:number = Vector.Init_mem(@new Vector, Matrix.x01(a), Matrix.x11(a), Matrix.x21(a));
         let b:number = Vector.Init_mem(@new Vector, Matrix.x02(a), Matrix.x12(a), Matrix.x22(a));
         let t:number = Vector.Init_mem(@new Vector, Matrix.x03(a), Matrix.x13(a), Matrix.x23(a));
-        let xa:number = Vector.MulScalar_mem(r, Vector.X(min));
-        let xb:number = Vector.MulScalar_mem(r, Vector.X(max));
-        let ya:number = Vector.MulScalar_mem(u, Vector.Y(min));
-        let yb:number = Vector.MulScalar_mem(u, Vector.Y(max));
-        let za:number = Vector.MulScalar_mem(b, Vector.Z(min));
-        let zb:number = Vector.MulScalar_mem(b, Vector.Z(max));
+        let xa:number = Vector.MulScalar_mem(r, Vector.x(min));
+        let xb:number = Vector.MulScalar_mem(r, Vector.x(max));
+        let ya:number = Vector.MulScalar_mem(u, Vector.y(min));
+        let yb:number = Vector.MulScalar_mem(u, Vector.y(max));
+        let za:number = Vector.MulScalar_mem(b, Vector.z(min));
+        let zb:number = Vector.MulScalar_mem(b, Vector.z(max));
         xa = Vector.Min_mem(xa, xb, r);
         xb = Vector.Max_mem(xa, xb, u);
         ya = Vector.Min_mem(ya, yb, b);

@@ -58,7 +58,7 @@ var XRAY;
     var Color = (function (_super) {
         __extends(Color, _super);
         function Color(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Color, "BASE", {
             get: function () {
@@ -399,33 +399,33 @@ var XRAY;
             return new Color3(unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3]);
         };
         Color.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 194603; return SELF; };
-        Color.NAME = "Color";
-        Color.SIZE = 32;
-        Color.ALIGN = 8;
-        Color.CLSID = 194603;
-        Color.BrightColors = [
-            Color.HexColor(0xFF00FF),
-            Color.HexColor(0x84FF00),
-            Color.HexColor(0xFF0084),
-            Color.HexColor(0x00FFFF),
-            Color.HexColor(0x00FF84),
-            Color.HexColor(0xDD40FF),
-            Color.HexColor(0xFFFF00)
-        ];
-        Color.RGBAColors = [
-            Color.HexColor(0xFF0000),
-            Color.HexColor(0x00FF00),
-            Color.HexColor(0x0000FF),
-            Color.HexColor(0xFFFFFF)
-        ];
         return Color;
     }(MemoryObject));
+    Color.NAME = "Color";
+    Color.SIZE = 32;
+    Color.ALIGN = 8;
+    Color.CLSID = 194603;
+    Color.BrightColors = [
+        Color.HexColor(0xFF00FF),
+        Color.HexColor(0x84FF00),
+        Color.HexColor(0xFF0084),
+        Color.HexColor(0x00FFFF),
+        Color.HexColor(0x00FF84),
+        Color.HexColor(0xDD40FF),
+        Color.HexColor(0xFFFF00)
+    ];
+    Color.RGBAColors = [
+        Color.HexColor(0xFF0000),
+        Color.HexColor(0x00FF00),
+        Color.HexColor(0x0000FF),
+        Color.HexColor(0xFFFFFF)
+    ];
     XRAY.Color = Color;
     unsafe._idToType[194603] = Color;
     var Vector = (function (_super) {
         __extends(Vector, _super);
         function Vector(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Vector, "BASE", {
             get: function () {
@@ -885,15 +885,15 @@ var XRAY;
             return Vector.Init_mem(ptr, unsafe._mem_f64[(SELF + 8) >> 3], unsafe._mem_f64[(SELF + 16) >> 3], unsafe._mem_f64[(SELF + 24) >> 3]);
         };
         Vector.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 1266219; return SELF; };
-        Vector.NAME = "Vector";
-        Vector.SIZE = 32;
-        Vector.ALIGN = 8;
-        Vector.CLSID = 1266219;
-        Vector.ZERO = Vector.NewVector({ x: 0, y: 0, y: 0 });
-        Vector.ONE = Vector.NewVector({ x: 1, y: 1, y: 1 });
-        Vector.NegativeONE = Vector.NewVector({ x: -1, y: -1, y: -1 });
         return Vector;
     }(MemoryObject));
+    Vector.NAME = "Vector";
+    Vector.SIZE = 32;
+    Vector.ALIGN = 8;
+    Vector.CLSID = 1266219;
+    Vector.ZERO = Vector.NewVector({ x: 0, y: 0, y: 0 });
+    Vector.ONE = Vector.NewVector({ x: 1, y: 1, y: 1 });
+    Vector.NegativeONE = Vector.NewVector({ x: -1, y: -1, y: -1 });
     XRAY.Vector = Vector;
     unsafe._idToType[1266219] = Vector;
     var Utils = (function () {
@@ -1034,7 +1034,7 @@ var XRAY;
     var Box = (function (_super) {
         __extends(Box, _super);
         function Box(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Box, "BASE", {
             get: function () {
@@ -1193,18 +1193,18 @@ var XRAY;
             };
         };
         Box.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 1841; return SELF; };
-        Box.NAME = "Box";
-        Box.SIZE = 12;
-        Box.ALIGN = 4;
-        Box.CLSID = 1841;
         return Box;
     }(MemoryObject));
+    Box.NAME = "Box";
+    Box.SIZE = 12;
+    Box.ALIGN = 4;
+    Box.CLSID = 1841;
     XRAY.Box = Box;
     unsafe._idToType[1841] = Box;
     var Matrix = (function (_super) {
         __extends(Matrix, _super);
         function Matrix(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Matrix, "BASE", {
             get: function () {
@@ -1449,18 +1449,18 @@ var XRAY;
             return m;
         };
         Matrix.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 2093537; return SELF; };
-        Matrix.NAME = "Matrix";
-        Matrix.SIZE = 136;
-        Matrix.ALIGN = 8;
-        Matrix.CLSID = 2093537;
         return Matrix;
     }(MemoryObject));
+    Matrix.NAME = "Matrix";
+    Matrix.SIZE = 136;
+    Matrix.ALIGN = 8;
+    Matrix.CLSID = 2093537;
     XRAY.Matrix = Matrix;
     unsafe._idToType[2093537] = Matrix;
     var Image = (function (_super) {
         __extends(Image, _super);
         function Image(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Image, "BASE", {
             get: function () {
@@ -1502,18 +1502,18 @@ var XRAY;
             return ptr;
         };
         Image.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 150430; return SELF; };
-        Image.NAME = "Image";
-        Image.SIZE = 20;
-        Image.ALIGN = 4;
-        Image.CLSID = 150430;
         return Image;
     }(MemoryObject));
+    Image.NAME = "Image";
+    Image.SIZE = 20;
+    Image.ALIGN = 4;
+    Image.CLSID = 150430;
     XRAY.Image = Image;
     unsafe._idToType[150430] = Image;
     var Texture = (function (_super) {
         __extends(Texture, _super);
         function Texture(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Texture, "BASE", {
             get: function () {
@@ -1643,19 +1643,19 @@ var XRAY;
             return new Vector3(cx.r, cy.r, 0);
         };
         Texture.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 10502342; return SELF; };
-        Texture.NAME = "Texture";
-        Texture.SIZE = 16;
-        Texture.ALIGN = 4;
-        Texture.CLSID = 10502342;
-        Texture.textures = [];
         return Texture;
     }(MemoryObject));
+    Texture.NAME = "Texture";
+    Texture.SIZE = 16;
+    Texture.ALIGN = 4;
+    Texture.CLSID = 10502342;
+    Texture.textures = [];
     XRAY.Texture = Texture;
     unsafe._idToType[10502342] = Texture;
     var Material = (function (_super) {
         __extends(Material, _super);
         function Material(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Material, "BASE", {
             get: function () {
@@ -1777,12 +1777,12 @@ var XRAY;
             return material;
         };
         Material.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 167722613; return SELF; };
-        Material.NAME = "Material";
-        Material.SIZE = 73;
-        Material.ALIGN = 8;
-        Material.CLSID = 167722613;
         return Material;
     }(MemoryObject));
+    Material.NAME = "Material";
+    Material.SIZE = 73;
+    Material.ALIGN = 8;
+    Material.CLSID = 167722613;
     XRAY.Material = Material;
     unsafe._idToType[167722613] = Material;
     var Ray = (function () {
@@ -1905,7 +1905,7 @@ var XRAY;
     var Shape = (function (_super) {
         __extends(Shape, _super);
         function Shape(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Shape, "BASE", {
             get: function () {
@@ -2087,18 +2087,18 @@ var XRAY;
             }
         };
         Shape.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 255446; return SELF; };
-        Shape.NAME = "Shape";
-        Shape.SIZE = 8;
-        Shape.ALIGN = 4;
-        Shape.CLSID = 255446;
         return Shape;
     }(MemoryObject));
+    Shape.NAME = "Shape";
+    Shape.SIZE = 8;
+    Shape.ALIGN = 4;
+    Shape.CLSID = 255446;
     XRAY.Shape = Shape;
     unsafe._idToType[255446] = Shape;
     var TransformedShape = (function (_super) {
         __extends(TransformedShape, _super);
         function TransformedShape(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(TransformedShape, "BASE", {
             get: function () {
@@ -2233,18 +2233,18 @@ var XRAY;
             }
         };
         TransformedShape.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 124486674; return SELF; };
-        TransformedShape.NAME = "TransformedShape";
-        TransformedShape.SIZE = 28;
-        TransformedShape.ALIGN = 4;
-        TransformedShape.CLSID = 124486674;
         return TransformedShape;
     }(Shape));
+    TransformedShape.NAME = "TransformedShape";
+    TransformedShape.SIZE = 28;
+    TransformedShape.ALIGN = 4;
+    TransformedShape.CLSID = 124486674;
     XRAY.TransformedShape = TransformedShape;
     unsafe._idToType[124486674] = TransformedShape;
     var Cube = (function (_super) {
         __extends(Cube, _super);
         function Cube(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Cube, "BASE", {
             get: function () {
@@ -2426,18 +2426,18 @@ var XRAY;
             }
         };
         Cube.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 48824165; return SELF; };
-        Cube.NAME = "Cube";
-        Cube.SIZE = 24;
-        Cube.ALIGN = 4;
-        Cube.CLSID = 48824165;
         return Cube;
     }(Shape));
+    Cube.NAME = "Cube";
+    Cube.SIZE = 24;
+    Cube.ALIGN = 4;
+    Cube.CLSID = 48824165;
     XRAY.Cube = Cube;
     unsafe._idToType[48824165] = Cube;
     var Sphere = (function (_super) {
         __extends(Sphere, _super);
         function Sphere(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Sphere, "BASE", {
             get: function () {
@@ -2583,18 +2583,18 @@ var XRAY;
             }
         };
         Sphere.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 171432461; return SELF; };
-        Sphere.NAME = "Sphere";
-        Sphere.SIZE = 32;
-        Sphere.ALIGN = 8;
-        Sphere.CLSID = 171432461;
         return Sphere;
     }(Shape));
+    Sphere.NAME = "Sphere";
+    Sphere.SIZE = 32;
+    Sphere.ALIGN = 8;
+    Sphere.CLSID = 171432461;
     XRAY.Sphere = Sphere;
     unsafe._idToType[171432461] = Sphere;
     var Triangle = (function (_super) {
         __extends(Triangle, _super);
         function Triangle(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Triangle, "BASE", {
             get: function () {
@@ -2908,18 +2908,18 @@ var XRAY;
             }
         };
         Triangle.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 232773086; return SELF; };
-        Triangle.NAME = "Triangle";
-        Triangle.SIZE = 53;
-        Triangle.ALIGN = 4;
-        Triangle.CLSID = 232773086;
         return Triangle;
     }(Shape));
+    Triangle.NAME = "Triangle";
+    Triangle.SIZE = 53;
+    Triangle.ALIGN = 4;
+    Triangle.CLSID = 232773086;
     XRAY.Triangle = Triangle;
     unsafe._idToType[232773086] = Triangle;
     var Mesh = (function (_super) {
         __extends(Mesh, _super);
         function Mesh(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Mesh, "BASE", {
             get: function () {
@@ -3156,18 +3156,18 @@ var XRAY;
             }
         };
         Mesh.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 48819938; return SELF; };
-        Mesh.NAME = "Mesh";
-        Mesh.SIZE = 24;
-        Mesh.ALIGN = 4;
-        Mesh.CLSID = 48819938;
         return Mesh;
     }(Shape));
+    Mesh.NAME = "Mesh";
+    Mesh.SIZE = 24;
+    Mesh.ALIGN = 4;
+    Mesh.CLSID = 48819938;
     XRAY.Mesh = Mesh;
     unsafe._idToType[48819938] = Mesh;
     var Node = (function (_super) {
         __extends(Node, _super);
         function Node(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Node, "BASE", {
             get: function () {
@@ -3319,7 +3319,7 @@ var XRAY;
             var count = 0;
             for (var i = 0; i < unsafe._mem_i32[(SELF + 20) >> 2]; i++) {
                 var shape = unsafe._mem_i32[((unsafe._mem_i32[(SELF + 16) >> 2]) + 4 + (4 * i)) >> 2];
-                var box = Shape.BoundingBox(shape);
+                var box = Triangle.BoundingBox(shape);
                 _xs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 8) >> 3];
                 _ys[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 16) >> 3];
                 _zs[count] = unsafe._mem_f64[((unsafe._mem_i32[(box + 4) >> 2]) + 24) >> 3];
@@ -3369,18 +3369,18 @@ var XRAY;
             unsafe._mem_i32[(SELF + 16) >> 2] = 0;
         };
         Node.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 20726; return SELF; };
-        Node.NAME = "Node";
-        Node.SIZE = 32;
-        Node.ALIGN = 8;
-        Node.CLSID = 20726;
         return Node;
     }(MemoryObject));
+    Node.NAME = "Node";
+    Node.SIZE = 32;
+    Node.ALIGN = 8;
+    Node.CLSID = 20726;
     XRAY.Node = Node;
     unsafe._idToType[20726] = Node;
     var Tree = (function (_super) {
         __extends(Tree, _super);
         function Tree(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Tree, "BASE", {
             get: function () {
@@ -3411,12 +3411,12 @@ var XRAY;
             return Node.Intersect(unsafe._mem_i32[(tree + 8) >> 2], r, hit.tmin, hit.tmax);
         };
         Tree.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 27694; return SELF; };
-        Tree.NAME = "Tree";
-        Tree.SIZE = 12;
-        Tree.ALIGN = 4;
-        Tree.CLSID = 27694;
         return Tree;
     }(MemoryObject));
+    Tree.NAME = "Tree";
+    Tree.SIZE = 12;
+    Tree.ALIGN = 4;
+    Tree.CLSID = 27694;
     XRAY.Tree = Tree;
     unsafe._idToType[27694] = Tree;
     var Hit = (function () {
@@ -3451,9 +3451,9 @@ var XRAY;
             var ray = new Ray(position, normal);
             return new HitInfo(shape, position, normal, ray, material, inside);
         };
-        Hit.NoHit = new Hit(null, Number.POSITIVE_INFINITY, null);
         return Hit;
     }());
+    Hit.NoHit = new Hit(null, Number.POSITIVE_INFINITY, null);
     XRAY.Hit = Hit;
     var HitInfo = (function () {
         function HitInfo(Shape, Position, Normal, Ray, Material, Inside) {
@@ -3470,7 +3470,7 @@ var XRAY;
     var Camera = (function (_super) {
         __extends(Camera, _super);
         function Camera(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Camera, "BASE", {
             get: function () {
@@ -3563,18 +3563,18 @@ var XRAY;
             return new Ray(cp, d);
         };
         Camera.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 1632962; return SELF; };
-        Camera.NAME = "Camera";
-        Camera.SIZE = 48;
-        Camera.ALIGN = 8;
-        Camera.CLSID = 1632962;
         return Camera;
     }(MemoryObject));
+    Camera.NAME = "Camera";
+    Camera.SIZE = 48;
+    Camera.ALIGN = 8;
+    Camera.CLSID = 1632962;
     XRAY.Camera = Camera;
     unsafe._idToType[1632962] = Camera;
     var Scene = (function (_super) {
         __extends(Scene, _super);
         function Scene(p) {
-            _super.call(this, p);
+            return _super.call(this, p) || this;
         }
         Object.defineProperty(Scene, "BASE", {
             get: function () {
@@ -3685,12 +3685,12 @@ var XRAY;
             return color.divScalar(this.lights.length);
         };
         Scene.initInstance = function (SELF) { unsafe._mem_i32[SELF >> 2] = 237222; return SELF; };
-        Scene.NAME = "Scene";
-        Scene.SIZE = 48;
-        Scene.ALIGN = 8;
-        Scene.CLSID = 237222;
         return Scene;
     }(MemoryObject));
+    Scene.NAME = "Scene";
+    Scene.SIZE = 48;
+    Scene.ALIGN = 8;
+    Scene.CLSID = 237222;
     XRAY.Scene = Scene;
     unsafe._idToType[237222] = Scene;
     var MasterScene = (function () {
@@ -3890,9 +3890,9 @@ var XRAY;
         BufferGeometry.computeNormals = function (positions) {
             return new Float32Array(positions.length);
         };
-        BufferGeometry.identityMatrix = new THREE.Matrix4().identity();
         return BufferGeometry;
     }());
+    BufferGeometry.identityMatrix = new THREE.Matrix4().identity();
     XRAY.BufferGeometry = BufferGeometry;
     (function (LightMode) {
         LightMode[LightMode["LightModeRandom"] = 0] = "LightModeRandom";
@@ -4240,26 +4240,26 @@ var XRAY;
             }
             return new Vector3(x, y, z);
         };
-        Vector3.SIMD = {
-            dot: function (a, b) {
-                var lvMult = SIMD.Float32x4.mul(a, b);
-                var lvTemp = SIMD.Float32x4.shuffle(lvMult, lvMult, 1, 0, 0, 0);
-                var lvTemp2 = SIMD.Float32x4.shuffle(lvMult, lvMult, 2, 0, 0, 0);
-                var lvSum = SIMD.Float32x4.add(lvMult, SIMD.Float32x4.add(lvTemp, lvTemp2));
-                return SIMD.Float32x4.extractLane(SIMD.Float32x4.shuffle(lvSum, lvSum, 0, 0, 0, 0), 0);
-            },
-            cross: function (a, b) {
-                var lvTemp1 = SIMD.Float32x4.shuffle(a, a, 1, 2, 0, 0);
-                var lvTemp2 = SIMD.Float32x4.shuffle(b, b, 2, 0, 1, 0);
-                var lvMult = SIMD.Float32x4.mul(lvTemp1, lvTemp2);
-                lvTemp1 = SIMD.Float32x4.shuffle(a, a, 2, 0, 1, 0);
-                lvTemp2 = SIMD.Float32x4.shuffle(b, b, 1, 2, 0, 0);
-                var lvMult2 = SIMD.Float32x4.mul(lvTemp1, lvTemp2);
-                return SIMD.Float32x4.sub(lvMult, lvMult2);
-            }
-        };
         return Vector3;
     }());
+    Vector3.SIMD = {
+        dot: function (a, b) {
+            var lvMult = SIMD.Float32x4.mul(a, b);
+            var lvTemp = SIMD.Float32x4.shuffle(lvMult, lvMult, 1, 0, 0, 0);
+            var lvTemp2 = SIMD.Float32x4.shuffle(lvMult, lvMult, 2, 0, 0, 0);
+            var lvSum = SIMD.Float32x4.add(lvMult, SIMD.Float32x4.add(lvTemp, lvTemp2));
+            return SIMD.Float32x4.extractLane(SIMD.Float32x4.shuffle(lvSum, lvSum, 0, 0, 0, 0), 0);
+        },
+        cross: function (a, b) {
+            var lvTemp1 = SIMD.Float32x4.shuffle(a, a, 1, 2, 0, 0);
+            var lvTemp2 = SIMD.Float32x4.shuffle(b, b, 2, 0, 1, 0);
+            var lvMult = SIMD.Float32x4.mul(lvTemp1, lvTemp2);
+            lvTemp1 = SIMD.Float32x4.shuffle(a, a, 2, 0, 1, 0);
+            lvTemp2 = SIMD.Float32x4.shuffle(b, b, 1, 2, 0, 0);
+            var lvMult2 = SIMD.Float32x4.mul(lvTemp1, lvTemp2);
+            return SIMD.Float32x4.sub(lvMult, lvMult2);
+        }
+    };
     XRAY.Vector3 = Vector3;
     var Color3 = (function () {
         function Color3(r, g, b) {
@@ -4358,17 +4358,17 @@ var XRAY;
             var i = Math.round(Math.random() * Color3.brightColors.length);
             return Color3.brightColors[i];
         };
-        Color3.brightColors = [
-            Color3.hexColor(0xFF00FF),
-            Color3.hexColor(0x84FF00),
-            Color3.hexColor(0xFF0084),
-            Color3.hexColor(0x00FFFF),
-            Color3.hexColor(0x00FF84),
-            Color3.hexColor(0xDD40FF),
-            Color3.hexColor(0xFFFF00)
-        ];
         return Color3;
     }());
+    Color3.brightColors = [
+        Color3.hexColor(0xFF00FF),
+        Color3.hexColor(0x84FF00),
+        Color3.hexColor(0xFF0084),
+        Color3.hexColor(0x00FFFF),
+        Color3.hexColor(0x00FF84),
+        Color3.hexColor(0xDD40FF),
+        Color3.hexColor(0xFFFF00)
+    ];
     XRAY.Color3 = Color3;
     var Matrix4 = (function () {
         function Matrix4(x00, x01, x02, x03, x10, x11, x12, x13, x20, x21, x22, x23, x30, x31, x32, x33) {
@@ -4406,7 +4406,7 @@ var XRAY;
             this.x33 = x33;
         }
         Matrix4.fromTHREEJS = function (e) {
-            return new Matrix44(e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]);
+            return new Matrix4(e[0], e[4], e[8], e[12], e[1], e[5], e[9], e[13], e[2], e[6], e[10], e[14], e[3], e[7], e[11], e[15]);
         };
         Object.defineProperty(Matrix4.prototype, "DATA", {
             get: function () {
@@ -4421,11 +4421,7 @@ var XRAY;
             configurable: true
         });
         Matrix4.Identity = function () {
-            return new Matrix4;
-            1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1;
+            return new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
         };
         Matrix4.IsEqual = function (a, b) {
             return a.x00 == b.x00 && a.x01 == b.x01 && a.x02 == b.x02 && a.x03 == b.x03 &&
@@ -4440,11 +4436,7 @@ var XRAY;
                 this.x30 == 0 && this.x31 == 0 && this.x32 == 0 && this.x33 == 1;
         };
         Matrix4.TranslateUnitMatrix4 = function (v) {
-            return new Matrix4,
-                1, 0, 0, v.x,
-                0, 1, 0, v.y,
-                0, 0, 1, v.z,
-                0, 0, 0, 1;
+            return new Matrix4(1, 0, 0, v.x, 0, 1, 0, v.y, 0, 0, 1, v.z, 0, 0, 0, 1);
         };
         Matrix4.ScaleUnitMatrix4 = function (v) {
             return new Matrix4(v.x, 0, 0, 0, 0, v.y, 0, 0, 0, 0, v.z, 0, 0, 0, 0, 1);
