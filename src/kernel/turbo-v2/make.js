@@ -9,10 +9,17 @@ let buildCommand = "";
 modules.forEach((file) => {
     buildCommand += path.resolve(__dirname, file) + " ";
 });
+
+let TURBO_PATH = path.resolve(__dirname, "../../../../TurboScript/");
+process.env.TURBO_PATH = TURBO_PATH;
+
 let outFile = path.resolve(__dirname, "xray-kernel-turbo.asm.js");
+
 buildCommand += " --turbo-asm --out " + outFile;
-let compilerShell = "../TurboScript/lib/tc.js";
-let code = shell.exec(`node ${compilerShell} ${buildCommand}`).code;
+
+let compilerShell = TURBO_PATH + "/lib/tc.sh";
+
+let code = shell.exec(`${compilerShell} ${buildCommand}`).code;
 
 console.log(`child process exited with code ${code}`);
 
