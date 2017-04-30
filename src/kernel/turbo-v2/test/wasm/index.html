@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>X Ray kernel Wasm Test</title>
+
+    <script src="../../../../../node_modules/three/build/three.js"></script>
+    <script src="../../../../../libs/threejs/controls/EditorControls.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/DDSLoader.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/MTLLoader.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/OBJLoader.js"></script>
+
+    <script>
+        exports = window.exports ? window.exports : {};
+        SharedInt8Array = Int8Array;
+
+    async function init() {
+        let data = await fetch("../../xray-kernel-turbo.wasm");
+        let wasmBytes = await data.arrayBuffer();
+        try{
+            WebAssembly.compile(wasmBytes).then(function (compiled) {
+                window.turbo = new WebAssembly.Instance(compiled).exports;
+                console.log("WASM Compiled!");
+            })
+
+        }catch (e){
+            console.error(e);
+        }
+    }
+    init();
+</script>
+</head>
+<body>
+<div id="output"></div>
+<!--<script src="main.js"></script>-->
+</body>
+</html>

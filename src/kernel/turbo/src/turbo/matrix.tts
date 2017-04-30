@@ -153,7 +153,7 @@
     static PerspectiveUnitMatrix(fovy:number, aspect:number, near:number, far:number, c?:number):number {
         let ymax:number = near * Math.tan(fovy * Math.PI/360);
         let xmax:number = ymax * aspect;
-        return Matrix.Frustum(-xmax, xmax, -ymax, ymax, near, far, c);
+        return Matrix.FrustumUnitMatrix(-xmax, xmax, -ymax, ymax, near, far, c);
     }
 
     static LookAtMatrix(eye:number, center:number, up:number, c?:number):number{
@@ -267,14 +267,20 @@
         let yb:number = Vector.MulScalar_mem(u, Vector.y(max));
         let za:number = Vector.MulScalar_mem(b, Vector.z(min));
         let zb:number = Vector.MulScalar_mem(b, Vector.z(max));
-        xa = Vector.Min_mem(xa, xb, r);
-        xb = Vector.Max_mem(xa, xb, u);
-        ya = Vector.Min_mem(ya, yb, b);
-        yb = Vector.Max_mem(ya, yb);
-        za = Vector.Min_mem(za, zb);
-        zb = Vector.Max_mem(za, zb);
-        min = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xa, ya), za),t);
-        max = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xb, yb), zb),t);
+        Vector.Min_mem(xa, xb, r);
+        xb = Vector.Max_mem(xa, xb, xb);
+        let _xa = xa;
+        xa = r;
+        Vector.Min_mem(ya, yb, u);
+        yb = Vector.Max_mem(ya, yb, yb);
+        let _ya = ya;
+        ya = u;
+        Vector.Min_mem(za, zb, b);
+        zb = Vector.Max_mem(za, zb, zb);
+        let _za = za;
+        za = b;
+        min = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xa, ya, xa), za, za),t, _xa);
+        max = Vector.Add_mem(Vector.Add_mem(Vector.Add_mem(xb, yb, xb), zb, zb),t, _ya);
         let ptr = c?c:@new Box;
         return Box.Init_mem(ptr, min, max);
     }

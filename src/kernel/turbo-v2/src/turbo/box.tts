@@ -1,44 +1,37 @@
-@turbo class Box{
+class Box{
+	
+	min:Vector3;
+	max:Vector3;
 
-	Min:Vector
-	Max:Vector
-
-	@method init(SELF, min:XYZ = xyz(0,0,0), max:XYZ= xyz(0,0,0)){
-        SELF.Min = Vector.NewVector(min);
-        SELF.Max = Vector.NewVector(max);
-        return SELF;
+	constructor(min:Vector3, max:Vector3):Box {
+        this.min = min?min:new Vector3();
+        this.max = max?max:new Vector3();
+        return this;
 	}
 
-    static Init_mem(SELF, min:number, max:number){
-        SELF.Min = min;
-        SELF.Max = max;
-        return SELF;
+    set(min:Vector3, max:Vector3):Box {
+        this.min = min;
+        this.max = max;
+        return this;
 	}
 
-    static NewBox(min?:number, max?:number){
-        let SELF = @new Box;
-        SELF.Min = min?min:Vector.NewVector();
-        SELF.Max = max?max:Vector.NewVector();
-        return SELF;
-	}
+    // static ToJSON(this){
+     //    return {
+     //        min:Vector3.ToJSON(this.min),
+     //        max:Vector3.ToJSON(this.max)
+     //    };
+	// }
 
-    static ToJSON(SELF){
-        return {
-            min:Vector.ToJSON(SELF.Min),
-            max:Vector.ToJSON(SELF.Max)
-        };
-	}
-
-	static BoxForShapes(shapes:number, numShapes:number):number{
+	static boxForShapes(shapes:Shape[], numShapes:number):number{
 		if(numShapes == 0) {
-			return Box.NewBox();
+			return new Box();
 		}
 		// let box = Shape.BoundingBox(Shape.Array.at(shapes, 0));
-		let box = Box.NewBox();
+		let box = new Box();
 
 		for(let i:number = 0; i < numShapes; i++){
-			let shape:number = Shape.Array.at(shapes, i);
-			box = Box.Extend(box, Shape.BoundingBox(shape));
+			let shape:Shape = shapes[i];
+			box = box.extend(shape.boundingBox);
 		}
 		return box;
 	}
@@ -56,95 +49,95 @@
      //    return box
 	// }
 
-	static Anchor_mem(SELF, anchor:number, c?:number):number {
-        let size = Box.Size_mem(SELF);
-        let tmp = Vector.Mul_mem(size, anchor);
+	static Anchor_mem(anchor:number, c?:number):number {
+        let size = Box.Size_mem(this);
+        let tmp = Vector3.Mul_mem(size, anchor);
         free(size);
         if(c){
             free(tmp);
         }else{
             c = tmp;
         }
-		return Vector.Add_mem(SELF.Min, c, c);
+		return Vector3.Add_mem(this.min, c, c);
     }
-	static Anchor(SELF, anchor:Vector3):number {
-        let size:Vector3 = Box.Size(SELF);
-		return Vector.Add_12(SELF.Min, size.mul(anchor));
+	static Anchor(anchor:Vector3):number {
+        let size:Vector3 = Box.Size(this);
+		return Vector3.Add_12(this.min, size.mul(anchor));
     }
 
-	static Center_mem(SELF):number {
-        let anchor = Vector.NewVector(0.5, 0.5, 0.5);
-		return Box.Anchor(SELF, anchor, anchor);
+	static Center_mem(this):number {
+        let anchor = Vector3.NewVector(0.5, 0.5, 0.5);
+		return Box.Anchor(anchor, anchor);
 	}
-	static Center(SELF):Vector3 {
+	static Center(this):Vector3 {
         let anchor = new Vector3(0.5, 0.5, 0.5);
-		return Box.Anchor(SELF, anchor);
+		return Box.Anchor(anchor);
 	}
 
-	static OuterRadius(SELF):number {
-        let center:Vector3 = Box.Center(SELF);
-        return Vector.Sub_12(SELF.Min, center).length();
+	static OuterRadius(this):number {
+        let center:Vector3 = Box.Center(this);
+        return Vector3.Sub_12(this.min, center).length();
 	}
 
-	static InnerRadius(SELF):number {
-        let center = Box.Center(SELF);
-        return Vector.Sub_21(center, SELF.Min).maxComponent();
+	static InnerRadius(this):number {
+        let center = Box.Center(this);
+        return Vector3.Sub_21(center, this.min).maxComponent();
     }
 
-	static Size_mem(SELF):number {
-		return Vector.Sub_mem(SELF.Max, SELF.Min);
+	static Size_mem(this):number {
+		return Vector3.Sub_mem(this.max, this.min);
 	}
-	static Size(SELF):Vector3 {
-		return Vector.Sub_mem_2(SELF.Max, SELF.Min);
+	static Size(this):Vector3 {
+		return Vector3.Sub_mem_2(this.max, this.min);
 	}
 
-	static Extend(SELF, b:number):number{
+	static Extend(b:number):number{
         //let ptr:number = @new Box;
-		let min = SELF.Min;
-		let max = SELF.Max;
-		let bmin = Box.Min(b);
-		let bmax = Box.Max(b);
-		return Box.Init_mem(SELF, Vector.Min_mem(min, bmin, min), Vector.Max_mem(max, bmax, max));
+		let min = this.min;
+		let max = this.max;
+		let bmin = Box.min(b);
+		let bmax = Box.max(b);
+		return Box.Init_mem(Vector3.Min_mem(min, bmin, min), Vector3.Max_mem(max, bmax, max));
 	}
 
-	static Contains(SELF , b:number):boolean{
+	static Contains(this , b:number):boolean{
 
-        let a_min = SELF.Min;
-        let a_max = SELF.Max;
+        let a_min = this.min;
+        let a_max = this.max;
 
-		return Vector.x(a_min) <= Vector.x(b) && Vector.x(a_max) >= Vector.x(b) &&
-			Vector.y(a_min) <= Vector.y(b) && Vector.y(a_max) >= Vector.y(b) &&
-			Vector.z(a_min) <= Vector.z(b) && Vector.z(a_max) >= Vector.z(b);
+		return Vector3.x(a_min) <= Vector3.x(b) && Vector3.x(a_max) >= Vector3.x(b) &&
+			Vector3.y(a_min) <= Vector3.y(b) && Vector3.y(a_max) >= Vector3.y(b) &&
+			Vector3.z(a_min) <= Vector3.z(b) && Vector3.z(a_max) >= Vector3.z(b);
 	}
 
 	static Intersects(a:number, b:number):boolean {
-        let a_min = Box.Min(a);
-        let a_max = Box.Max(a);
-        let b_min = Box.Min(b);
-        let b_max = Box.Max(b);
+        let a_min = Box.min(a);
+        let a_max = Box.max(a);
+        let b_min = Box.min(b);
+        let b_max = Box.max(b);
 
-		return !(Vector.x(a_min) > Vector.x(b_max) || Vector.x(a_max) < Vector.x(b_min) || Vector.y(a_min) > Vector.y(b_max) ||
-		Vector.y(a_max) < Vector.y(b_min) || Vector.z(a_min) > Vector.z(b_max) || Vector.z(a_max) < Vector.z(b_min));
+		return !(Vector3.x(a_min) > Vector3.x(b_max) || Vector3.x(a_max) < Vector3.x(b_min) || Vector3.y(a_min) > Vector3.y(b_max) ||
+		Vector3.y(a_max) < Vector3.y(b_min) || Vector3.z(a_min) > Vector3.z(b_max) || Vector3.z(a_max) < Vector3.z(b_min));
 	}
 
-	static Intersect(SELF, r:Ray):{tmax:number, tmin:number} {
+	static Intersect(r:Ray):{tmax:number, tmin:number} {
 
-        let min = SELF.Min;
-        let max = SELF.Max;
+        let min = this.min;
+        let max = this.max;
 
-        // x1 := (b.Min.x - r.Origin.x) / r.Direction.x
-        // y1 := (b.Min.y - r.Origin.y) / r.Direction.y
-        // z1 := (b.Min.z - r.Origin.z) / r.Direction.z
-        // x2 := (b.Max.x - r.Origin.x) / r.Direction.x
-        // y2 := (b.Max.y - r.Origin.y) / r.Direction.y
-        // z2 := (b.Max.z - r.Origin.z) / r.Direction.z
+        // x1 := (b.min.x - r.Origin.x) / r.Direction.x
+        // y1 := (b.min.y - r.Origin.y) / r.Direction.y
+        // z1 := (b.min.z - r.Origin.z) / r.Direction.z
+        // x2 := (b.max.x - r.Origin.x) / r.Direction.x
+        // y2 := (b.max.y - r.Origin.y) / r.Direction.y
+        // z2 := (b.max.z - r.Origin.z) / r.Direction.z
 
-		let x1 = (Vector.x(min) - r.origin.x) / r.direction.x;
-        let y1 = (Vector.y(min) - r.origin.y) / r.direction.y;
-        let z1 = (Vector.z(min) - r.origin.z) / r.direction.z;
-        let x2 = (Vector.x(max) - r.origin.x) / r.direction.x;
-        let y2 = (Vector.y(max) - r.origin.y) / r.direction.y;
-        let z2 = (Vector.z(max) - r.origin.z) / r.direction.z;
+		let x1 = (Vector3.x(min) - r.origin.x) / r.direction.x;
+        let y1 = (Vector3.y(min) - r.origin.y) / r.direction.y;
+        let z1 = (Vector3.z(min) - r.origin.z) / r.direction.z;
+        let x2 = (Vector3.x(max) - r.origin.x) / r.direction.x;
+        let y2 = (Vector3.y(max) - r.origin.y) / r.direction.y;
+        let z2 = (Vector3.z(max) - r.origin.z) / r.direction.z;
         let tmp;
 
 		if (x1 > x2) {
@@ -168,23 +161,23 @@
         };
 	}
 
-	static Partition(SELF, axis:Axis, point:number): {left:boolean, right:boolean} {
-        let min = SELF.Min;
-        let max = SELF.Max;
+	static Partition(axis:Axis, point:number): {left:boolean, right:boolean} {
+        let min = this.min;
+        let max = this.max;
         let left;
         let right;
 		switch (axis) {
 			case Axis.AxisX:
-				left = Vector.x(min) <= point;
-				right = Vector.x(max) >= point;
+				left = Vector3.x(min) <= point;
+				right = Vector3.x(max) >= point;
                 break;
 			case Axis.AxisY:
-				left = Vector.y(min) <= point;
-				right = Vector.y(max) >= point;
+				left = Vector3.y(min) <= point;
+				right = Vector3.y(max) >= point;
                 break;
             case Axis.AxisZ:
-				left = Vector.z(min) <= point;
-				right = Vector.z(max) >= point;// EPIC Bug :D it was min and got weird triangle intersection
+				left = Vector3.z(min) <= point;
+				right = Vector3.z(max) >= point;// EPIC Bug :D it was min and got weird triangle intersection
                 break;
 		}
 		return {

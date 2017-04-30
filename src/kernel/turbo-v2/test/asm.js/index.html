@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>X Ray kernel asm.js Test</title>
+
+    <script src="../../../../../node_modules/three/build/three.js"></script>
+    <script src="../../../../../libs/threejs/controls/EditorControls.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/DDSLoader.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/MTLLoader.js"></script>
+    <script src="../../../../../node_modules/three/examples/js/loaders/OBJLoader.js"></script>
+
+    <script>
+        exports = window.exports ? window.exports : {};
+        SharedInt8Array = Int8Array;
+    </script>
+    <script src="../../xray-kernel-turbo.asm.js"></script>
+</head>
+<body>
+<script>
+    var turbo = initTurbo(0x10000);
+</script>
+<div id="output"></div>
+<!--<script src="main.js"></script>-->
+</body>
+</html>
